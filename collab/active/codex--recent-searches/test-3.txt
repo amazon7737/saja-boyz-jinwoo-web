@@ -1,0 +1,19 @@
+test('recentSearchesBoundHistoryAndDeleteOneKeyword', async () => {
+  const older = Array.from({ length: 12 }, (_, index) => '기록 ' + index);
+  localStorage.setItem(storageKey, JSON.stringify(older));
+  await mount('새 검색');
+  const expected = ['새 검색', ...older.slice(0, 9)];
+  expect(stored()).toEqual(expected);
+  await mount();
+  expect(terms()).toEqual(expected);
+  const remove = recent().querySelector('button[aria-label="새 검색 삭제"]');
+  expect(remove).not.toBeNull();
+  expect(remove!.getAttribute('type')).toBe('button');
+  await act(async () => (remove as HTMLButtonElement).click());
+  expect(terms()).toEqual(older.slice(0, 9));
+  expect(stored()).toEqual(older.slice(0, 9));
+  expect(request).toHaveBeenCalledTimes(1);
+  await unmount();
+  await mount();
+  expect(terms()).toEqual(older.slice(0, 9));
+});

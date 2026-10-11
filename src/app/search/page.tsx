@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { fetchArticleList } from '@/features/article-list/api/fetch-articles';
 import { ArticleList } from '@/features/article-list/ui/article-list/article-list';
+import { RecentSearches } from '@/features/search/ui/recent-searches/recent-searches';
 import { KeywordLinkStatus } from './keyword-link-status';
 
 const suggestedKeywords = [
@@ -91,6 +92,7 @@ export default async function SearchPage({
       ) : (
         <p className="m-0 text-muted">궁금한 기사의 키워드를 검색해 보세요.</p>
       )}
+      <RecentSearches executedKeyword={keyword} />
       <section
         aria-labelledby="suggested-keywords"
         className="flex flex-col gap-3"

@@ -1,0 +1,25 @@
+test('recentSearchesTolerateInvalidOrUnavailableStorage', async () => {
+  for (const raw of ['{broken', '{"items":["가짜 기록"]}', '[null,7,"",{}]']) {
+    localStorage.setItem(storageKey, raw);
+    await mount();
+    expect(terms()).toEqual([]);
+    expect(recent().textContent).toContain('최근 검색어가 없어요');
+    await unmount();
+  }
+  vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
+    throw new DOMException('blocked', 'SecurityError');
+  });
+  vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+    throw new DOMException('full', 'QuotaExceededError');
+  });
+  await mount('화재');
+  expect(
+    container.querySelector('section[aria-label="기사 검색 결과"]'),
+  ).not.toBeNull();
+  expect(container.querySelector('[role="alert"]')).toBeNull();
+  expect(request).toHaveBeenCalledTimes(1);
+  await mount();
+  expect(terms()).toEqual([]);
+  expect(container.querySelector('form[action="/search"]')).not.toBeNull();
+  expect(container.textContent).toContain('추천 검색어');
+});

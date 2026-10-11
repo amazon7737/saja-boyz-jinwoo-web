@@ -1,0 +1,16 @@
+test('recentSearchesRestoreStoredKeywordsWithoutFetching', async () => {
+  const keywords = ['서울 소방서', '서교동 화재'];
+  localStorage.setItem(storageKey, JSON.stringify(keywords));
+  await mount();
+  expect(terms()).toEqual(keywords);
+  expect(recent().textContent).not.toContain('실시간 강남역');
+  expect(request).not.toHaveBeenCalled();
+  const input = container.querySelector('input[name="q"]');
+  expect(input).toBeInstanceOf(HTMLInputElement);
+  await act(async () => {
+    (input as HTMLInputElement).value = '아직 입력 중';
+    input!.dispatchEvent(new Event('input', { bubbles: true }));
+  });
+  expect(stored()).toEqual(keywords);
+  expect(request).not.toHaveBeenCalled();
+});
