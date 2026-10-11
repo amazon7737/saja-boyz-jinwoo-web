@@ -1,0 +1,36 @@
+{
+  "status": "complete",
+  "baseline": "9c61c0516522967b45f90475c419c3cb08a9856c",
+  "review": {
+    "head": "dc483848849960a0fd6d9d8f9965dc81511e3b95",
+    "worker": "astra",
+    "summary": "HEAD dc483848의 지정 기준점 및 origin/dev 대비 전체 제품 변경과 승인 테스트를 독립 검토했고, 구체적인 수정 필요 결함을 찾지 못했습니다. 근거: search-results.tsx:41–61의 중복 요청 차단·원본 offset·최신 total/빈 페이지 종료·실패 보존, page.tsx:69의 검색어별 초기화, load-search-page.tsx:6–24의 서버 입력 검증·위임, fetch-articles.ts:47–63의 timeout/no-store/응답 검증. 신규 테스트 본문·헤더는 승인 계획과 정확히 일치하며 기존 테스트는 변경되지 않았습니다.",
+    "at": 1791712873
+  },
+  "receipts": [
+    {
+      "entry": "searchPageRequestValidatesOffsetAndRetainsRawTotal",
+      "red_status": "red",
+      "green_count": 55,
+      "head": "62a950a39a848435269ec4769d1080318df43b9b"
+    },
+    {
+      "entry": "searchMoreAppendsDeduplicatedPagesWithRawOffsets",
+      "red_status": "red",
+      "green_count": 56,
+      "head": "2e094b34256cbfa02687f4ebde755845c3a3f371"
+    },
+    {
+      "entry": "searchMorePendingFailureAndRetryPreserveLoadedArticles",
+      "red_status": "green",
+      "green_count": 57,
+      "head": "bdf9ab7f64c57b1cc79257e456839af76a50d8ef"
+    },
+    {
+      "entry": "searchMoreResetsOnKeywordChangeAndIgnoresLatePages",
+      "red_status": "green",
+      "green_count": 58,
+      "head": "dc483848849960a0fd6d9d8f9965dc81511e3b95"
+    }
+  ]
+}

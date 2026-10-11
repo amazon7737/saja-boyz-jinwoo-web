@@ -22,7 +22,9 @@ function isArticleCollectionItem(
   );
 }
 
-export async function fetchArticleList(keyword?: string) {
+export async function fetchArticleList(keyword?: string, offset = 0) {
+  if (!Number.isSafeInteger(offset) || offset < 0) return null;
+
   try {
     const baseUrl = process.env.NEWS_API_BASE_URL;
     if (!baseUrl) return null;
@@ -37,7 +39,7 @@ export async function fetchArticleList(keyword?: string) {
     }
 
     const url = new URL('/news', base);
-    url.searchParams.set('offset', '0');
+    url.searchParams.set('offset', String(offset));
     url.searchParams.set('limit', '20');
     const normalizedKeyword = keyword?.trim();
     if (normalizedKeyword) url.searchParams.set('keyword', normalizedKeyword);
@@ -61,7 +63,11 @@ export async function fetchArticleList(keyword?: string) {
       return null;
     }
 
-    return { items: payload.items, apiOrigin: url.origin };
+    return {
+      items: payload.items,
+      apiOrigin: url.origin,
+      total: payload.total,
+    };
   } catch {
     return null;
   }

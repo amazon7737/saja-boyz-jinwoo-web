@@ -1,6 +1,6 @@
 import Link from 'next/link';
-import { fetchArticleList } from '@/features/article-list/api/fetch-articles';
-import { ArticleList } from '@/features/article-list/ui/article-list/article-list';
+import { loadSearchPage } from '@/features/search/api/load-search-page';
+import { SearchResults } from '@/features/search/ui/search-results/search-results';
 import { RecentSearches } from '@/features/search/ui/recent-searches/recent-searches';
 import { KeywordLinkStatus } from './keyword-link-status';
 
@@ -20,7 +20,7 @@ export default async function SearchPage({
 }) {
   const { q } = await searchParams;
   const keyword = (Array.isArray(q) ? q[0] : q)?.trim() ?? '';
-  const result = keyword ? await fetchArticleList(keyword) : null;
+  const result = keyword ? await loadSearchPage(keyword, 0) : null;
 
   return (
     <div className="flex flex-col gap-5 pb-5 text-sm">
@@ -66,18 +66,7 @@ export default async function SearchPage({
       </div>
       {keyword ? (
         result ? (
-          <section aria-label="기사 검색 결과">
-            <p className="m-0 text-xs text-muted">
-              최대 20개의 기사를 보여드려요. 중복 기사는 한 번만 표시해요.
-            </p>
-            {result.items.length === 0 ? (
-              <p role="status" className="text-muted leading-[1.7]">
-                검색 결과가 없어요
-              </p>
-            ) : (
-              <ArticleList items={result.items} apiOrigin={result.apiOrigin} />
-            )}
-          </section>
+          <SearchResults key={keyword} keyword={keyword} initialPage={result} />
         ) : (
           <div role="alert" className="flex flex-col gap-3">
             <p className="m-0">검색 결과를 불러오지 못했어요</p>

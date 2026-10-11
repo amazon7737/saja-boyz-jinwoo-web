@@ -1,0 +1,41 @@
+test('searchMoreResetsOnKeywordChangeAndIgnoresLatePages', async () => {
+  request.mockResolvedValueOnce(Response.json({ total: 40, items: batch() }));
+  await mount('첫 검색');
+  let finish!: (response: Response) => void;
+  request.mockImplementationOnce(
+    () =>
+      new Promise((resolve) => {
+        finish = resolve;
+      }),
+  );
+  await click('더 보기');
+  request.mockResolvedValueOnce(
+    Response.json({ total: 60, items: batch(100) }),
+  );
+  await mount('다른 검색');
+  expect(titles()).toEqual(batch(100).map((item) => item.article.title));
+  await act(async () => finish(Response.json({ total: 40, items: batch(20) })));
+  expect(titles()).toEqual(batch(100).map((item) => item.article.title));
+  request.mockResolvedValueOnce(Response.json({ total: 60, items: [] }));
+  await click('더 보기');
+  expect(titles()).toHaveLength(20);
+  expect(
+    Array.from(container.querySelectorAll('button')).some(
+      (b) => b.textContent?.trim() === '더 보기',
+    ),
+  ).toBe(false);
+  expect(offsets()).toEqual(['0', '20', '0', '20']);
+  expect(
+    request.mock.calls.map(([input]) =>
+      new URL(String(input)).searchParams.get('keyword'),
+    ),
+  ).toEqual(['첫 검색', '첫 검색', '다른 검색', '다른 검색']);
+  const calls = request.mock.calls.length;
+  await mount('   ');
+  expect(titles()).toEqual([]);
+  expect(request).toHaveBeenCalledTimes(calls);
+  expect(container.querySelector('form[action="/search"]')).not.toBeNull();
+  expect(
+    container.querySelector('section[aria-label="최근 검색"]'),
+  ).not.toBeNull();
+});
