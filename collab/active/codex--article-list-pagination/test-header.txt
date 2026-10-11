@@ -1,0 +1,81 @@
+// file: src/app/incidents/article-list-pagination.test.ts
+// @vitest-environment jsdom
+import { act } from 'react';
+import { createRoot, type Root } from 'react-dom/client';
+import { afterEach, assert, beforeEach, expect, test, vi } from 'vitest';
+import IncidentsPage from '@/app/incidents/page';
+import type { ArticleCollectionItem } from '@/features/article-list/model/article.types';
+
+const request = vi.fn<typeof fetch>();
+const apiOrigin = 'https://news.example.invalid';
+let container: HTMLDivElement;
+let root: Root;
+
+function article(index: number): ArticleCollectionItem {
+  return {
+    article_id: index.toString(16).padStart(64, '0'),
+    image_status: 'disabled',
+    image_url: null,
+    article: {
+      title: '기사 ' + index,
+      description: '기사 요약 ' + index,
+      pubDate: '2026-10-11T00:00:00Z',
+      originallink: 'https://publisher.example.invalid/' + index,
+      link: '',
+    },
+  };
+}
+
+function batch(start = 0) {
+  return Array.from({ length: 20 }, (_, index) => article(start + index));
+}
+
+beforeEach(() => {
+  request.mockReset();
+  vi.stubEnv('NEWS_API_BASE_URL', apiOrigin);
+  vi.stubGlobal('fetch', request);
+  vi.stubGlobal('IS_REACT_ACT_ENVIRONMENT', true);
+  container = document.createElement('div');
+  document.body.append(container);
+  root = createRoot(container);
+});
+
+afterEach(async () => {
+  await act(async () => root.unmount());
+  container.remove();
+  vi.restoreAllMocks();
+  vi.unstubAllGlobals();
+  vi.unstubAllEnvs();
+});
+
+async function mount() {
+  const page = await IncidentsPage();
+  await act(async () => root.render(page));
+}
+
+function button(name: string) {
+  const found = Array.from(container.querySelectorAll('button')).find(
+    (entry) =>
+      (entry.getAttribute('aria-label') ?? entry.textContent?.trim()) === name,
+  );
+  assert(found, `${name} 버튼이 표시되어야 합니다`);
+  return found;
+}
+
+async function click(name: string) {
+  await act(async () => button(name).click());
+}
+
+function titles() {
+  return Array.from(container.querySelectorAll('article h2')).map(
+    (title) => title.textContent,
+  );
+}
+
+function offsets() {
+  return request.mock.calls.map(([input]) =>
+    new URL(
+      input instanceof Request ? input.url : String(input),
+    ).searchParams.get('offset'),
+  );
+}

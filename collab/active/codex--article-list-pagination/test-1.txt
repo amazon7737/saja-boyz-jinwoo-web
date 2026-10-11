@@ -1,0 +1,72 @@
+test('articleListMoreAppendsWithRawOffsetsAndFirstSeenIdentity', async () => {
+  const first = [...batch().slice(0, 19), article(0)];
+  request.mockResolvedValueOnce(Response.json({ total: 100, items: first }));
+  await mount();
+  expect(titles()).toEqual(
+    first.slice(0, 19).map((item) => item.article.title),
+  );
+  expect(request).toHaveBeenCalledTimes(1);
+  expect(button('더 보기').disabled).toBe(false);
+
+  const duplicate = article(0);
+  duplicate.article.title = '뒤늦은 중복 제목';
+  request.mockResolvedValueOnce(
+    Response.json({
+      total: 100,
+      items: Array.from({ length: 20 }, () => duplicate),
+    }),
+  );
+  await click('더 보기');
+  expect(titles()).toEqual(
+    first.slice(0, 19).map((item) => item.article.title),
+  );
+  expect(button('더 보기').disabled).toBe(false);
+
+  const next = article(19);
+  next.image_status = 'ready';
+  next.image_url = `/images/${next.article_id}.jpg`;
+  const repeatedNext = {
+    ...next,
+    article: { ...next.article, title: '새 페이지 내부의 중복 제목' },
+  };
+  request.mockResolvedValueOnce(
+    Response.json({ total: 100, items: [next, repeatedNext] }),
+  );
+  await click('더 보기');
+  expect(titles()).toEqual(batch().map((item) => item.article.title));
+  expect(button('더 보기').disabled).toBe(false);
+  const added = Array.from(container.querySelectorAll('article')).at(-1);
+  assert(added);
+  expect(added.querySelector('h2 a')?.getAttribute('href')).toBe(
+    `/incidents/${next.article_id}`,
+  );
+  expect(added.querySelector('img')?.getAttribute('src')).toBe(
+    apiOrigin + next.image_url,
+  );
+  expect(added.textContent).toContain('AI 생성 이미지');
+  expect(
+    added.querySelector('a[href="https://publisher.example.invalid/19"]'),
+  ).not.toBeNull();
+
+  request.mockResolvedValueOnce(
+    Response.json({ total: 43, items: [duplicate] }),
+  );
+  await click('더 보기');
+  expect(offsets()).toEqual(['0', '20', '40', '42']);
+  expect(titles()).toEqual(batch().map((item) => item.article.title));
+  expect(container.querySelector('button')).toBeNull();
+  expect(container.textContent).not.toContain('뒤늦은 중복 제목');
+  expect(container.textContent).not.toContain('새 페이지 내부의 중복 제목');
+  expect(container.textContent).not.toMatch(/(?:100|43)\s*건/);
+  for (const [input, init] of request.mock.calls) {
+    const url = new URL(input instanceof Request ? input.url : String(input));
+    expect(url.origin).toBe(apiOrigin);
+    expect(url.pathname).toBe('/news');
+    expect([...url.searchParams.keys()].sort()).toEqual(['limit', 'offset']);
+    expect(url.searchParams.get('limit')).toBe('20');
+    expect(init?.method).toBe('GET');
+    expect(init?.cache).toBe('no-store');
+    expect(init?.signal).toBeTruthy();
+    expect(init?.body).toBeUndefined();
+  }
+});
