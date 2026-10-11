@@ -1,4 +1,5 @@
 import Link from 'next/link';
+
 import { ArticleImage } from '../article-image/article-image';
 import type { ArticleCollectionItem } from '../../model/article.types';
 import {

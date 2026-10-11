@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+
 import { KeywordLinkStatus } from '@/app/search/keyword-link-status';
 
 function normalizeKeywords(values: unknown): string[] {
@@ -14,6 +15,7 @@ function normalizeKeywords(values: unknown): string[] {
     .filter(
       (keyword) => keyword.length > 0 && !/[\uD800-\uDFFF]/u.test(keyword),
     );
+
   return [...new Set(keywords)].slice(0, 10);
 }
 
@@ -22,6 +24,7 @@ function readKeywords(): string[] {
     const stored: unknown = JSON.parse(
       localStorage.getItem('hh:recent-searches:v1') ?? '[]',
     );
+
     return normalizeKeywords(stored);
   } catch {
     return [];
@@ -45,9 +48,11 @@ export function RecentSearches({ executedKeyword = '' }) {
       executedKeyword,
       ...storedKeywords,
     ]);
+
     if (executedKeyword) {
       writeKeywords(nextKeywords);
     }
+
     // 서버와 첫 렌더를 일치시키고 마운트 후 브라우저 저장소를 복원한다.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setKeywords(nextKeywords);
@@ -57,6 +62,7 @@ export function RecentSearches({ executedKeyword = '' }) {
     const nextKeywords = normalizeKeywords(keywords).filter(
       (stored) => stored !== keyword,
     );
+
     setKeywords(nextKeywords);
     writeKeywords(nextKeywords);
   }

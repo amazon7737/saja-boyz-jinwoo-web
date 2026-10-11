@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import type { ReactNode } from 'react';
 
 import { FeatureError, featureErrorMessages } from '../model/feature-error';
+
 // Keep the approved boundary module contract while the class lives in a neutral model.
 export { FeatureError } from '../model/feature-error';
 

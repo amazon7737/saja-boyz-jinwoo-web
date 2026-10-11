@@ -12,6 +12,7 @@ export function ArticleList({
   const articles = items.filter(({ article_id }) => {
     if (seen.has(article_id)) return false;
     seen.add(article_id);
+
     return true;
   });
 

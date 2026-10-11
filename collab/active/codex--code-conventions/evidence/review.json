@@ -1,0 +1,12 @@
+{
+  "baseline": "1ffce390f85f7f1976666f48fadfebc9cbd44f7f",
+  "status": "complete",
+  "review": {
+    "head": "f3c4a8c72e8e2e2d7544ae524c34097a410d8f63",
+    "worker": "astra",
+    "summary": "HEAD f3c4a8c의 두 비교 범위 전체를 검토했으며 수정할 결함은 없습니다. AppShell의 경로 분기·정확한 클래스·DOM 순서·경계·훅·props가 보존됩니다(src/components/layout/app-shell/app-shell.tsx:1–58). 나머지 TS/TSX는 import 선언 순서를 제외하면 AST가 동등합니다. 테스트·fixture·패키지·스크립트 변경이 없고 기존 테스트 참조도 원문과 일치합니다(search-layout.test.ts:1–43, failed-test.md:9–57). 규칙의 제품 소스 한정·옵션과 문서의 수동 검토/폐기 예정 설명이 일치합니다(eslint.config.mjs:8–40, docs/code-conventions.md:49–57). 새 eslint-disable 우회는 없습니다.",
+    "at": 1791725866
+  },
+  "new_test_receipts": [],
+  "verification": "Existing 61-test suite, before/after gates; no new tests"
+}

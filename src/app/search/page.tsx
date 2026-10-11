@@ -1,7 +1,9 @@
 import Link from 'next/link';
+
 import { loadSearchPage } from '@/features/search/api/load-search-page';
 import { SearchResults } from '@/features/search/ui/search-results/search-results';
 import { RecentSearches } from '@/features/search/ui/recent-searches/recent-searches';
+
 import { KeywordLinkStatus } from './keyword-link-status';
 
 const suggestedKeywords = [

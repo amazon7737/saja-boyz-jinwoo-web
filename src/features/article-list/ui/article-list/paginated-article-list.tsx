@@ -1,6 +1,7 @@
 'use client';
 
 import { useRef, useState } from 'react';
+
 import { loadArticlePage } from '../../api/load-article-page';
 import { ArticleList } from './article-list';
 
@@ -23,12 +24,16 @@ export function PaginatedArticleList({
     inFlight.current = true;
     setPending(true);
     setFailed(false);
+
     try {
       const nextPage = await loadArticlePage(offset);
+
       if (!nextPage) {
         setFailed(true);
+
         return;
       }
+
       setPage((previous) => ({
         ...nextPage,
         items: [...previous.items, ...nextPage.items],

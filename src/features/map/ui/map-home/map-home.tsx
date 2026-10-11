@@ -44,6 +44,7 @@ export function MapHome({ clientId }: { clientId: string }) {
     const resize = () => {
       const maps = (window as Window & { naver?: { maps: NaverMaps } }).naver
         ?.maps;
+
       if (!disposed && !loadFailed && map && maps && canvas.current) {
         map.setSize(
           new maps.Size(
@@ -58,24 +59,32 @@ export function MapHome({ clientId }: { clientId: string }) {
     const initialize = () => {
       const maps = (window as Window & { naver?: { maps: NaverMaps } }).naver
         ?.maps;
+
       if (disposed || loadFailed || map || !canvas.current || !maps) return;
       map = new maps.Map(canvas.current, {
         center: new maps.LatLng(37.5665, 126.978),
         zoom: 12,
       });
+
       if (typeof ResizeObserver !== 'undefined') {
         observer = new ResizeObserver(resize);
         observer.observe(canvas.current);
       }
+
       window.addEventListener('resize', resize);
+
       locate.current = () => {
         if (disposed || loadFailed || !map || pending) return;
         setLocationError('');
+
         if (!navigator.geolocation) {
           setLocationError('이 브라우저는 위치 확인을 지원하지 않습니다.');
+
           return;
         }
+
         const currentRequest = ++requestId;
+
         pending = true;
         setLocating(true);
         const activeMap = map;
@@ -97,6 +106,7 @@ export function MapHome({ clientId }: { clientId: string }) {
                 : '위치를 확인하지 못했습니다. 다시 시도해 주세요.',
           );
         };
+
         try {
           navigator.geolocation.getCurrentPosition(
             (position) => {
@@ -105,6 +115,7 @@ export function MapHome({ clientId }: { clientId: string }) {
                 position.coords.latitude,
                 position.coords.longitude,
               );
+
               marker?.setMap(null);
               marker = new maps.Marker({
                 map: activeMap,
@@ -126,21 +137,25 @@ export function MapHome({ clientId }: { clientId: string }) {
           reject();
         }
       };
+
       clearTimeout(timeout);
       setReady(true);
     };
 
     const url = new URL('https://oapi.map.naver.com/openapi/v3/maps.js');
+
     url.searchParams.set('ncpKeyId', clientId);
     let script = [...document.querySelectorAll('script')].find(
       (element) => element.src === url.href,
     );
     const existing = Boolean(script);
+
     if (!script) {
       script = document.createElement('script');
       script.src = url.href;
       script.async = true;
     }
+
     const fail = () => {
       if (disposed || loadFailed) return;
       loadFailed = true;
@@ -159,8 +174,10 @@ export function MapHome({ clientId }: { clientId: string }) {
       setReady(false);
       setFailed(true);
     };
+
     sdkWindow.navermap_authFailure = fail;
     const timeout = setTimeout(fail, 10_000);
+
     script.addEventListener('load', initialize);
     script.addEventListener('error', fail);
     if (!existing) document.head.append(script);
@@ -174,6 +191,7 @@ export function MapHome({ clientId }: { clientId: string }) {
       window.removeEventListener('resize', resize);
       marker?.setMap(null);
       clearTimeout(timeout);
+
       if (sdkWindow.navermap_authFailure === fail) {
         if (previousAuthFailure === undefined) {
           delete sdkWindow.navermap_authFailure;
@@ -181,6 +199,7 @@ export function MapHome({ clientId }: { clientId: string }) {
           sdkWindow.navermap_authFailure = previousAuthFailure;
         }
       }
+
       script.removeEventListener('load', initialize);
       script.removeEventListener('error', fail);
       map?.destroy();

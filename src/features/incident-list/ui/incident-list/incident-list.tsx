@@ -1,10 +1,12 @@
 import Image from 'next/image';
 import Link from 'next/link';
+
 import {
   categoryLabels,
   statusLabels,
 } from '@/features/incidents/model/labels';
 import type { Incident } from '@/features/incidents/model/types';
+
 import styles from './incident-list.module.css';
 
 type IncidentListProps =
@@ -31,7 +33,9 @@ function formatRelativeTime(occurredAt: string, now: Date) {
   if (minutes < 60) return `${minutes}분 전`;
 
   const hours = Math.floor(minutes / 60);
+
   if (hours < 24) return `${hours}시간 전`;
+
   return `${Math.floor(hours / 24)}일 전`;
 }
 

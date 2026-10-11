@@ -14,6 +14,7 @@ export async function loadSearchPage(keyword: string, offset: number) {
   }
 
   const result = await fetchArticleList(keyword.trim(), offset);
+
   if (!result) return null;
 
   return {

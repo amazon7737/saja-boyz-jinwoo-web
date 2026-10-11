@@ -27,9 +27,11 @@ export async function fetchArticleList(keyword?: string, offset = 0) {
 
   try {
     const baseUrl = process.env.NEWS_API_BASE_URL;
+
     if (!baseUrl) return null;
 
     const base = new URL(baseUrl);
+
     if (
       (base.protocol !== 'http:' && base.protocol !== 'https:') ||
       base.username ||
@@ -39,9 +41,11 @@ export async function fetchArticleList(keyword?: string, offset = 0) {
     }
 
     const url = new URL('/news', base);
+
     url.searchParams.set('offset', String(offset));
     url.searchParams.set('limit', '20');
     const normalizedKeyword = keyword?.trim();
+
     if (normalizedKeyword) url.searchParams.set('keyword', normalizedKeyword);
 
     const response = await fetch(url, {
@@ -49,9 +53,11 @@ export async function fetchArticleList(keyword?: string, offset = 0) {
       cache: 'no-store',
       signal: AbortSignal.timeout(5000),
     });
+
     if (!response.ok) return null;
 
     const payload: unknown = await response.json();
+
     if (
       !isRecord(payload) ||
       typeof payload.total !== 'number' ||

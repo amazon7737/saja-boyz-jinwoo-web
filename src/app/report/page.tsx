@@ -1,4 +1,5 @@
 import { FoundationPanel } from '@/components/layout/foundation-panel/foundation-panel';
+
 export default function ReportPage() {
   return (
     <FoundationPanel

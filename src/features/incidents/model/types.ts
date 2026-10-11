@@ -1,6 +1,8 @@
 export type IncidentCategory =
   'society' | 'security' | 'politics' | 'international';
+
 export type IncidentStatus = 'ongoing' | 'publicized' | 'closed';
+
 export interface Incident {
   id: string;
   title: string;
@@ -13,6 +15,7 @@ export interface Incident {
   imageUrl?: string;
   timeline: { id: string; occurredAt: string; description: string }[];
 }
+
 export interface IncidentFilters {
   query?: string;
   category?: IncidentCategory;

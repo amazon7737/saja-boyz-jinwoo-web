@@ -1,4 +1,5 @@
 import Link from 'next/link';
+
 import { PaginatedArticleList } from '@/features/article-list/ui/article-list/paginated-article-list';
 import { fetchArticleList } from '@/features/article-list/api/fetch-articles';
 

@@ -1,15 +1,18 @@
 'use client';
 
 import { Fragment, useEffect, useRef, useState } from 'react';
+
 import { loadSearchPage } from '../../api/load-search-page';
 
 type SearchPage = NonNullable<Awaited<ReturnType<typeof loadSearchPage>>>;
 
 function uniqueCards(cards: SearchPage['cards']) {
   const seen = new Set<string>();
+
   return cards.filter(({ id }) => {
     if (seen.has(id)) return false;
     seen.add(id);
+
     return true;
   });
 }
@@ -33,6 +36,7 @@ export function SearchResults({
 
   useEffect(() => {
     active.current = true;
+
     return () => {
       active.current = false;
     };
@@ -43,14 +47,20 @@ export function SearchResults({
     inFlight.current = true;
     setPending(true);
     setFailed(false);
+
     try {
       const page = await loadSearchPage(keyword, offset);
+
       if (!active.current) return;
+
       if (!page) {
         setFailed(true);
+
         return;
       }
+
       const nextOffset = offset + page.received;
+
       setCards((previous) => uniqueCards([...previous, ...page.cards]));
       setOffset(nextOffset);
       setHasMore(page.received > 0 && nextOffset < page.total);

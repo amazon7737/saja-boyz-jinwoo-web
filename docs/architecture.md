@@ -13,6 +13,8 @@ pnpm run dev
 
 환경변수 없이 개발 준비 화면을 실행할 수 있다. `.env.example`을 참고하며 비밀키는 커밋하지 않는다. `pnpm run build` 후 `pnpm start`로 프로덕션 서버를 실행한다.
 
+코드의 import·공백·이름·JSX 구획 기준은 [코드 작성 컨벤션](code-conventions.md)을 따른다.
+
 ## 구조
 
 - `src/app`: 라우트 조합, Next 오류·로딩 진입점, 메타데이터와 전역 디자인 토큰.

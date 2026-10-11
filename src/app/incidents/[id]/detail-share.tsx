@@ -18,6 +18,7 @@ export function DetailShare({ id, title }: { id: string; title: string }) {
       if (typeof navigator.share === 'function') {
         try {
           await navigator.share({ title, url });
+
           return;
         } catch (error) {
           if (

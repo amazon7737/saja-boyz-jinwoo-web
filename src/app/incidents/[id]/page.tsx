@@ -1,7 +1,6 @@
-import { DetailImage } from './detail-image';
-import { DetailShare } from './detail-share';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+
 import type { ArticleCollectionItem } from '@/features/article-list/model/article.types';
 import {
   articleText,
@@ -9,6 +8,9 @@ import {
   publicationText,
   safeSourceUrl,
 } from '@/features/article-list/model/article-presentation';
+
+import { DetailShare } from './detail-share';
+import { DetailImage } from './detail-image';
 
 export const dynamic = 'force-dynamic';
 
@@ -21,6 +23,7 @@ function isDetailItem(
   id: string,
 ): value is ArticleCollectionItem {
   if (!isRecord(value) || !isRecord(value.article)) return false;
+
   return (
     value.article_id === id &&
     typeof value.article.title === 'string' &&
@@ -36,6 +39,7 @@ function isDetailItem(
 async function fetchDetail(id: string) {
   try {
     const base = new URL(process.env.NEWS_API_BASE_URL ?? '');
+
     if (
       (base.protocol !== 'http:' && base.protocol !== 'https:') ||
       base.username ||
@@ -43,16 +47,20 @@ async function fetchDetail(id: string) {
     ) {
       return { status: 'error' } as const;
     }
+
     const url = new URL(`/news/${id}`, base);
     const response = await fetch(url, {
       method: 'GET',
       cache: 'no-store',
       signal: AbortSignal.timeout(5000),
     });
+
     if (response.status === 404) return { status: 'not-found' } as const;
     if (!response.ok) return { status: 'error' } as const;
     const item: unknown = await response.json();
+
     if (!isDetailItem(item, id)) return { status: 'error' } as const;
+
     return { status: 'success', item, apiOrigin: url.origin } as const;
   } catch {
     return { status: 'error' } as const;
@@ -65,9 +73,12 @@ export default async function IncidentDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+
   if (!/^[a-f0-9]{64}$/.test(id)) notFound();
   const result = await fetchDetail(id);
+
   if (result.status === 'not-found') notFound();
+
   if (result.status === 'error') {
     return (
       <div role="alert" className="mt-6 rounded-card bg-surface p-6 text-text">
@@ -81,6 +92,7 @@ export default async function IncidentDetailPage({
       </div>
     );
   }
+
   const { item, apiOrigin } = result;
   const { article } = item;
   const publishedAt = publicationDate(article.pubDate);

@@ -20,9 +20,11 @@ export function articleText(value: string) {
 
         const hex = code[1].toLowerCase() === 'x';
         const point = Number.parseInt(code.slice(hex ? 2 : 1), hex ? 16 : 10);
+
         if (point > 0x10ffff || (point >= 0xd800 && point <= 0xdfff)) {
           return entity;
         }
+
         return String.fromCodePoint(point);
       },
     );
@@ -31,6 +33,7 @@ export function articleText(value: string) {
 export function safeSourceUrl(value: string) {
   try {
     const url = new URL(value);
+
     if (
       (url.protocol === 'http:' || url.protocol === 'https:') &&
       !url.username &&
@@ -41,6 +44,7 @@ export function safeSourceUrl(value: string) {
   } catch {
     return null;
   }
+
   return null;
 }
 
@@ -62,9 +66,11 @@ export function publicationDate(value: string) {
   const rfc = input.match(
     /^(?:(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun),?\s+)?(\d{1,2})\s+(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+(\d{4})\s+(\d{2}):(\d{2})(?::(\d{2}))?\s+(UT|UTC|GMT|[+-]\d{2}:?\d{2})$/i,
   );
+
   if (!iso && !rfc) return new Date(NaN);
 
   const parts = iso ?? rfc;
+
   if (!parts) return new Date(NaN);
   const year = Number(parts[iso ? 1 : 3]);
   const month = iso
@@ -83,6 +89,7 @@ export function publicationDate(value: string) {
   const offsetMinute = /^[+-]/.test(zone) ? Number(zone.slice(3, 5)) : 0;
   const leap = year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0);
   const days = [31, leap ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+
   if (
     day < 1 ||
     day > (days[month - 1] ?? 0) ||
@@ -98,15 +105,20 @@ export function publicationDate(value: string) {
 
   // Do not let Date.parse reinterpret invalid offsets or trailing text.
   const date = new Date(0);
+
   date.setUTCFullYear(year, month - 1, day);
   date.setUTCHours(hour, minute, second, millisecond);
+
   if (rfc) {
     const weekday = 'sun mon tue wed thu fri sat'
       .split(' ')
       .indexOf(input.slice(0, 3).toLowerCase());
+
     if (weekday >= 0 && date.getUTCDay() !== weekday) return new Date(NaN);
   }
+
   const offset = (offsetHour * 60 + offsetMinute) * (zone[0] === '-' ? -1 : 1);
+
   return new Date(date.getTime() - offset * 60_000);
 }
 
@@ -116,5 +128,6 @@ export function publicationText(date: Date) {
       .formatToParts(date)
       .map(({ type, value }) => [type, value]),
   );
+
   return `${parts.year}-${parts.month}-${parts.day} ${parts.hour}:${parts.minute} KST`;
 }

@@ -6,6 +6,23 @@ on:
 permissions:
   contents: read
 jobs:
+  conventions:
+    name: 코드 컨벤션 검사
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: ESLint 코드 컨벤션 검사
+        run: pnpm run lint
+      - name: Prettier 코드 형식 검사
+        run: pnpm run format:check
+      - name: 컨벤션 문서와 CI 설정 형식 검사
+        run: pnpm exec prettier --check docs/code-conventions.md .github/workflows/app-check.yml
   app:
     name: 앱 lint·타입·테스트·빌드
     runs-on: ubuntu-latest
