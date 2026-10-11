@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { ArticleImage } from '../article-image/article-image';
 import type { ArticleCollectionItem } from '../../model/article.types';
 import {
@@ -29,7 +30,9 @@ export function ArticleCard({
     <article className="grid min-w-0 grid-cols-[80px_minmax(0,1fr)] items-start gap-x-3 gap-y-1.5 rounded-card border border-solid border-border bg-surface p-3 shadow-[0_4px_8px_rgb(0_0_0/3%)]">
       <ArticleImage key={imageUrl} src={imageUrl} />
       <h2 className="col-start-2 row-start-1 m-0 min-w-0 truncate text-[14px]/[17px] font-extrabold text-text">
-        {articleText(article.title)}
+        <Link href={`/incidents/${article_id}`}>
+          {articleText(article.title)}
+        </Link>
       </h2>
       <p className="col-start-2 row-start-3 m-0 min-w-0 line-clamp-2 text-[12px]/4 text-muted [overflow-wrap:anywhere]">
         {articleText(article.description)}

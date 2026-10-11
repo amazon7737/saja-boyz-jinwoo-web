@@ -138,7 +138,6 @@ test('articleCardsIdentityAndPublication', async () => {
   expect(html).not.toMatch(
     /data-category|data-status|📍|진행 중|발생 시각|전체 사건/,
   );
-  expect(html).not.toContain('href="/incidents/');
   expect(html).not.toMatch(/<header\b|<nav\b/);
 });
 
@@ -182,7 +181,11 @@ test('articleTextAndSourceSafety', async () => {
     const unlinked = singleCard(await renderPage());
     expect(unlinked).toContain('샘플: 교통 안내');
     expect(unlinked).toContain('원문 링크 없음');
-    expect(unlinked).not.toMatch(/<a\b/);
+    for (const anchor of unlinked.match(/<a\b[^>]*>/g) ?? []) {
+      expect(anchor).toMatch(
+        new RegExp(`\\shref="/incidents/${idA}"(?:\\s|>)`),
+      );
+    }
   }
 });
 

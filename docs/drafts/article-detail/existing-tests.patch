@@ -1,0 +1,60 @@
+--- a/src/app/incidents/article-list-api.test.ts
++++ b/src/app/incidents/article-list-api.test.ts
+@@ -138,7 +138,6 @@
+   expect(html).not.toMatch(
+     /data-category|data-status|📍|진행 중|발생 시각|전체 사건/,
+   );
+-  expect(html).not.toContain('href="/incidents/');
+   expect(html).not.toMatch(/<header\b|<nav\b/);
+ });
+ 
+@@ -182,7 +181,11 @@
+     const unlinked = singleCard(await renderPage());
+     expect(unlinked).toContain('샘플: 교통 안내');
+     expect(unlinked).toContain('원문 링크 없음');
+-    expect(unlinked).not.toMatch(/<a\b/);
++    for (const anchor of unlinked.match(/<a\b[^>]*>/g) ?? []) {
++      expect(anchor).toMatch(
++        new RegExp(`\\shref="/incidents/${idA}"(?:\\s|>)`),
++      );
++    }
+   }
+ });
+ 
+--- a/src/features/article-list/ui/article-list/article-list.test.ts
++++ b/src/features/article-list/ui/article-list/article-list.test.ts
+@@ -88,10 +88,15 @@
+   expect(cards[0].querySelector('time')?.dateTime).toBe(
+     '2026-10-04T00:00:00.000Z',
+   );
+-  expect(cards[0].querySelector('a')?.getAttribute('href')).toBe(
+-    'https://publisher.example.invalid/A',
+-  );
+-  expect(cards[0].querySelector('a')?.textContent).toBe('기사 원문');
++  expect(
++    cards[0]
++      .querySelector('a[href="https://publisher.example.invalid/A"]')
++      ?.getAttribute('href'),
++  ).toBe('https://publisher.example.invalid/A');
++  expect(
++    cards[0].querySelector('a[href="https://publisher.example.invalid/A"]')
++      ?.textContent,
++  ).toBe('기사 원문');
+   expect(cards[1].querySelector('img')?.src).toBe(
+     `${apiOrigin}/images/${idB}.jpg`,
+   );
+@@ -124,9 +129,11 @@
+   expect(container.querySelector('figcaption')?.textContent).toBe(
+     'AI 생성 이미지',
+   );
+-  expect(container.querySelector('a')?.getAttribute('href')).toBe(
+-    'https://publisher.example.invalid/A',
+-  );
++  expect(
++    container
++      .querySelector('a[href="https://publisher.example.invalid/A"]')
++      ?.getAttribute('href'),
++  ).toBe('https://publisher.example.invalid/A');
+ 
+   await failImage(nextImage);
+ 

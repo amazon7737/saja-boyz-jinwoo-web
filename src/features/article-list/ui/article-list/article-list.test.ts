@@ -88,10 +88,15 @@ test('articleImageErrorPreservesCards', async () => {
   expect(cards[0].querySelector('time')?.dateTime).toBe(
     '2026-10-04T00:00:00.000Z',
   );
-  expect(cards[0].querySelector('a')?.getAttribute('href')).toBe(
-    'https://publisher.example.invalid/A',
-  );
-  expect(cards[0].querySelector('a')?.textContent).toBe('기사 원문');
+  expect(
+    cards[0]
+      .querySelector('a[href="https://publisher.example.invalid/A"]')
+      ?.getAttribute('href'),
+  ).toBe('https://publisher.example.invalid/A');
+  expect(
+    cards[0].querySelector('a[href="https://publisher.example.invalid/A"]')
+      ?.textContent,
+  ).toBe('기사 원문');
   expect(cards[1].querySelector('img')?.src).toBe(
     `${apiOrigin}/images/${idB}.jpg`,
   );
@@ -124,9 +129,11 @@ test('articleImageRecoversForNewSource', async () => {
   expect(container.querySelector('figcaption')?.textContent).toBe(
     'AI 생성 이미지',
   );
-  expect(container.querySelector('a')?.getAttribute('href')).toBe(
-    'https://publisher.example.invalid/A',
-  );
+  expect(
+    container
+      .querySelector('a[href="https://publisher.example.invalid/A"]')
+      ?.getAttribute('href'),
+  ).toBe('https://publisher.example.invalid/A');
 
   await failImage(nextImage);
 
