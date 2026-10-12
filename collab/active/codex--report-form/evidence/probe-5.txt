@@ -1,0 +1,30 @@
+
+ RUN  v5.0.3 /Users/kangminkim/lunch/sobaya/apps/saja-boyz-jinwoo-codex--report-form
+
+ ❯ src/app/report/zz_sobaya_probe_poLPfc.test.ts (1 test | 1 failed) 11ms
+   × reportAttachmentLimits: invalid batches preserve previous selection 11ms
+
+ Test Files  1 failed (1)
+      Tests  1 failed (1)
+   Start at  00:13:04
+   Duration  273ms (environment 75%, import 10%, transform 8%, tests 6%, worker 1%)
+
+npm notice run saja-boyz-jinwoo@0.1.0 npx
+npm notice run 'vitest' run src/app/report/zz_sobaya_probe_poLPfc.test.ts -t ^reportAttachmentLimits: invalid batches preserve previous selection$
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/app/report/zz_sobaya_probe_poLPfc.test.ts > reportAttachmentLimits: invalid batches preserve previous selection
+AssertionError: report file input must exist
+ ❯ selectFiles src/app/report/zz_sobaya_probe_poLPfc.test.ts:88:3
+     86| async function selectFiles(files: File[]) {
+     87|   const input = container.querySelector('input[type="file"]');
+     88|   assert(input instanceof HTMLInputElement, 'report file input must ex…
+       |   ^
+     89|   const fileList = Object.assign([...files], {
+     90|     item: (index: number) => files[index] ?? null,
+ ❯ src/app/report/zz_sobaya_probe_poLPfc.test.ts:121:9
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+RED    reportAttachmentLimits: invalid batches preserve previous selection  (fails: assertion/test failure; diagnostics above)

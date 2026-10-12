@@ -1,0 +1,1 @@
+PASS: exact candidate header and 6 tests typecheck with unchanged source.
