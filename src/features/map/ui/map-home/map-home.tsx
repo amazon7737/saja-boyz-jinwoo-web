@@ -3,8 +3,15 @@
 import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react';
 
+import {
+  captureMapViewport,
+  restoreMapViewport,
+} from '../../model/map-viewport';
+
 type MapInstance = {
   destroy(): void;
+  getCenter?(): { lat(): number; lng(): number };
+  getZoom?(): number;
   setCenter(point: unknown): void;
   setSize(size: unknown): void;
 };
@@ -34,6 +41,7 @@ export function MapHome({ clientId }: { clientId: string }) {
   const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
+    const viewport = restoreMapViewport(clientId);
     let disposed = false;
     let loadFailed = false;
     let map: MapInstance | undefined;
@@ -62,8 +70,8 @@ export function MapHome({ clientId }: { clientId: string }) {
 
       if (disposed || loadFailed || map || !canvas.current || !maps) return;
       map = new maps.Map(canvas.current, {
-        center: new maps.LatLng(37.5665, 126.978),
-        zoom: 12,
+        center: new maps.LatLng(viewport.latitude, viewport.longitude),
+        zoom: viewport.zoom,
       });
 
       if (typeof ResizeObserver !== 'undefined') {
@@ -145,6 +153,19 @@ export function MapHome({ clientId }: { clientId: string }) {
     const url = new URL('https://oapi.map.naver.com/openapi/v3/maps.js');
 
     url.searchParams.set('ncpKeyId', clientId);
+
+    for (const element of document.querySelectorAll('script[src]')) {
+      const scriptUrl = new URL((element as HTMLScriptElement).src);
+
+      if (
+        scriptUrl.origin === url.origin &&
+        scriptUrl.pathname === url.pathname &&
+        scriptUrl.searchParams.get('ncpKeyId') !== clientId
+      ) {
+        element.remove();
+      }
+    }
+
     let script = [...document.querySelectorAll('script')].find(
       (element) => element.src === url.href,
     );
@@ -202,6 +223,7 @@ export function MapHome({ clientId }: { clientId: string }) {
 
       script.removeEventListener('load', initialize);
       script.removeEventListener('error', fail);
+      if (map) captureMapViewport(clientId, map);
       map?.destroy();
     };
   }, [clientId, attempt]);

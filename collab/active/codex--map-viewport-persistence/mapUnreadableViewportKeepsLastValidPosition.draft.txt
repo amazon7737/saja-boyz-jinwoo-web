@@ -1,0 +1,16 @@
+test('mapUnreadableViewportKeepsLastValidPosition', async () => {
+  await visit();
+  current = { latitude: 35.1796, longitude: 129.0756, zoom: 15 };
+  await leave();
+  await visit();
+  current = { latitude: Number.NaN, longitude: 181, zoom: Infinity };
+  await leave();
+  await visit();
+  expect(created).toHaveBeenLastCalledWith({ latitude: 35.1796, longitude: 129.0756, zoom: 15 });
+  broken = true;
+  await leave();
+  broken = false;
+  await visit();
+  expect(created).toHaveBeenLastCalledWith({ latitude: 35.1796, longitude: 129.0756, zoom: 15 });
+  expect(destroy).toHaveBeenCalledTimes(3);
+});
