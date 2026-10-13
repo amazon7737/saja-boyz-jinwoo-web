@@ -14,6 +14,8 @@
 
 ## 하네스·독립 리뷰
 
+보관한 터미널 출력 `.txt`는 Git 검토를 위해 CR·행 끝 공백·마지막 빈 줄만 정리했다. 검사 메시지와 통과·실패 결과는 그대로 유지했다.
+
 승인 항목 9개 모두 별도 체크포인트와 전체 선언 suite 검증을 완료했다. 오류 응답 항목은 이미 동작하여 `ALREADY GREEN` 근거로 검증했다. 최종 커밋에 대해 `review.sh`가 전체 gate(75개 테스트·format·lint)를 먼저 통과한 후 독립 리뷰 call 11을 수행했고, 구체적인 잔여 결함 없이 완료됐다.
 
 [최종 status 원본](completion/harness-status.json)은 `head=review.head=da20a13…`, `status=complete`, `pending=[]`, `dirty=false`와 9개 체크포인트를 기록한다. [독립 리뷰 원본](completion/independent-review.json)은 별도 문맥의 소스·승인 원문 검토 결과다. 독립 리뷰의 중첩 Chrome 실행은 macOS `SIGABRT/EPERM` 제약으로 실패했으며, 바깥 gate의 실제 브라우저 회귀 검사와 아래 별도 E2E는 통과했다.
@@ -41,7 +43,7 @@ Chrome 393×852에서 로컬 웹앱 `http://127.0.0.1:13444` → 로컬 HTTPS �
 
 ## 빌드와 운영 연결
 
-Node 24.19.0·pnpm 10.34.6에서 타입 검사가 통과했다. 공유 `node_modules` symlink가 checkout 밖을 가리키는 이 작업 환경에서는 기본 Turbopack 빌드가 경로 제한으로 실패했다([원본](completion/build-turbopack-environment-error.txt)). 기존 브라우저 테스트와 동일한 `pnpm run build --webpack`으로 production build를 완료했다([원본](completion/build-webpack.txt)). 의존성·Next 설정·package 스크립트는 변경하지 않았다.
+Node 24.19.0·pnpm 10.34.6에서 타입 검사가 통과했다. 공유 `node_modules` symlink가 checkout 밖을 가리키는 이 작업 환경에서는 기본 Turbopack 빌드가 경로 제한으로 실패했다([원본](completion/build-turbopack-environment-error.txt)). 기존 브라우저 테스트와 동일한 `pnpm run build --webpack`으로 production build를 완료했다([출력](completion/build-webpack.txt)). 의존성·Next 설정·package 스크립트는 변경하지 않았다.
 
 E2E 빌드는 공개 환경 변수 `NEXT_PUBLIC_REPORT_API_BASE_URL=https://127.0.0.1:19444`를 사용했다. 운영 주소가 아니며 배포할 때 실제 HTTPS API 주소로 다시 빌드해야 한다. `.env.example`에는 비밀 없는 공개 주소의 빈 자리만 추가했다. 서버의 정확한 `REPORTS_ALLOWED_ORIGINS`와 `REPORTS_ENABLED` 설정 및 서버 PR #2 반영이 필요하다. 운영 API 활성화·실배포는 이번 E2E 결과에 포함되지 않는다.
 

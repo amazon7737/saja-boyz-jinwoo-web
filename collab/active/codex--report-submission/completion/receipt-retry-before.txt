@@ -27,7 +27,7 @@ null
 <p
   role="status"
 >
-  제보가 접수됐어요 · 접수번호: 
+  제보가 접수됐어요 · 접수번호:
   aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 </p>
 
@@ -110,4 +110,3 @@ Received: "7faa6253-73ab-43af-a34e-466193108462"
       Tests  8 failed | 3 passed (11)
    Start at  16:25:30
    Duration  350ms (environment 60%, tests 24%, import 8%, transform 7%, worker 1%)
-
