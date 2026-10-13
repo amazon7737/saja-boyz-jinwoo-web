@@ -222,7 +222,7 @@ test('reportSubmissionRequiredFields: whitespace errors are linked and corrected
 });
 ```
 
-- [ ] reportSubmissionTextLimits — 실제 접수 계약 검증 (3번 검토 블록)
+- [x] reportSubmissionTextLimits — 실제 접수 계약 검증 (3번 검토 블록)
 
 ```ts
 test('reportSubmissionTextLimits: trimmed field limits reject overflow and allow boundaries', async () => {

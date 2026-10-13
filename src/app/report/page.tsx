@@ -351,6 +351,22 @@ export default function ReportPage() {
         </p>
         {submissionError && <p role="alert">{submissionError}</p>}
         {confirmed && <p role="status">제보가 접수됐어요</p>}
+        {confirmed && (
+          <button
+            className="cursor-pointer rounded-[10px] border border-solid border-border bg-surface px-3 py-2 text-muted"
+            type="button"
+            onClick={(event) => {
+              event.currentTarget.form?.reset();
+              setErrors({});
+              setConfirmed(false);
+              setSubmissionError('');
+              setAttachments([]);
+              setAttachmentError('');
+            }}
+          >
+            새 제보 작성
+          </button>
+        )}
         <button
           className="min-h-[52px] cursor-pointer rounded-card border-0 bg-brand text-[16px]/[normal] font-extrabold text-surface"
           type="submit"
