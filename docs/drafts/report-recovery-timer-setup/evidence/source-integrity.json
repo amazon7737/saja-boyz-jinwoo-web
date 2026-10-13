@@ -1,0 +1,9 @@
+{
+  "source_revision": "b23c5323c5e622d48289afc0a5657f787c356652",
+  "page_sha256": "baa8deda9f73089c02ea457038bd0f696fbb490df0a9231e7a814d2c84cde985",
+  "other_src_files_byte_identical_to_commit": 58,
+  "candidate_only_change": "renderReport: await advance(1) immediately after act(root.render), before any submit",
+  "candidate_diff_lines_added": 1,
+  "all_six_test_bodies_preserved": true,
+  "product_source_changes": 0
+}

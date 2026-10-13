@@ -1,0 +1,29 @@
+test('reportBoundaryReset: closing a local fallback preserves form DOM files and the unchanged retry key', async () => {
+  fetchMock.mockRejectedValueOnce(new TypeError('Failed to fetch'));
+  await renderReport();
+  await fillValid();
+  const file = new File(['fixture'], 'kept.png', { type: 'image/png' });
+  await selectFile(file);
+  const form = container.querySelector('form');
+  const nodes = fieldNames.map((name) => field(name));
+  const values = nodes.map((element) => element.value);
+  await submit();
+  expect(boundaryErrors).toHaveBeenCalledTimes(1);
+  expect(container.querySelector('[role="alert"]')?.textContent).toContain(
+    uncertainMessage,
+  );
+  const key = requestKey(0);
+  await act(async () => closeErrorButton().click());
+  expect(container.querySelector('[role="alert"]')).toBeNull();
+  expect(container.querySelector('form')).toBe(form);
+  fieldNames.forEach((name, index) => expect(field(name)).toBe(nodes[index]));
+  expectDraft(values, file);
+  expect(fetchMock).toHaveBeenCalledTimes(1);
+  await submit();
+  expect(fetchMock).toHaveBeenCalledTimes(2);
+  expect(requestKey(1)).toBe(key);
+  expect(requestBody(1).get('attachments')).toBe(file);
+  expect(container.textContent).toContain(receipt.report_id);
+  expect(container.querySelector('[role="alert"]')).toBeNull();
+  expect(submitButton().disabled).toBe(true);
+});

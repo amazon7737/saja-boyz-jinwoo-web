@@ -4,7 +4,7 @@ owner: amazon
 started: 2026-10-13
 status: done
 goal: feat(report): 실제 제보 접수와 서버 저장 연결
-next: dev 대상 PR 생성·리뷰. 서버 PR team-poem/poem-news#2와 공개 API 주소 및 정확한 웹앱 origin을 함께 설정한 뒤 운영 접수를 활성화한다.
+next: PR 16 후속 수정 재리뷰. 운영 접수 활성화는 서버 배포와 공개 API 주소·정확한 웹앱 origin 설정이 필요하다.
 base: dev
 ---
 
@@ -20,3 +20,5 @@ base: dev
 
 - 2026-10-13 사용자가 최종 계약·기준선 교체·프런트 9개/서버 8개 테스트를 명시적으로 승인했다. approval.md에 정확한 입력 해시와 채택 상태를 기록했다. 이전 승인 전 메모는 이 기록으로 후속 갱신된다.
 - 2026-10-13 구현·9개 체크포인트·전체 gate·독립 리뷰·실제 Chrome→HTTPS→Go→비공개 저장 E2E를 완료했다. completion.md와 completion/에 검증 증거를 보존했다. PR #15의 dev squash 병합을 확인하고 동일한 전체 tree를 보존하며 ancestry를 연결했다. 위의 승인 전/미구현 메모는 이 완료 기록으로 대체된다.
+
+- 2026-10-13 PR #16의 요청 제한·Suspensive 오류 복구 코멘트를 별도 승인/검증 후 통합했다. recovery/completion.md와 recovery/integration.md에 6개 항목·최종 독립 리뷰·전체 81개·실제 Chrome 결과 및 source 동일성을 보존했다. 운영 배포는 수행하지 않았다.

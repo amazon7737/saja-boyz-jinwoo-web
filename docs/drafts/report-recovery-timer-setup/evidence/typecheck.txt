@@ -1,0 +1,6 @@
+
+> saja-boyz-jinwoo@0.1.0 typecheck /private/tmp/poem-report-recovery-link-timer/app
+> next typegen && tsc --noEmit
+
+Generating route types...
+✓ Types generated successfully

@@ -1,0 +1,44 @@
+test('reportFallbackEdits: direct resubmission and field or attachment edits keep correct request identities', async () => {
+  fetchMock.mockRejectedValueOnce(new TypeError('first outage'));
+  const retry = delayedRequest();
+  fetchMock.mockRejectedValueOnce(new TypeError('third outage'));
+  await renderReport();
+  await fillValid();
+  const firstFile = new File(['first'], 'first.png', { type: 'image/png' });
+  const secondFile = new File(['second'], 'second.png', { type: 'image/png' });
+  await selectFile(firstFile);
+  await submit();
+  expect(boundaryErrors).toHaveBeenCalledTimes(1);
+  const firstKey = requestKey(0);
+  await submit();
+  expect(fetchMock).toHaveBeenCalledTimes(2);
+  expect(requestKey(1)).toBe(firstKey);
+  expect(submitButton().disabled).toBe(true);
+  await act(async () => retry.headers.reject(new TypeError('second outage')));
+  expect(boundaryErrors).toHaveBeenCalledTimes(2);
+  expect(container.querySelector('[role="alert"]')?.textContent).toContain(
+    uncertainMessage,
+  );
+  expect(submitButton().disabled).toBe(false);
+  await act(async () => closeErrorButton().click());
+  await changeField('title', '수정한 도로 점검 제보');
+  await submit();
+  expect(fetchMock).toHaveBeenCalledTimes(3);
+  expect(boundaryErrors).toHaveBeenCalledTimes(3);
+  expect(container.querySelector('[role="alert"]')?.textContent).toContain(
+    uncertainMessage,
+  );
+  expect(submitButton().disabled).toBe(false);
+  const editedKey = requestKey(2);
+  expect(editedKey).not.toBe(firstKey);
+  expect(requestBody(2).get('title')).toBe('수정한 도로 점검 제보');
+  await selectFile(secondFile);
+  await submit();
+  expect(fetchMock).toHaveBeenCalledTimes(4);
+  expect(requestKey(3)).not.toBe(editedKey);
+  expect(requestBody(3).get('title')).toBe('수정한 도로 점검 제보');
+  expect(requestBody(3).getAll('attachments')).toEqual([firstFile, secondFile]);
+  expect(container.querySelector('[role="alert"]')).toBeNull();
+  expect(container.textContent).toContain(receipt.report_id);
+  expect(submitButton().disabled).toBe(true);
+});
