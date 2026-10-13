@@ -1,0 +1,38 @@
+
+ RUN  v5.0.3 /private/tmp/poem-report-recovery-probe
+
+ ❯ src/app/report/zz_sobaya_probe_l8fVoA.test.ts (1 test | 1 failed) 24ms
+   × reportRequestDeadline: a pending upload aborts at 60000ms and unlocks the preserved form 24ms
+
+ Test Files  1 failed (1)
+      Tests  1 failed (1)
+   Start at  18:29:47
+   Duration  296ms (environment 67%, transform 12%, tests 11%, import 10%, worker 1%)
+
+npm notice run saja-boyz-jinwoo@0.1.0 npx
+npm notice run 'vitest' run src/app/report/zz_sobaya_probe_l8fVoA.test.ts -t ^reportRequestDeadline: a pending upload aborts at 60000ms and unlocks the preserved form$
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/app/report/zz_sobaya_probe_l8fVoA.test.ts > reportRequestDeadline: a pending upload aborts at 60000ms and unlocks the preserved form
+AssertionError: expected undefined to be false // Object.is equality
+
+- Expected:
+false
+
++ Received:
+undefined
+
+ ❯ src/app/report/zz_sobaya_probe_l8fVoA.test.ts:268:35
+    266|   expect(submitButton().disabled).toBe(true);
+    267|   expect(container.textContent).not.toContain(uncertainMessage);
+    268|   expect(request.signal?.aborted).toBe(false);
+       |                                   ^
+    269|   await advance(1);
+    270|   expect(request.signal?.aborted).toBe(true);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+RED    reportRequestDeadline: a pending upload aborts at 60000ms and unlocks the preserved form  (fails: assertion/test failure; diagnostics above)
+
+PROBE_EXIT: 0
