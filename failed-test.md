@@ -404,7 +404,7 @@ test('reportFallbackEdits: direct resubmission and field or attachment edits kee
 });
 ```
 
-- [ ] reportFailureCleanup — 비동기 오류 분류와 완료된 요청의 타이머 정리가 유지된다
+- [x] reportFailureCleanup — 비동기 오류 분류와 완료된 요청의 타이머 정리가 유지된다
 
 ```ts
 test('reportFailureCleanup: async failures enter the real local boundary and settled attempts leave no deadline', async () => {
