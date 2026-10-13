@@ -23,12 +23,21 @@ const textLimits: Partial<Record<RequiredField, number>> = {
   description: 5000,
 };
 
+const attachmentTypes = [
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+  'video/mp4',
+  'video/webm',
+];
+
 export default function ReportPage() {
   const [errors, setErrors] = useState<Partial<Record<RequiredField, string>>>(
     {},
   );
   const [confirmed, setConfirmed] = useState(false);
   const [attachments, setAttachments] = useState<File[]>([]);
+  const [attachmentError, setAttachmentError] = useState('');
 
   function checkInput(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -157,15 +166,55 @@ export default function ReportPage() {
               name="attachments"
               type="file"
               multiple
-              accept="image/jpeg,image/png,image/webp,video/mp4,video/webm"
+              accept={attachmentTypes.join(',')}
+              aria-invalid={Boolean(attachmentError) || undefined}
+              aria-describedby={
+                attachmentError ? 'report-attachments-error' : undefined
+              }
               onChange={(event) => {
                 const selected = Array.from(event.currentTarget.files ?? []);
 
-                setAttachments((previous) => [...previous, ...selected]);
                 event.currentTarget.value = '';
+
+                if (selected.length === 0) return;
+
+                if (attachments.length + selected.length > 3) {
+                  setAttachmentError(
+                    '첨부파일은 최대 3개까지 선택할 수 있어요',
+                  );
+
+                  return;
+                }
+
+                if (
+                  selected.some(
+                    (file) =>
+                      !attachmentTypes.includes(file.type) ||
+                      file.size === 0 ||
+                      file.size > 10 * 1024 * 1024,
+                  )
+                ) {
+                  setAttachmentError(
+                    'JPEG·PNG·WebP·MP4·WebM 형식의 0바이트보다 크고 10 MiB 이하인 파일을 선택해 주세요',
+                  );
+
+                  return;
+                }
+
+                setAttachmentError('');
+                setAttachments((previous) => [...previous, ...selected]);
               }}
             />
           </div>
+          {attachmentError && (
+            <p
+              id="report-attachments-error"
+              role="alert"
+              className={styles.error}
+            >
+              {attachmentError}
+            </p>
+          )}
           {attachments.length > 0 && (
             <ul className={styles.attachmentList}>
               {attachments.map((file, index) => (

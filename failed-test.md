@@ -248,7 +248,7 @@ test('reportAttachments: valid files can be selected removed and selected again'
 });
 ```
 
-- [ ] reportAttachmentLimits — 잘못된 첨부 묶음 거부와 기존 3개 보존
+- [x] reportAttachmentLimits — 잘못된 첨부 묶음 거부와 기존 3개 보존
 
 ```ts
 test('reportAttachmentLimits: invalid batches preserve previous selection', async () => {
