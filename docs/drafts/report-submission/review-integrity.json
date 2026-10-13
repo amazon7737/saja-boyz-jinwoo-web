@@ -1,0 +1,62 @@
+[
+  {
+    "file": "header.txt",
+    "sha256": "73a1f5699c7d6bbc5128f5e1aec8f13582a5852e574388958eef61791b209304",
+    "review_matches": true
+  },
+  {
+    "file": "test-1.txt",
+    "sha256": "b9e12748ef6202cd316c581359cda44b293d2a0ab8649fbf79c61734b31ae7a2",
+    "review_matches": true
+  },
+  {
+    "file": "test-2.txt",
+    "sha256": "2e639a4d6a8166edd184d5098bd7ec7933e11bf29036e07b64e2befef1ac60cf",
+    "review_matches": true
+  },
+  {
+    "file": "test-3.txt",
+    "sha256": "c26e16be1d58c6da0bb4d538d7e9cfdcaad1c756a51da7cc46a547322a15ff20",
+    "review_matches": true
+  },
+  {
+    "file": "test-4.txt",
+    "sha256": "4995888cff4a587eda35c6beb70b29094bc892ba2a39e1e497d48c76cdd1d52f",
+    "review_matches": true
+  },
+  {
+    "file": "test-5.txt",
+    "sha256": "b1ae78cbcdce8cf3f756e4297b1069f97fc9169ad52c1eae87ceb8e4f9385951",
+    "review_matches": true
+  },
+  {
+    "file": "test-6.txt",
+    "sha256": "4b1cfc8d435c60dc088627eb7d9140f7166860ff4cb618ccabe5ba3bee936e8f",
+    "review_matches": true
+  },
+  {
+    "file": "test-7.txt",
+    "sha256": "f8aaaa74c1efbbec483690b177305dbb002634ac198a923dc3c4696350aa705e",
+    "review_matches": true
+  },
+  {
+    "file": "test-8.txt",
+    "sha256": "948752a93b2fcdfe1b2874603aab56e8593af4ba220d47437d98922a42701034",
+    "review_matches": true
+  },
+  {
+    "file": "test-9.txt",
+    "sha256": "b6fa3c890ff357b1fa1f0e9141d63749b6e1d657545202aaf11984040b108b7d",
+    "review_matches": true
+  },
+  {
+    "file": "test-10.txt",
+    "sha256": "3763dd3762b8d6051ea2176c76cdb2ff158d50c36cecc0a897f075b548dfba1a",
+    "review_matches": true
+  },
+  {
+    "file": "test-11.txt",
+    "sha256": "0d44cb8a53dac14abf8a63d2c1d6f753caa086751ce5b0811ef117231c4d5be7",
+    "review_matches": true
+  }
+]

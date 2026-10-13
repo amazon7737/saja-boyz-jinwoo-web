@@ -1,0 +1,29 @@
+
+ RUN  v5.0.3 /Users/kangminkim/lunch/sobaya/apps/saja-boyz-jinwoo-codex--report-submission
+
+ ❯ src/app/report/zz_sobaya_probe_0Or9CP.test.ts (1 test | 1 failed) 27ms
+   × reportSubmissionPending: double submit is locked until a real receipt arrives 27ms
+
+ Test Files  1 failed (1)
+      Tests  1 failed (1)
+   Start at  14:58:51
+   Duration  343ms (environment 65%, transform 12%, import 12%, tests 10%, worker 1%)
+
+npm notice run saja-boyz-jinwoo@0.1.0 npx
+npm notice run 'vitest' run src/app/report/zz_sobaya_probe_0Or9CP.test.ts -t ^reportSubmissionPending: double submit is locked until a real receipt arrives$
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/app/report/zz_sobaya_probe_0Or9CP.test.ts > reportSubmissionPending: double submit is locked until a real receipt arrives
+AssertionError: expected "vi.fn()" to be called 1 times, but got 0 times
+ ❯ src/app/report/zz_sobaya_probe_0Or9CP.test.ts:159:21
+    157|   await selectFiles([testFile('road.png', 'image/png')]);
+    158|   await checkInput();
+    159|   expect(fetchMock).toHaveBeenCalledTimes(1);
+       |                     ^
+    160|   expect(container.textContent).toContain('접수 중');
+    161|   expect(container.textContent).not.toContain(receipt.report_id);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+RED    reportSubmissionPending: double submit is locked until a real receipt arrives  (fails: assertion/test failure; diagnostics above)

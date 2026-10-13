@@ -1,0 +1,37 @@
+test('reportSubmissionEditedRetry: changed content uses a new request key after an uncertain attempt', async () => {
+  fetchMock.mockRejectedValueOnce(new TypeError('Failed to fetch'));
+  fetchMock.mockRejectedValueOnce(new TypeError('Failed to fetch'));
+  await renderReport();
+  await fillValid();
+  await checkInput();
+  expect(fetchMock).toHaveBeenCalledTimes(1);
+  const previousKey = new Headers(fetchMock.mock.calls[0][1]?.headers).get(
+    'Idempotency-Key',
+  );
+  expect(previousKey).toBeTruthy();
+  await changeField('title', '수정한 제보 제목');
+  await checkInput();
+  expect(fetchMock).toHaveBeenCalledTimes(2);
+  const nextRequest = fetchMock.mock.calls[1][1];
+  const nextKey = new Headers(nextRequest?.headers).get('Idempotency-Key');
+  expect(nextKey).toBeTruthy();
+  expect(nextKey).not.toBe(previousKey);
+  assert(nextRequest?.body instanceof FormData);
+  expect(nextRequest.body.get('title')).toBe('수정한 제보 제목');
+  expect(container.textContent).not.toContain('제보가 접수됐어요');
+  await selectFiles([testFile('added.png', 'image/png')]);
+  await checkInput();
+  expect(fetchMock).toHaveBeenCalledTimes(3);
+  const attachmentRequest = fetchMock.mock.calls[2][1];
+  const attachmentKey = new Headers(attachmentRequest?.headers).get(
+    'Idempotency-Key',
+  );
+  expect(attachmentKey).toBeTruthy();
+  expect(attachmentKey).not.toBe(nextKey);
+  assert(attachmentRequest?.body instanceof FormData);
+  expect(attachmentRequest.body.get('title')).toBe('수정한 제보 제목');
+  expect(attachmentRequest.body.getAll('attachments')).toHaveLength(1);
+  expect(container.querySelector('[role="status"]')?.textContent).toContain(
+    receipt.report_id,
+  );
+});
