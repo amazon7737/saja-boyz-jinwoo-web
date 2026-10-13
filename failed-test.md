@@ -320,7 +320,7 @@ test('reportBodyDeadline: headers at 45000ms do not restart the deadline for the
 });
 ```
 
-- [ ] reportBoundaryReset — 로컬 오류 닫기 후 DOM·파일·미변경 요청 키가 유지된다
+- [x] reportBoundaryReset — 로컬 오류 닫기 후 DOM·파일·미변경 요청 키가 유지된다
 
 ```ts
 test('reportBoundaryReset: closing a local fallback preserves form DOM files and the unchanged retry key', async () => {
