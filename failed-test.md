@@ -194,7 +194,7 @@ test('reportSubmissionFields: labels and shared categories are available', async
 });
 ```
 
-- [ ] reportSubmissionRequiredFields — 실제 접수 계약 검증 (2번 검토 블록)
+- [x] reportSubmissionRequiredFields — 실제 접수 계약 검증 (2번 검토 블록)
 
 ```ts
 test('reportSubmissionRequiredFields: whitespace errors are linked and corrected', async () => {

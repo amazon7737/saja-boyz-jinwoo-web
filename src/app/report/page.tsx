@@ -34,10 +34,11 @@ export default function ReportPage() {
     {},
   );
   const [confirmed, setConfirmed] = useState(false);
+  const [submissionError, setSubmissionError] = useState('');
   const [attachments, setAttachments] = useState<File[]>([]);
   const [attachmentError, setAttachmentError] = useState('');
 
-  function checkInput(event: FormEvent<HTMLFormElement>) {
+  async function checkInput(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = event.currentTarget;
     const values = new FormData(form);
@@ -58,12 +59,64 @@ export default function ReportPage() {
 
     setErrors(nextErrors);
     setAttachmentError('');
-    setConfirmed(firstInvalid === undefined);
+    setConfirmed(false);
+    setSubmissionError('');
 
     if (firstInvalid !== undefined) {
       const firstField = form.elements.namedItem(firstInvalid);
 
       if (firstField instanceof HTMLElement) firstField.focus();
+
+      return;
+    }
+
+    try {
+      const body = new FormData();
+
+      for (const name of requiredFields) {
+        const value = String(values.get(name) ?? '').trim();
+
+        if (name === 'occurredAt') {
+          body.append('occurred_at', new Date(`${value}+09:00`).toISOString());
+        } else {
+          body.append(name, value);
+        }
+      }
+
+      for (const file of attachments) body.append('attachments', file);
+
+      const response = await fetch(
+        new URL('/reports', process.env.NEXT_PUBLIC_REPORT_API_BASE_URL),
+        {
+          method: 'POST',
+          credentials: 'omit',
+          headers: { 'Idempotency-Key': crypto.randomUUID() },
+          body,
+        },
+      );
+      const receipt: unknown = await response.json();
+
+      if (
+        (response.status !== 200 && response.status !== 201) ||
+        typeof receipt !== 'object' ||
+        receipt === null ||
+        !('report_id' in receipt) ||
+        typeof receipt.report_id !== 'string' ||
+        !/^[a-f0-9]{32}$/.test(receipt.report_id) ||
+        !('status' in receipt) ||
+        receipt.status !== 'pending' ||
+        !('received_at' in receipt) ||
+        typeof receipt.received_at !== 'string' ||
+        Number.isNaN(Date.parse(receipt.received_at))
+      ) {
+        setSubmissionError('제보를 접수하지 못했어요. 다시 시도해 주세요');
+
+        return;
+      }
+
+      setConfirmed(true);
+    } catch {
+      setSubmissionError('제보를 접수하지 못했어요. 다시 시도해 주세요');
     }
   }
 
@@ -296,9 +349,8 @@ export default function ReportPage() {
         <p className="m-0 text-[13px]/[normal] text-muted">
           접수된 제보 내용과 첨부파일은 비공개로 저장돼요
         </p>
-        {confirmed && (
-          <p role="status">입력 확인 완료. 입력한 내용은 전송되지 않았어요</p>
-        )}
+        {submissionError && <p role="alert">{submissionError}</p>}
+        {confirmed && <p role="status">제보가 접수됐어요</p>}
         <button
           className="min-h-[52px] cursor-pointer rounded-card border-0 bg-brand text-[16px]/[normal] font-extrabold text-surface"
           type="submit"
