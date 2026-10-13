@@ -59,6 +59,7 @@ export default function ReportPage() {
     const firstInvalid = requiredFields.find((name) => nextErrors[name]);
 
     setErrors(nextErrors);
+    setAttachmentError('');
     setConfirmed(firstInvalid === undefined);
 
     if (firstInvalid !== undefined) {
@@ -230,6 +231,7 @@ export default function ReportPage() {
                     aria-label={`${file.name} 삭제`}
                     onClick={() => {
                       setConfirmed(false);
+                      setAttachmentError('');
                       setAttachments((previous) =>
                         previous.filter((_, position) => position !== index),
                       );
