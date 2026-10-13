@@ -278,3 +278,28 @@ test('reportRequestDeadline: a pending upload aborts at 60000ms and unlocks the 
   await advance(120000);
   expect(fetchMock).toHaveBeenCalledTimes(1);
 });
+
+test('reportBodyDeadline: headers at 45000ms do not restart the deadline for the response body', async () => {
+  const request = delayedRequest();
+  await renderReport();
+  await fillValid();
+  await submit();
+  await advance(45000);
+  await act(async () => request.headers.resolve(request.response));
+  expect(request.readBody).toHaveBeenCalledTimes(1);
+  await advance(14999);
+  expect(submitButton().disabled).toBe(true);
+  expect(request.signal?.aborted).toBe(false);
+  expect(container.textContent).not.toContain(uncertainMessage);
+  await advance(1);
+  expect(request.signal?.aborted).toBe(true);
+  expect(container.querySelector('[role="alert"]')?.textContent).toContain(
+    uncertainMessage,
+  );
+  expect(boundaryErrors).toHaveBeenCalledTimes(1);
+  expect(submitButton().disabled).toBe(false);
+  expect(vi.getTimerCount()).toBe(0);
+  await act(async () => request.body.resolve(receipt));
+  expect(container.textContent).not.toContain(receipt.report_id);
+  expect(fetchMock).toHaveBeenCalledTimes(1);
+});

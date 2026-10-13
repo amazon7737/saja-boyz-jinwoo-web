@@ -291,7 +291,7 @@ test('reportRequestDeadline: a pending upload aborts at 60000ms and unlocks the 
 });
 ```
 
-- [ ] reportBodyDeadline — 헤더 수신이 전체 60초 제한을 다시 시작하지 않는다
+- [x] reportBodyDeadline — 헤더 수신이 전체 60초 제한을 다시 시작하지 않는다
 
 ```ts
 test('reportBodyDeadline: headers at 45000ms do not restart the deadline for the response body', async () => {
