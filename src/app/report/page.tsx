@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useState, type FormEvent } from 'react';
+import { useRef, useState, type FormEvent } from 'react';
 
 import { categoryLabels } from '@/features/incidents/model/labels';
 
@@ -35,11 +35,16 @@ export default function ReportPage() {
   );
   const [confirmedReportId, setConfirmedReportId] = useState('');
   const [submissionError, setSubmissionError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const submissionInFlight = useRef(false);
   const [attachments, setAttachments] = useState<File[]>([]);
   const [attachmentError, setAttachmentError] = useState('');
 
   async function checkInput(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+
+    if (submissionInFlight.current || confirmedReportId) return;
+
     const form = event.currentTarget;
     const values = new FormData(form);
     const nextErrors: Partial<Record<RequiredField, string>> = {};
@@ -69,6 +74,9 @@ export default function ReportPage() {
 
       return;
     }
+
+    submissionInFlight.current = true;
+    setIsSubmitting(true);
 
     try {
       const body = new FormData();
@@ -117,6 +125,9 @@ export default function ReportPage() {
       setConfirmedReportId(receipt.report_id);
     } catch {
       setSubmissionError('제보를 접수하지 못했어요. 다시 시도해 주세요');
+    } finally {
+      submissionInFlight.current = false;
+      setIsSubmitting(false);
     }
   }
 
@@ -169,6 +180,7 @@ export default function ReportPage() {
             className="box-border w-full min-w-0 rounded-[10px] border border-solid border-border bg-[#f8fafc] px-3.5 py-3 font-[family-name:inherit] text-[14px]/[normal] text-text invalid:text-[#94a3b8]"
             id="report-category"
             name="category"
+            disabled={isSubmitting}
             required
             defaultValue=""
             {...errorAttributes('category')}
@@ -195,6 +207,7 @@ export default function ReportPage() {
             className="box-border w-full min-w-0 rounded-[10px] border border-solid border-border bg-[#f8fafc] px-3.5 py-3 text-[14px]/[normal] text-text placeholder:text-[#94a3b8]"
             id="report-occurred-at"
             name="occurredAt"
+            disabled={isSubmitting}
             {...errorAttributes('occurredAt')}
             type="datetime-local"
             required
@@ -212,6 +225,7 @@ export default function ReportPage() {
             className="box-border w-full min-w-0 rounded-[10px] border border-solid border-border bg-[#f8fafc] px-3.5 py-3 text-[14px]/[normal] text-text placeholder:text-[#94a3b8]"
             id="report-title"
             name="title"
+            disabled={isSubmitting}
             {...errorAttributes('title')}
             placeholder="사건 제목을 입력하세요"
             required
@@ -229,6 +243,7 @@ export default function ReportPage() {
             className="box-border w-full min-w-0 rounded-[10px] border border-solid border-border bg-[#f8fafc] px-3.5 py-3 text-[14px]/[normal] text-text placeholder:text-[#94a3b8]"
             id="report-location"
             name="location"
+            disabled={isSubmitting}
             {...errorAttributes('location')}
             placeholder="위치를 입력하세요"
             required
@@ -246,6 +261,7 @@ export default function ReportPage() {
             className="box-border h-[120px] w-full min-w-0 resize-y rounded-[10px] border border-solid border-border bg-[#f8fafc] p-3.5 text-[14px]/[normal] text-text placeholder:text-[#94a3b8]"
             id="report-description"
             name="description"
+            disabled={isSubmitting}
             {...errorAttributes('description')}
             placeholder="상세 내용을 입력하세요"
             required
@@ -267,6 +283,7 @@ export default function ReportPage() {
               id="report-attachments"
               name="attachments"
               type="file"
+              disabled={isSubmitting}
               multiple
               accept={attachmentTypes.join(',')}
               aria-invalid={Boolean(attachmentError) || undefined}
@@ -330,6 +347,7 @@ export default function ReportPage() {
                   <button
                     className="shrink-0 cursor-pointer rounded-[10px] border border-solid border-border bg-surface px-3 py-2 text-muted"
                     type="button"
+                    disabled={isSubmitting}
                     aria-label={`${file.name} 삭제`}
                     onClick={() => {
                       setConfirmedReportId('');
@@ -372,8 +390,9 @@ export default function ReportPage() {
         <button
           className="min-h-[52px] cursor-pointer rounded-card border-0 bg-brand text-[16px]/[normal] font-extrabold text-surface"
           type="submit"
+          disabled={isSubmitting || Boolean(confirmedReportId)}
         >
-          제보 접수
+          {isSubmitting ? '접수 중' : '제보 접수'}
         </button>
       </form>
     </section>

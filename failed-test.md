@@ -317,7 +317,7 @@ test('reportSubmissionPayload: trimmed fields Korean time and retained attachmen
 });
 ```
 
-- [ ] reportSubmissionPending — 실제 접수 계약 검증 (7번 검토 블록)
+- [x] reportSubmissionPending — 실제 접수 계약 검증 (7번 검토 블록)
 
 ```ts
 test('reportSubmissionPending: double submit is locked until a real receipt arrives', async () => {
