@@ -460,7 +460,7 @@ test('reportFailureCleanup: async failures enter the real local boundary and set
 });
 ```
 
-- [ ] reportAttemptIsolation — 취소된 이전 요청과 언마운트가 현재 상태를 오염시키지 않는다
+- [x] reportAttemptIsolation — 취소된 이전 요청과 언마운트가 현재 상태를 오염시키지 않는다
 
 ```ts
 test('reportAttemptIsolation: abandoned responses cannot finish a newer attempt and unmount aborts active work', async () => {
