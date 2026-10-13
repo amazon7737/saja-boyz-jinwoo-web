@@ -8,4 +8,3 @@ COMMAND: node node_modules/prettier/bin/prettier.cjs --check src/app/report/repo
 EXIT: 0
 Checking formatting...
 All matched files use Prettier code style!
-

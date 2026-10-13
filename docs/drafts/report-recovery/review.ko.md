@@ -19,7 +19,7 @@
 
 ## 공통 헤더
 
-대상 파일: src/app/report/report-recovery.test.ts  
+대상 파일: src/app/report/report-recovery.test.ts
 원본 블록: header.txt
 
 아래 모든 항목이 사용하는 헤더입니다. 파일 지시문·import·mock·공통 도구도 검토 대상입니다.
@@ -470,7 +470,7 @@ void [
 
 ## 1. reportRequestDeadline
 
-대상 파일: src/app/report/report-recovery.test.ts  
+대상 파일: src/app/report/report-recovery.test.ts
 원본 블록: test-1.txt
 
 공통 헤더를 사용합니다. 기한 직전과 만료 순간, 보존·잠금 해제·자동 재시도 부재를 검사합니다.
@@ -528,7 +528,7 @@ test('reportRequestDeadline: a pending upload aborts at 60000ms and unlocks the 
 
 ## 2. reportBodyDeadline
 
-대상 파일: src/app/report/report-recovery.test.ts  
+대상 파일: src/app/report/report-recovery.test.ts
 원본 블록: test-2.txt
 
 공통 헤더를 사용합니다. 헤더 수신 이후에도 최초 제출 기준의 본문 기한을 적용하는지 검사합니다.
@@ -584,7 +584,7 @@ test('reportBodyDeadline: headers at 45000ms do not restart the deadline for the
 
 ## 3. reportBoundaryReset
 
-대상 파일: src/app/report/report-recovery.test.ts  
+대상 파일: src/app/report/report-recovery.test.ts
 원본 블록: test-3.txt
 
 공통 헤더를 사용합니다. 오류 닫기 전후 DOM·값·File 객체와 동일 내용의 요청 키를 검사합니다.
@@ -650,7 +650,7 @@ test('reportBoundaryReset: closing a local fallback preserves form DOM files and
 
 ## 4. reportFallbackEdits
 
-대상 파일: src/app/report/report-recovery.test.ts  
+대상 파일: src/app/report/report-recovery.test.ts
 원본 블록: test-4.txt
 
 공통 헤더를 사용합니다. 오류 표시 중 재시도, 반복 실패 전달, 제목·첨부 변경에 따른 키를 검사합니다.
@@ -745,7 +745,7 @@ test('reportFallbackEdits: direct resubmission and field or attachment edits kee
 
 ## 5. reportFailureCleanup
 
-대상 파일: src/app/report/report-recovery.test.ts  
+대상 파일: src/app/report/report-recovery.test.ts
 원본 블록: test-5.txt
 
 공통 헤더를 사용합니다. 다섯 실패와 마지막 정상 응답을 같은 화면에서 처리하고 타이머 정리를 검사합니다.
@@ -848,7 +848,7 @@ test('reportFailureCleanup: async failures enter the real local boundary and set
 
 ## 6. reportAttemptIsolation
 
-대상 파일: src/app/report/report-recovery.test.ts  
+대상 파일: src/app/report/report-recovery.test.ts
 원본 블록: test-6.txt
 
 공통 헤더를 사용합니다. native Fetch 중단 모형에서 이전 요청·새 요청·unmount 뒤 정리를 검사합니다.
@@ -924,4 +924,3 @@ test('reportAttemptIsolation: abandoned responses cannot finish a newer attempt 
   expect(fetchMock).toHaveBeenCalledTimes(2);
 });
 ```
-
