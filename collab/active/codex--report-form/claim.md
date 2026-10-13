@@ -2,14 +2,15 @@
 branch: codex/report-form
 owner: amazon
 started: 2026-10-13
-status: done
+status: active
 goal: feat(report): 제보 입력 검증과 첨부 선택 화면 구현
-next: dev 대상 PR #15 리뷰·병합. 실제 제보 접수 연동은 별도 서버 계약 확정 후 진행.
+next: PR #15 리뷰에 따라 제보 CSS Module을 Tailwind로 전환하고 스타일 안내 문서·CI 검사를 정리한다.
 base: dev
 ---
 
 ## 메모
 
+- 2026-10-13 사용자가 solp721의 PR 리뷰 반영을 요청했다. src/app/report/page.tsx와 해당 CSS Module, docs/work-split.md·architecture.md·code-conventions.md, .github/workflows/app-check.yml 및 스타일 검사 스크립트가 수정 범위다. 기존 동작·승인 테스트·보관된 명세는 유지하는 별도 구조 변경이다.
 - 사용자 지시: amazon에게 배정된 개발을 순차적으로 PR까지 진행하고, 남은 배정이 없으면 종료한다.
 - dev 78ebbc8까지 반영했다. 목록·이미지 대체·상세·목록 페이지네이션과 easter721의 지도 위치 복원 PR #14는 이미 병합됐다.
 - 승인된 제보 UI 항목 6개를 구현했다. 전체 70개 테스트·타입·빌드·Chrome 화면 검증과 98cb67d의 최종 gate·독립 리뷰를 통과했다.
