@@ -1,0 +1,119 @@
+{
+  "scope": "Actual Chrome and isolated Next webpack build against a local HTTPS mock only. No Go storage, production, upload-performance or proxy-timeout verification.",
+  "source_revision": "20498c3c2c1966a5288b9468337b91648dde883c",
+  "source_checkout": "/Users/kangminkim/lunch/sobaya/apps/saja-boyz-jinwoo-codex--report-recovery",
+  "started_at": "2026-10-13T13:14:45.903Z",
+  "checks": {
+    "body_deadline": true,
+    "reset_preserves_draft": true,
+    "same_key_retry_success": true
+  },
+  "browser_errors": [],
+  "console_errors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Error: 접수 여부를 확인하지 못했어요. 다시 시도해 주세요\n    at http://127.0.0.1:55057/_next/static/chunks/app/report/page-8c9d485d075c4dd2.js:1:5197\n    at iE (http://127.0.0.1:55057/_next/static/chunks/87e1c968-8af1d620ad966e06.js:1:93231)\n    at ub (http://127.0.0.1:55057/_next/static/chunks/87e1c968-8af1d620ad966e06.js:1:117373)\n    at uy (http://127.0.0.1:55057/_next/static/chunks/87e1c968-8af1d620ad966e06.js:1:117035)\n    at ub (http://127.0.0.1:55057/_next/static/chunks/87e1c968-8af1d620ad966e06.js:1:117418)\n    at uy (http://127.0.0.1:55057/_next/static/chunks/87e1c968-8af1d620ad966e06.js:1:117035)\n    at ub (http://127.0.0.1:55057/_next/static/chunks/87e1c968-8af1d620ad966e06.js:1:117418)\n    at uy (http://127.0.0.1:55057/_next/static/chunks/87e1c968-8af1d620ad966e06.js:1:117035)\n    at ub (http://127.0.0.1:55057/_next/static/chunks/87e1c968-8af1d620ad966e06.js:1:117353)\n    at uy (http://127.0.0.1:55057/_next/static/chunks/87e1c968-8af1d620ad966e06.js:1:117035)"
+  ],
+  "failed_requests": [
+    {
+      "url": "http://127.0.0.1:55057/search?_rsc=GlxhFyFIiz2FI1_f",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://127.0.0.1:55057/incidents?_rsc=GlxhFyFIiz2FI1_f",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://127.0.0.1:55057/incidents?_rsc=gRarAOE7goAKvjnC",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://127.0.0.1:55057/search?_rsc=0i2dvkfKaOCe07uf",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://127.0.0.1:55058/reports",
+      "error": "net::ERR_ABORTED"
+    }
+  ],
+  "external_requests_observed": [],
+  "options": [
+    {
+      "method": "POST",
+      "headers": "idempotency-key",
+      "origin": "http://127.0.0.1:55057"
+    },
+    {
+      "method": "POST",
+      "headers": "idempotency-key",
+      "origin": "http://127.0.0.1:55057"
+    }
+  ],
+  "posts": [
+    {
+      "number": 1,
+      "received_at": "2026-10-13T13:14:52.389Z",
+      "arrived_monotonic_ms": 6632.636792,
+      "idempotency_key": "47cb120f-17ac-4214-92f0-8f9f18ee8592",
+      "origin": "http://127.0.0.1:55057",
+      "content_type": "multipart/form-data; boundary=----WebKitFormBoundarygxic6Ngsy7DBn9Bg",
+      "has_cookie": false,
+      "fields": {
+        "category": "society",
+        "occurred_at": "2026-10-13T03:34:00.000Z",
+        "title": "합성 오류 복구 브라우저 제보",
+        "location": "가상 검증 장소 101",
+        "description": "개인정보나 실제 사건이 없는 로컬 오류 복구 검증입니다."
+      },
+      "files": [
+        {
+          "field": "attachments",
+          "name": "one-pixel.png",
+          "type": "image/png",
+          "bytes": 68,
+          "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460"
+        }
+      ],
+      "parsed": true,
+      "headers_sent_after_ms": 45004.647125,
+      "connection_closed_after_ms": 60002.06458300001,
+      "response_finished": false
+    },
+    {
+      "number": 2,
+      "received_at": "2026-10-13T13:15:53.147Z",
+      "arrived_monotonic_ms": 67390.087584,
+      "idempotency_key": "47cb120f-17ac-4214-92f0-8f9f18ee8592",
+      "origin": "http://127.0.0.1:55057",
+      "content_type": "multipart/form-data; boundary=----WebKitFormBoundary7B0nqYW1MPaXjjyR",
+      "has_cookie": false,
+      "fields": {
+        "category": "society",
+        "occurred_at": "2026-10-13T03:34:00.000Z",
+        "title": "합성 오류 복구 브라우저 제보",
+        "location": "가상 검증 장소 101",
+        "description": "개인정보나 실제 사건이 없는 로컬 오류 복구 검증입니다."
+      },
+      "files": [
+        {
+          "field": "attachments",
+          "name": "one-pixel.png",
+          "type": "image/png",
+          "bytes": 68,
+          "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460"
+        }
+      ],
+      "parsed": true,
+      "connection_closed_after_ms": 0.775500000003376,
+      "response_finished": true
+    }
+  ],
+  "frontend": "http://127.0.0.1:55057",
+  "mock_api": "https://127.0.0.1:55058",
+  "last_browser_response": {
+    "status": 200,
+    "received_monotonic_ms": 67399.836542
+  },
+  "deadline_ui_elapsed_ms": 60344.086208,
+  "result": "passed",
+  "finished_at": "2026-10-13T13:15:53.351Z"
+}

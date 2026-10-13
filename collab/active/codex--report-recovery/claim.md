@@ -2,9 +2,9 @@
 branch: codex/report-recovery
 owner: amazon
 started: 2026-10-13
-status: active
+status: done
 goal: fix(report): 제보 요청 제한 시간과 오류 복구 보완
-next: 승인한 6개 테스트를 항목별 구현·검증하고 최종 독립 리뷰 후 PR 16에 통합한다.
+next: 검증된 제품·테스트를 기존 PR 16의 submission 브랜치에 통합하고 최종 CI를 확인한다.
 base: codex/report-submission
 ---
 
@@ -15,3 +15,5 @@ base: codex/report-submission
 - 기존 승인 계획은 보관 완료됐다. 기존 브랜치의 승인 상태를 재개하지 않고 별도 worktree에서 후속 기준을 준비한다. 완료된 수정은 PR #16에 통합하는 것이 목표다.
 - 2026-10-13 사용자가 제안서와 공통 헤더·6개 테스트를 승인했고, 해당 내용을 새 spec.md와 failed-test.md로 그대로 생성하는 것도 명시적으로 허용했다. approval.md에 정확한 입력과 범위를 기록한다. 기존 75개 테스트와 보관한 승인 계획은 유지한다.
 - 새 의존성이나 공용 오류 경계 변경 없이 설치된 @suspensive/react 3.21.4의 기능을 검토한다. 배포·실제 제보·운영 설정 변경은 하지 않는다.
+
+- 2026-10-13 초기 렌더 타이머 한 줄 교체를 사용자 승인으로 반영했다. 검증 HEAD 20498c3에서 모든 항목·최종 gate·독립 리뷰와 실제 Chrome 시간 초과·재시도를 완료했다. completion.md에 근거와 한계를 기록했다.

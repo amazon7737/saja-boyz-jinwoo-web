@@ -1,0 +1,73 @@
+{
+  "scope": "Actual Chrome and isolated Next webpack build against a local HTTPS mock only. No Go storage, production, upload-performance or proxy-timeout verification.",
+  "source_revision": "20498c3c2c1966a5288b9468337b91648dde883c",
+  "source_checkout": "/Users/kangminkim/lunch/sobaya/apps/saja-boyz-jinwoo-codex--report-recovery",
+  "started_at": "2026-10-13T13:11:02.102Z",
+  "checks": {},
+  "browser_errors": [],
+  "console_errors": [],
+  "failed_requests": [
+    {
+      "url": "http://127.0.0.1:54885/search?_rsc=GlxhFyFIiz2FI1_f",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://127.0.0.1:54885/incidents?_rsc=GlxhFyFIiz2FI1_f",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://127.0.0.1:54885/search?_rsc=0i2dvkfKaOCe07uf",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://127.0.0.1:54885/incidents?_rsc=gRarAOE7goAKvjnC",
+      "error": "net::ERR_ABORTED"
+    }
+  ],
+  "external_requests_blocked": [],
+  "options": [],
+  "posts": [
+    {
+      "number": 1,
+      "received_at": "2026-10-13T13:11:08.287Z",
+      "arrived_monotonic_ms": 6325.890875,
+      "idempotency_key": "bb333083-b2b9-4946-bc05-4506479bfbe9",
+      "origin": "http://127.0.0.1:54885",
+      "content_type": "multipart/form-data; boundary=----WebKitFormBoundarywGNhdU0qsjAttRuO",
+      "has_cookie": false,
+      "fields": {
+        "category": "society",
+        "occurred_at": "2026-10-13T03:34:00.000Z",
+        "title": "합성 오류 복구 브라우저 제보",
+        "location": "가상 검증 장소 101",
+        "description": "개인정보나 실제 사건이 없는 로컬 오류 복구 검증입니다."
+      },
+      "files": [
+        {
+          "field": "attachments",
+          "name": "one-pixel.png",
+          "type": "image/png",
+          "bytes": 68,
+          "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460"
+        }
+      ],
+      "parsed": true,
+      "headers_sent_after_ms": 45005.492084000005,
+      "connection_closed_after_ms": 55013.726584000004,
+      "response_finished": false
+    }
+  ],
+  "frontend": "http://127.0.0.1:54885",
+  "mock_api": "https://127.0.0.1:54886",
+  "last_browser_response": {
+    "status": 200,
+    "received_monotonic_ms": 51335.718875
+  },
+  "result": "failed",
+  "error": {
+    "name": "AssertionError",
+    "message": "No premature timeout\n\n1 !== 0\n",
+    "stack": "AssertionError [ERR_ASSERTION]: No premature timeout\n\n1 !== 0\n\n    at main (/private/tmp/poem-report-recovery-browser/verify.cjs:287:12)"
+  },
+  "finished_at": "2026-10-13T13:12:03.405Z"
+}
