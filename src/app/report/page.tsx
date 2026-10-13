@@ -37,6 +37,7 @@ export default function ReportPage() {
   const [submissionError, setSubmissionError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const submissionInFlight = useRef(false);
+  const retryRequestKey = useRef<string | null>(null);
   const [attachments, setAttachments] = useState<File[]>([]);
   const [attachmentError, setAttachmentError] = useState('');
 
@@ -93,15 +94,25 @@ export default function ReportPage() {
 
       for (const file of attachments) body.append('attachments', file);
 
+      const requestKey = retryRequestKey.current ?? crypto.randomUUID();
       const response = await fetch(
         new URL('/reports', process.env.NEXT_PUBLIC_REPORT_API_BASE_URL),
         {
           method: 'POST',
           credentials: 'omit',
-          headers: { 'Idempotency-Key': crypto.randomUUID() },
+          headers: { 'Idempotency-Key': requestKey },
           body,
         },
-      );
+      ).catch(() => {
+        retryRequestKey.current = requestKey;
+        setSubmissionError('접수 여부를 확인하지 못했어요. 다시 시도해 주세요');
+
+        return null;
+      });
+
+      if (response === null) return;
+
+      retryRequestKey.current = null;
       const receipt: unknown = await response.json();
 
       if (

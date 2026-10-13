@@ -364,7 +364,7 @@ test('reportSubmissionPending: double submit is locked until a real receipt arri
 });
 ```
 
-- [ ] reportSubmissionRetry — 실제 접수 계약 검증 (8번 검토 블록)
+- [x] reportSubmissionRetry — 실제 접수 계약 검증 (8번 검토 블록)
 
 ```ts
 test('reportSubmissionRetry: an ambiguous failure keeps values files and the same request key', async () => {
