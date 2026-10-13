@@ -261,7 +261,7 @@ void [
 ];
 ```
 
-- [ ] reportRequestDeadline — 요청이 계속 대기하면 60초에 중단하고 입력을 보존한다
+- [x] reportRequestDeadline — 요청이 계속 대기하면 60초에 중단하고 입력을 보존한다
 
 ```ts
 test('reportRequestDeadline: a pending upload aborts at 60000ms and unlocks the preserved form', async () => {

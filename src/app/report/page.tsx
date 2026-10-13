@@ -1,7 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { useRef, useState, type FormEvent } from 'react';
+import { ErrorBoundary, useErrorBoundary } from '@suspensive/react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 
 import { categoryLabels } from '@/features/incidents/model/labels';
 
@@ -78,6 +79,21 @@ function isReceiptTimestamp(value: string) {
 const uncertainReceiptMessage =
   '접수 여부를 확인하지 못했어요. 다시 시도해 주세요';
 
+type ReportRequest = {
+  controller: AbortController;
+  deadline?: ReturnType<typeof setTimeout>;
+};
+
+function SubmissionError({ message }: { message: string }) {
+  const { setError } = useErrorBoundary();
+
+  useEffect(() => {
+    if (message) setError(new Error(message));
+  }, [message, setError]);
+
+  return null;
+}
+
 export default function ReportPage() {
   const [errors, setErrors] = useState<Partial<Record<RequiredField, string>>>(
     {},
@@ -86,6 +102,8 @@ export default function ReportPage() {
   const [submissionError, setSubmissionError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const submissionInFlight = useRef(false);
+  const activeRequest = useRef<ReportRequest | null>(null);
+  const submissionBoundary = useRef<{ reset: () => void }>(null);
   const retryRequest = useRef<{
     key: string;
     fields: string;
@@ -94,6 +112,19 @@ export default function ReportPage() {
   const [attachments, setAttachments] = useState<File[]>([]);
   const [attachmentError, setAttachmentError] = useState('');
   const formLocked = isSubmitting || Boolean(confirmedReportId);
+
+  useEffect(() => {
+    return () => {
+      const request = activeRequest.current;
+
+      activeRequest.current = null;
+
+      if (request) {
+        clearTimeout(request.deadline);
+        request.controller.abort();
+      }
+    };
+  }, []);
 
   async function checkInput(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -121,6 +152,7 @@ export default function ReportPage() {
     setAttachmentError('');
     setConfirmedReportId('');
     setSubmissionError('');
+    submissionBoundary.current?.reset();
 
     if (firstInvalid !== undefined) {
       const firstField = form.elements.namedItem(firstInvalid);
@@ -140,6 +172,10 @@ export default function ReportPage() {
 
     submissionInFlight.current = true;
     setIsSubmitting(true);
+
+    const request: ReportRequest = { controller: new AbortController() };
+
+    activeRequest.current = request;
 
     try {
       const body = new FormData();
@@ -170,28 +206,37 @@ export default function ReportPage() {
 
       retryRequest.current = { key: requestKey, fields, attachments };
 
+      request.deadline = setTimeout(() => request.controller.abort(), 60000);
+
       const response = await fetch(endpoint, {
         method: 'POST',
         credentials: 'omit',
         headers: { 'Idempotency-Key': requestKey },
         body,
+        signal: request.controller.signal,
       }).catch(() => {
-        setSubmissionError(uncertainReceiptMessage);
+        if (activeRequest.current === request) {
+          setSubmissionError(uncertainReceiptMessage);
+        }
 
         return null;
       });
 
-      if (response === null) return;
+      if (response === null || activeRequest.current !== request) return;
 
       let receipt: unknown;
 
       try {
         receipt = await response.json();
       } catch {
-        setSubmissionError(uncertainReceiptMessage);
+        if (activeRequest.current === request) {
+          setSubmissionError(uncertainReceiptMessage);
+        }
 
         return;
       }
+
+      if (activeRequest.current !== request) return;
 
       if (
         (response.status !== 200 && response.status !== 201) ||
@@ -219,10 +264,17 @@ export default function ReportPage() {
       retryRequest.current = null;
       setConfirmedReportId(receipt.report_id);
     } catch {
-      setSubmissionError('제보를 접수하지 못했어요. 다시 시도해 주세요');
+      if (activeRequest.current === request) {
+        setSubmissionError('제보를 접수하지 못했어요. 다시 시도해 주세요');
+      }
     } finally {
-      submissionInFlight.current = false;
-      setIsSubmitting(false);
+      clearTimeout(request.deadline);
+
+      if (activeRequest.current === request) {
+        activeRequest.current = null;
+        submissionInFlight.current = false;
+        setIsSubmitting(false);
+      }
     }
   }
 
@@ -465,7 +517,24 @@ export default function ReportPage() {
         <p className="m-0 text-[13px]/[normal] text-muted">
           접수된 제보 내용과 첨부파일은 비공개로 저장돼요
         </p>
-        {submissionError && <p role="alert">{submissionError}</p>}
+        <ErrorBoundary
+          ref={submissionBoundary}
+          onReset={() => setSubmissionError('')}
+          fallback={({ error, reset }) => (
+            <div>
+              <p role="alert">{error.message}</p>
+              <button
+                className="cursor-pointer rounded-[10px] border border-solid border-border bg-surface px-3 py-2 text-muted"
+                type="button"
+                onClick={reset}
+              >
+                오류 닫기
+              </button>
+            </div>
+          )}
+        >
+          <SubmissionError message={submissionError} />
+        </ErrorBoundary>
         {confirmedReportId && (
           <p role="status">제보가 접수됐어요 · 접수번호: {confirmedReportId}</p>
         )}
