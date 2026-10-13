@@ -260,7 +260,7 @@ test('reportSubmissionTextLimits: trimmed field limits reject overflow and allow
 });
 ```
 
-- [ ] reportSubmissionPayload — 실제 접수 계약 검증 (6번 검토 블록)
+- [x] reportSubmissionPayload — 실제 접수 계약 검증 (6번 검토 블록)
 
 ```ts
 test('reportSubmissionPayload: trimmed fields Korean time and retained attachments are sent', async () => {

@@ -33,7 +33,7 @@ export default function ReportPage() {
   const [errors, setErrors] = useState<Partial<Record<RequiredField, string>>>(
     {},
   );
-  const [confirmed, setConfirmed] = useState(false);
+  const [confirmedReportId, setConfirmedReportId] = useState('');
   const [submissionError, setSubmissionError] = useState('');
   const [attachments, setAttachments] = useState<File[]>([]);
   const [attachmentError, setAttachmentError] = useState('');
@@ -59,7 +59,7 @@ export default function ReportPage() {
 
     setErrors(nextErrors);
     setAttachmentError('');
-    setConfirmed(false);
+    setConfirmedReportId('');
     setSubmissionError('');
 
     if (firstInvalid !== undefined) {
@@ -114,7 +114,7 @@ export default function ReportPage() {
         return;
       }
 
-      setConfirmed(true);
+      setConfirmedReportId(receipt.report_id);
     } catch {
       setSubmissionError('제보를 접수하지 못했어요. 다시 시도해 주세요');
     }
@@ -156,7 +156,7 @@ export default function ReportPage() {
         className="flex flex-col gap-5 px-4 pt-4 pb-6"
         noValidate
         onSubmit={checkInput}
-        onChange={() => setConfirmed(false)}
+        onChange={() => setConfirmedReportId('')}
       >
         <div className="flex min-w-0 flex-col gap-2">
           <label
@@ -332,7 +332,7 @@ export default function ReportPage() {
                     type="button"
                     aria-label={`${file.name} 삭제`}
                     onClick={() => {
-                      setConfirmed(false);
+                      setConfirmedReportId('');
                       setAttachmentError('');
                       setAttachments((previous) =>
                         previous.filter((_, position) => position !== index),
@@ -350,15 +350,17 @@ export default function ReportPage() {
           접수된 제보 내용과 첨부파일은 비공개로 저장돼요
         </p>
         {submissionError && <p role="alert">{submissionError}</p>}
-        {confirmed && <p role="status">제보가 접수됐어요</p>}
-        {confirmed && (
+        {confirmedReportId && (
+          <p role="status">제보가 접수됐어요 · 접수번호: {confirmedReportId}</p>
+        )}
+        {confirmedReportId && (
           <button
             className="cursor-pointer rounded-[10px] border border-solid border-border bg-surface px-3 py-2 text-muted"
             type="button"
             onClick={(event) => {
               event.currentTarget.form?.reset();
               setErrors({});
-              setConfirmed(false);
+              setConfirmedReportId('');
               setSubmissionError('');
               setAttachments([]);
               setAttachmentError('');
