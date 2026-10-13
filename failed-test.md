@@ -354,7 +354,7 @@ test('reportBoundaryReset: closing a local fallback preserves form DOM files and
 });
 ```
 
-- [ ] reportFallbackEdits — 직접 재시도·재실패·필드 및 첨부 변경 시 키가 올바르다
+- [x] reportFallbackEdits — 직접 재시도·재실패·필드 및 첨부 변경 시 키가 올바르다
 
 ```ts
 test('reportFallbackEdits: direct resubmission and field or attachment edits keep correct request identities', async () => {
