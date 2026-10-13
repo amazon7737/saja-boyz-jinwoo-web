@@ -2,10 +2,10 @@
 branch: codex/report-submission
 owner: amazon
 started: 2026-10-13
-status: active
+status: done
 goal: feat(report): 실제 제보 접수와 서버 저장 연결
-next: 승인된 프런트 교체 기준선과 9개 새 항목을 Sobaya 체크포인트로 구현·검증한다. 서버 통합 검증·PR은 최종 gate와 독립 리뷰 뒤 조정한다.
-base: codex/report-form
+next: dev 대상 PR 생성·리뷰. 서버 PR team-poem/poem-news#2와 공개 API 주소 및 정확한 웹앱 origin을 함께 설정한 뒤 운영 접수를 활성화한다.
+base: dev
 ---
 
 ## 메모
@@ -19,3 +19,4 @@ base: codex/report-form
 - 사용자 선택은 익명 접수 + 첨부 저장이다. docs/report-submission-contract.md와 docs/drafts/report-submission/에서 계약·기준선 교체·주석 검토본·probe 근거를 볼 수 있다. 실제 접수 구현은 아직 시작하지 않았다.
 
 - 2026-10-13 사용자가 최종 계약·기준선 교체·프런트 9개/서버 8개 테스트를 명시적으로 승인했다. approval.md에 정확한 입력 해시와 채택 상태를 기록했다. 이전 승인 전 메모는 이 기록으로 후속 갱신된다.
+- 2026-10-13 구현·9개 체크포인트·전체 gate·독립 리뷰·실제 Chrome→HTTPS→Go→비공개 저장 E2E를 완료했다. completion.md와 completion/에 검증 증거를 보존했다. PR #15의 dev squash 병합을 확인하고 동일한 전체 tree를 보존하며 ancestry를 연결했다. 위의 승인 전/미구현 메모는 이 완료 기록으로 대체된다.
