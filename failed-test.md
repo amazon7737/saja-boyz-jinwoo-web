@@ -409,7 +409,7 @@ test('reportSubmissionRetry: an ambiguous failure keeps values files and the sam
 });
 ```
 
-- [ ] reportSubmissionFailures — 실제 접수 계약 검증 (9번 검토 블록)
+- [x] reportSubmissionFailures — 실제 접수 계약 검증 (9번 검토 블록)
 
 ```ts
 test('reportSubmissionFailures: rejected or malformed responses never claim receipt or erase the draft', async () => {
