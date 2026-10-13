@@ -29,6 +29,20 @@ const attachmentTypes = [
   'video/webm',
 ];
 
+function getReportEndpoint() {
+  try {
+    const baseUrl = new URL(process.env.NEXT_PUBLIC_REPORT_API_BASE_URL ?? '');
+
+    if (baseUrl.protocol !== 'https:' || baseUrl.username || baseUrl.password) {
+      return null;
+    }
+
+    return new URL('/reports', baseUrl);
+  } catch {
+    return null;
+  }
+}
+
 export default function ReportPage() {
   const [errors, setErrors] = useState<Partial<Record<RequiredField, string>>>(
     {},
@@ -76,6 +90,14 @@ export default function ReportPage() {
       return;
     }
 
+    const endpoint = getReportEndpoint();
+
+    if (endpoint === null) {
+      setSubmissionError('제보 접수 연결이 준비되지 않았어요');
+
+      return;
+    }
+
     submissionInFlight.current = true;
     setIsSubmitting(true);
 
@@ -95,15 +117,12 @@ export default function ReportPage() {
       for (const file of attachments) body.append('attachments', file);
 
       const requestKey = retryRequestKey.current ?? crypto.randomUUID();
-      const response = await fetch(
-        new URL('/reports', process.env.NEXT_PUBLIC_REPORT_API_BASE_URL),
-        {
-          method: 'POST',
-          credentials: 'omit',
-          headers: { 'Idempotency-Key': requestKey },
-          body,
-        },
-      ).catch(() => {
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        credentials: 'omit',
+        headers: { 'Idempotency-Key': requestKey },
+        body,
+      }).catch(() => {
         retryRequestKey.current = requestKey;
         setSubmissionError('접수 여부를 확인하지 못했어요. 다시 시도해 주세요');
 

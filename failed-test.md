@@ -458,7 +458,7 @@ test('reportSubmissionFailures: rejected or malformed responses never claim rece
 });
 ```
 
-- [ ] reportSubmissionConfiguration — 실제 접수 계약 검증 (10번 검토 블록)
+- [x] reportSubmissionConfiguration — 실제 접수 계약 검증 (10번 검토 블록)
 
 ```ts
 test('reportSubmissionConfiguration: missing or unsafe public endpoint does not send the report', async () => {

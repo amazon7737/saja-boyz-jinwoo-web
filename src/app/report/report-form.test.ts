@@ -505,3 +505,24 @@ test('reportSubmissionFailures: rejected or malformed responses never claim rece
   }
   expect(fetchMock).toHaveBeenCalledTimes(10);
 });
+
+test('reportSubmissionConfiguration: missing or unsafe public endpoint does not send the report', async () => {
+  for (const endpoint of [
+    '',
+    'javascript:alert(1)',
+    'https://user:secret@example.test',
+    'http://reports.example.test',
+  ]) {
+    vi.stubEnv('NEXT_PUBLIC_REPORT_API_BASE_URL', endpoint);
+    await act(async () =>
+      root.render(createElement(ReportPage, { key: endpoint })),
+    );
+    await fillValid();
+    await checkInput();
+    expect(container.textContent).toContain(
+      '제보 접수 연결이 준비되지 않았어요',
+    );
+    expect(container.textContent).not.toContain('제보가 접수됐어요');
+    expect(fetchMock).not.toHaveBeenCalled();
+  }
+});
