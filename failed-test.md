@@ -483,7 +483,7 @@ test('reportSubmissionConfiguration: missing or unsafe public endpoint does not 
 });
 ```
 
-- [ ] reportSubmissionEditedRetry — 실제 접수 계약 검증 (11번 검토 블록)
+- [x] reportSubmissionEditedRetry — 실제 접수 계약 검증 (11번 검토 블록)
 
 ```ts
 test('reportSubmissionEditedRetry: changed content uses a new request key after an uncertain attempt', async () => {

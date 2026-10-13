@@ -51,7 +51,11 @@ export default function ReportPage() {
   const [submissionError, setSubmissionError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const submissionInFlight = useRef(false);
-  const retryRequestKey = useRef<string | null>(null);
+  const retryRequest = useRef<{
+    key: string;
+    fields: string;
+    attachments: File[];
+  } | null>(null);
   const [attachments, setAttachments] = useState<File[]>([]);
   const [attachmentError, setAttachmentError] = useState('');
 
@@ -114,16 +118,26 @@ export default function ReportPage() {
         }
       }
 
+      const fields = JSON.stringify(Array.from(body.entries()));
+
       for (const file of attachments) body.append('attachments', file);
 
-      const requestKey = retryRequestKey.current ?? crypto.randomUUID();
+      const previousRequest = retryRequest.current;
+      const requestKey =
+        previousRequest?.fields === fields &&
+        previousRequest.attachments.length === attachments.length &&
+        attachments.every(
+          (file, index) => file === previousRequest.attachments[index],
+        )
+          ? previousRequest.key
+          : crypto.randomUUID();
       const response = await fetch(endpoint, {
         method: 'POST',
         credentials: 'omit',
         headers: { 'Idempotency-Key': requestKey },
         body,
       }).catch(() => {
-        retryRequestKey.current = requestKey;
+        retryRequest.current = { key: requestKey, fields, attachments };
         setSubmissionError('접수 여부를 확인하지 못했어요. 다시 시도해 주세요');
 
         return null;
@@ -131,7 +145,7 @@ export default function ReportPage() {
 
       if (response === null) return;
 
-      retryRequestKey.current = null;
+      retryRequest.current = null;
       const receipt: unknown = await response.json();
 
       if (
