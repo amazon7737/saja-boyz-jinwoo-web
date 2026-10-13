@@ -152,3 +152,24 @@ test('reportFormFields: labels and shared categories are available', async () =>
   ).toBe('/');
   expect(fetchMock).not.toHaveBeenCalled();
 });
+
+test('reportRequiredFields: whitespace errors are linked and corrected', async () => {
+  await renderReport();
+  for (const name of ['title', 'location', 'description']) {
+    await changeField(name, '   ');
+  }
+  await checkInput();
+  for (const name of fieldNames) {
+    expectFieldError(name, '필수 항목이에요');
+  }
+  expect(document.activeElement).toBe(field('category'));
+  expect(container.textContent).not.toContain('입력 확인 완료');
+  expect(fetchMock).not.toHaveBeenCalled();
+  await fillValid();
+  await checkInput();
+  for (const name of fieldNames) {
+    expect(field(name).getAttribute('aria-invalid')).not.toBe('true');
+  }
+  expect(container.textContent).toContain('입력 확인 완료');
+  expect(field('title').value).toBe('도로 점검 제보');
+});

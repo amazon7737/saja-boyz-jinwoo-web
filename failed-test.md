@@ -165,7 +165,7 @@ test('reportFormFields: labels and shared categories are available', async () =>
 });
 ```
 
-- [ ] reportRequiredFields — 공백 필수값 오류·포커스·수정 후 확인
+- [x] reportRequiredFields — 공백 필수값 오류·포커스·수정 후 확인
 
 ```ts
 test('reportRequiredFields: whitespace errors are linked and corrected', async () => {

@@ -122,3 +122,9 @@
   font-weight: 800;
   cursor: pointer;
 }
+
+.error {
+  margin: 0;
+  color: var(--color-brand);
+  font-size: 13px;
+}
