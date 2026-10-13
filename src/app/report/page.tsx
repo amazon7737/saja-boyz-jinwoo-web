@@ -93,6 +93,7 @@ export default function ReportPage() {
   } | null>(null);
   const [attachments, setAttachments] = useState<File[]>([]);
   const [attachmentError, setAttachmentError] = useState('');
+  const formLocked = isSubmitting || Boolean(confirmedReportId);
 
   async function checkInput(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -261,7 +262,6 @@ export default function ReportPage() {
         className="flex flex-col gap-5 px-4 pt-4 pb-6"
         noValidate
         onSubmit={checkInput}
-        onChange={() => setConfirmedReportId('')}
       >
         <div className="flex min-w-0 flex-col gap-2">
           <label
@@ -274,7 +274,7 @@ export default function ReportPage() {
             className="box-border w-full min-w-0 rounded-[10px] border border-solid border-border bg-[#f8fafc] px-3.5 py-3 font-[family-name:inherit] text-[14px]/[normal] text-text invalid:text-[#94a3b8]"
             id="report-category"
             name="category"
-            disabled={isSubmitting}
+            disabled={formLocked}
             required
             defaultValue=""
             {...errorAttributes('category')}
@@ -301,7 +301,7 @@ export default function ReportPage() {
             className="box-border w-full min-w-0 rounded-[10px] border border-solid border-border bg-[#f8fafc] px-3.5 py-3 text-[14px]/[normal] text-text placeholder:text-[#94a3b8]"
             id="report-occurred-at"
             name="occurredAt"
-            disabled={isSubmitting}
+            disabled={formLocked}
             {...errorAttributes('occurredAt')}
             type="datetime-local"
             required
@@ -319,7 +319,7 @@ export default function ReportPage() {
             className="box-border w-full min-w-0 rounded-[10px] border border-solid border-border bg-[#f8fafc] px-3.5 py-3 text-[14px]/[normal] text-text placeholder:text-[#94a3b8]"
             id="report-title"
             name="title"
-            disabled={isSubmitting}
+            disabled={formLocked}
             {...errorAttributes('title')}
             placeholder="사건 제목을 입력하세요"
             required
@@ -337,7 +337,7 @@ export default function ReportPage() {
             className="box-border w-full min-w-0 rounded-[10px] border border-solid border-border bg-[#f8fafc] px-3.5 py-3 text-[14px]/[normal] text-text placeholder:text-[#94a3b8]"
             id="report-location"
             name="location"
-            disabled={isSubmitting}
+            disabled={formLocked}
             {...errorAttributes('location')}
             placeholder="위치를 입력하세요"
             required
@@ -355,7 +355,7 @@ export default function ReportPage() {
             className="box-border h-[120px] w-full min-w-0 resize-y rounded-[10px] border border-solid border-border bg-[#f8fafc] p-3.5 text-[14px]/[normal] text-text placeholder:text-[#94a3b8]"
             id="report-description"
             name="description"
-            disabled={isSubmitting}
+            disabled={formLocked}
             {...errorAttributes('description')}
             placeholder="상세 내용을 입력하세요"
             required
@@ -377,7 +377,7 @@ export default function ReportPage() {
               id="report-attachments"
               name="attachments"
               type="file"
-              disabled={isSubmitting}
+              disabled={formLocked}
               multiple
               accept={attachmentTypes.join(',')}
               aria-invalid={Boolean(attachmentError) || undefined}
@@ -385,6 +385,8 @@ export default function ReportPage() {
                 attachmentError ? 'report-attachments-error' : undefined
               }
               onChange={(event) => {
+                if (submissionInFlight.current || confirmedReportId) return;
+
                 const selected = Array.from(event.currentTarget.files ?? []);
 
                 event.currentTarget.value = '';
@@ -441,10 +443,12 @@ export default function ReportPage() {
                   <button
                     className="shrink-0 cursor-pointer rounded-[10px] border border-solid border-border bg-surface px-3 py-2 text-muted"
                     type="button"
-                    disabled={isSubmitting}
+                    disabled={formLocked}
                     aria-label={`${file.name} 삭제`}
                     onClick={() => {
-                      setConfirmedReportId('');
+                      if (submissionInFlight.current || confirmedReportId)
+                        return;
+
                       setAttachmentError('');
                       setAttachments((previous) =>
                         previous.filter((_, position) => position !== index),
@@ -485,7 +489,7 @@ export default function ReportPage() {
         <button
           className="min-h-[52px] cursor-pointer rounded-card border-0 bg-brand text-[16px]/[normal] font-extrabold text-surface"
           type="submit"
-          disabled={isSubmitting || Boolean(confirmedReportId)}
+          disabled={formLocked}
         >
           {isSubmitting ? '접수 중' : '제보 접수'}
         </button>
