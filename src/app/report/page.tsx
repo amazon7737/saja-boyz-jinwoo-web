@@ -5,8 +5,6 @@ import { useState, type FormEvent } from 'react';
 
 import { categoryLabels } from '@/features/incidents/model/labels';
 
-import styles from './report-form.module.css';
-
 const requiredFields = [
   'category',
   'occurredAt',
@@ -78,29 +76,44 @@ export default function ReportPage() {
 
   function fieldError(name: RequiredField) {
     return errors[name] ? (
-      <p id={`report-${name}-error`} className={styles.error}>
+      <p
+        id={`report-${name}-error`}
+        className="m-0 text-[13px]/[normal] text-brand"
+      >
         {errors[name]}
       </p>
     ) : null;
   }
 
   return (
-    <section className={styles.report}>
-      <header className={styles.header}>
-        <h1>제보하기</h1>
-        <Link href="/" aria-label="제보 닫기" className={styles.close}>
+    <section className="bg-surface text-text">
+      <header className="grid grid-cols-[32px_1fr_32px] items-center border-0 border-b border-solid border-border px-4 py-3">
+        <h1 className="col-start-2 m-0 text-center text-[16px]/[normal] font-extrabold">
+          제보하기
+        </h1>
+        <Link
+          href="/"
+          aria-label="제보 닫기"
+          className="grid size-8 place-items-center rounded-full bg-[#f1f5f9] text-[14px]/[normal]"
+        >
           <span aria-hidden="true">✕</span>
         </Link>
       </header>
       <form
-        className={styles.form}
+        className="flex flex-col gap-5 px-4 pt-4 pb-6"
         noValidate
         onSubmit={checkInput}
         onChange={() => setConfirmed(false)}
       >
-        <div className={styles.field}>
-          <label htmlFor="report-category">카테고리 선택</label>
+        <div className="flex min-w-0 flex-col gap-2">
+          <label
+            htmlFor="report-category"
+            className="text-[13px]/[normal] font-bold text-muted"
+          >
+            카테고리 선택
+          </label>
           <select
+            className="box-border w-full min-w-0 rounded-[10px] border border-solid border-border bg-[#f8fafc] px-3.5 py-3 font-[family-name:inherit] text-[14px]/[normal] text-text invalid:text-[#94a3b8]"
             id="report-category"
             name="category"
             required
@@ -118,9 +131,15 @@ export default function ReportPage() {
           </select>
           {fieldError('category')}
         </div>
-        <div className={styles.field}>
-          <label htmlFor="report-occurred-at">발생 날짜 및 시간</label>
+        <div className="flex min-w-0 flex-col gap-2">
+          <label
+            htmlFor="report-occurred-at"
+            className="text-[13px]/[normal] font-bold text-muted"
+          >
+            발생 날짜 및 시간
+          </label>
           <input
+            className="box-border w-full min-w-0 rounded-[10px] border border-solid border-border bg-[#f8fafc] px-3.5 py-3 text-[14px]/[normal] text-text placeholder:text-[#94a3b8]"
             id="report-occurred-at"
             name="occurredAt"
             {...errorAttributes('occurredAt')}
@@ -129,9 +148,15 @@ export default function ReportPage() {
           />
           {fieldError('occurredAt')}
         </div>
-        <div className={styles.field}>
-          <label htmlFor="report-title">제보 제목</label>
+        <div className="flex min-w-0 flex-col gap-2">
+          <label
+            htmlFor="report-title"
+            className="text-[13px]/[normal] font-bold text-muted"
+          >
+            제보 제목
+          </label>
           <input
+            className="box-border w-full min-w-0 rounded-[10px] border border-solid border-border bg-[#f8fafc] px-3.5 py-3 text-[14px]/[normal] text-text placeholder:text-[#94a3b8]"
             id="report-title"
             name="title"
             {...errorAttributes('title')}
@@ -140,9 +165,15 @@ export default function ReportPage() {
           />
           {fieldError('title')}
         </div>
-        <div className={styles.field}>
-          <label htmlFor="report-location">발생 위치</label>
+        <div className="flex min-w-0 flex-col gap-2">
+          <label
+            htmlFor="report-location"
+            className="text-[13px]/[normal] font-bold text-muted"
+          >
+            발생 위치
+          </label>
           <input
+            className="box-border w-full min-w-0 rounded-[10px] border border-solid border-border bg-[#f8fafc] px-3.5 py-3 text-[14px]/[normal] text-text placeholder:text-[#94a3b8]"
             id="report-location"
             name="location"
             {...errorAttributes('location')}
@@ -151,9 +182,15 @@ export default function ReportPage() {
           />
           {fieldError('location')}
         </div>
-        <div className={styles.field}>
-          <label htmlFor="report-description">상세내용</label>
+        <div className="flex min-w-0 flex-col gap-2">
+          <label
+            htmlFor="report-description"
+            className="text-[13px]/[normal] font-bold text-muted"
+          >
+            상세내용
+          </label>
           <textarea
+            className="box-border h-[120px] w-full min-w-0 resize-y rounded-[10px] border border-solid border-border bg-[#f8fafc] p-3.5 text-[14px]/[normal] text-text placeholder:text-[#94a3b8]"
             id="report-description"
             name="description"
             {...errorAttributes('description')}
@@ -162,12 +199,18 @@ export default function ReportPage() {
           />
           {fieldError('description')}
         </div>
-        <div className={styles.field}>
-          <label htmlFor="report-attachments">사진/동영상 첨부</label>
-          <div className={styles.attachment}>
+        <div className="flex min-w-0 flex-col gap-2">
+          <label
+            htmlFor="report-attachments"
+            className="text-[13px]/[normal] font-bold text-muted"
+          >
+            사진/동영상 첨부
+          </label>
+          <div className="relative flex h-[100px] flex-col items-center justify-center gap-1.5 rounded-[10px] border border-dashed border-[#94a3b8] bg-[#f8fafc] text-[13px]/[normal] font-bold text-muted focus-within:outline-[3px] focus-within:outline-solid focus-within:outline-brand focus-within:outline-offset-4">
             <span aria-hidden="true">＋</span>
             <span>이미지 첨부</span>
             <input
+              className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
               id="report-attachments"
               name="attachments"
               type="file"
@@ -216,17 +259,23 @@ export default function ReportPage() {
             <p
               id="report-attachments-error"
               role="alert"
-              className={styles.error}
+              className="m-0 text-[13px]/[normal] text-brand"
             >
               {attachmentError}
             </p>
           )}
           {attachments.length > 0 && (
-            <ul className={styles.attachmentList}>
+            <ul className="m-0 flex list-none flex-col gap-2 p-0 text-[13px]/[normal]">
               {attachments.map((file, index) => (
-                <li key={`${index}-${file.name}`}>
-                  <span>{file.name}</span>
+                <li
+                  key={`${index}-${file.name}`}
+                  className="flex items-center justify-between gap-2"
+                >
+                  <span className="min-w-0 [overflow-wrap:anywhere]">
+                    {file.name}
+                  </span>
                   <button
+                    className="shrink-0 cursor-pointer rounded-[10px] border border-solid border-border bg-surface px-3 py-2 text-muted"
                     type="button"
                     aria-label={`${file.name} 삭제`}
                     onClick={() => {
@@ -244,11 +293,14 @@ export default function ReportPage() {
             </ul>
           )}
         </div>
-        <p className={styles.notice}>제보 접수 준비 중</p>
+        <p className="m-0 text-[13px]/[normal] text-muted">제보 접수 준비 중</p>
         {confirmed && (
           <p role="status">입력 확인 완료. 입력한 내용은 전송되지 않았어요</p>
         )}
-        <button className={styles.submit} type="submit">
+        <button
+          className="min-h-[52px] cursor-pointer rounded-card border-0 bg-brand text-[16px]/[normal] font-extrabold text-surface"
+          type="submit"
+        >
           입력 확인
         </button>
       </form>
