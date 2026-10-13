@@ -106,6 +106,39 @@
   outline-offset: 4px;
 }
 
+.attachmentList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 13px;
+}
+
+.attachmentList li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.attachmentList span {
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+
+.attachmentList button {
+  flex-shrink: 0;
+  padding: 8px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  background: var(--color-surface);
+  color: var(--color-muted);
+  font: inherit;
+  cursor: pointer;
+}
+
 .notice {
   margin: 0;
   color: var(--color-muted);

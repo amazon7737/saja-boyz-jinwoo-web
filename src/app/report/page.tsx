@@ -28,6 +28,7 @@ export default function ReportPage() {
     {},
   );
   const [confirmed, setConfirmed] = useState(false);
+  const [attachments, setAttachments] = useState<File[]>([]);
 
   function checkInput(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -156,8 +157,35 @@ export default function ReportPage() {
               name="attachments"
               type="file"
               multiple
+              accept="image/jpeg,image/png,image/webp,video/mp4,video/webm"
+              onChange={(event) => {
+                const selected = Array.from(event.currentTarget.files ?? []);
+
+                setAttachments((previous) => [...previous, ...selected]);
+                event.currentTarget.value = '';
+              }}
             />
           </div>
+          {attachments.length > 0 && (
+            <ul className={styles.attachmentList}>
+              {attachments.map((file, index) => (
+                <li key={`${index}-${file.name}`}>
+                  <span>{file.name}</span>
+                  <button
+                    type="button"
+                    aria-label={`${file.name} 삭제`}
+                    onClick={() =>
+                      setAttachments((previous) =>
+                        previous.filter((_, position) => position !== index),
+                      )
+                    }
+                  >
+                    삭제
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
         <p className={styles.notice}>제보 접수 준비 중</p>
         {confirmed && <p role="status">입력 확인 완료</p>}

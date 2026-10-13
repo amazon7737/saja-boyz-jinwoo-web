@@ -215,7 +215,7 @@ test('reportTextLimits: trimmed field limits reject overflow and allow boundarie
 });
 ```
 
-- [ ] reportAttachments — 허용 첨부 선택·삭제·재선택 이벤트
+- [x] reportAttachments — 허용 첨부 선택·삭제·재선택 이벤트
 
 ```ts
 test('reportAttachments: valid files can be selected removed and selected again', async () => {
