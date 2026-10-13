@@ -1,0 +1,68 @@
+{
+  "origin": "http://127.0.0.1:4189",
+  "checks": [
+    {
+      "name": "Real blank click validates five fields and focuses the first field",
+      "detail": true
+    },
+    {
+      "name": "Native Enter prevents navigation, respects trimmed limits and keeps values",
+      "detail": true
+    },
+    {
+      "name": "Invalid edit removes the previous confirmation",
+      "detail": true
+    },
+    {
+      "name": "Browser file chooser selection, removal and same-file reselection",
+      "detail": true
+    },
+    {
+      "name": "Invalid batch and fourth attachment are rejected without losing previous files",
+      "detail": true
+    },
+    {
+      "name": "Layout 393px with long filename, errors and three attachments",
+      "detail": true
+    },
+    {
+      "name": "Layout 320px with long filename, errors and three attachments",
+      "detail": true
+    },
+    {
+      "name": "Layout 1280px with long filename, errors and three attachments",
+      "detail": true
+    },
+    {
+      "name": "Rejected attachment error clears after deletion and revalidation of the retained valid selection",
+      "detail": true
+    },
+    {
+      "name": "Keyboard reaches close, required inputs, attachment removal and confirmation",
+      "detail": true
+    },
+    {
+      "name": "No submission/upload requests, navigation, persistent-storage writes or location requests",
+      "detail": {
+        "interactions": []
+      }
+    },
+    {
+      "name": "Reload does not restore a draft or selected attachments",
+      "detail": true
+    }
+  ],
+  "screenshots": [
+    "report-393-initial.png",
+    "report-393-errors.png",
+    "report-320-errors.png"
+  ],
+  "limitations": [
+    "Chrome file chooser automation exercises native file selection events; the OS dialog itself and a screen reader were not manually operated.",
+    "Viewport checks are not real mobile device, touch keyboard, safe-area or screen-reader validation."
+  ],
+  "pageErrors": [],
+  "result": "passed",
+  "source_head": "98cb67d53c96d2c9646955abbfdb07213235eeee",
+  "browser": "Desktop Chrome"
+}
