@@ -124,7 +124,7 @@ function expectFieldError(name: string, message: string) {
 }
 ```
 
-- [ ] reportFormFields — 접근 가능한 필드·기존 카테고리·미접수 안내
+- [x] reportFormFields — 접근 가능한 필드·기존 카테고리·미접수 안내
 
 ```ts
 test('reportFormFields: labels and shared categories are available', async () => {
