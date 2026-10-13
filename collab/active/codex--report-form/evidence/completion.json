@@ -1,0 +1,67 @@
+{
+  "baseline": "da982a1da9749f10c56efc1ad6c7d8d74e3dca38",
+  "status": "complete",
+  "calls": 10,
+  "checkpoints": [
+    {
+      "entry": "reportFormFields",
+      "head": "033ae7ef1e4c1c6781e4e2b577296614814b7911",
+      "red_status": "red",
+      "failed_before": [
+        "reportFormFields: labels and shared categories are available"
+      ],
+      "passed_count": 65
+    },
+    {
+      "entry": "reportRequiredFields",
+      "head": "222d1521b993aa3b8110a8a8ca0144118f8eb6dd",
+      "red_status": "red",
+      "failed_before": [
+        "reportRequiredFields: whitespace errors are linked and corrected"
+      ],
+      "passed_count": 66
+    },
+    {
+      "entry": "reportTextLimits",
+      "head": "ea6a6ab0e6cacd74a86323530dadfa351482a969",
+      "red_status": "red",
+      "failed_before": [
+        "reportTextLimits: trimmed field limits reject overflow and allow boundaries"
+      ],
+      "passed_count": 67
+    },
+    {
+      "entry": "reportAttachments",
+      "head": "d5fe49b2e5b8368a2fa4b5212b665c4fb32693e1",
+      "red_status": "red",
+      "failed_before": [
+        "reportAttachments: valid files can be selected removed and selected again"
+      ],
+      "passed_count": 68
+    },
+    {
+      "entry": "reportAttachmentLimits",
+      "head": "2c8331bdcdf8ebd6a2edce42c379020b7cd8abd4",
+      "red_status": "red",
+      "failed_before": [
+        "reportAttachmentLimits: invalid batches preserve previous selection"
+      ],
+      "passed_count": 69
+    },
+    {
+      "entry": "reportLocalConfirmation",
+      "head": "7938536c9878df7c9d8c416676643c8e4fa06914",
+      "red_status": "red",
+      "failed_before": [
+        "reportLocalConfirmation: valid input is retained without claiming receipt"
+      ],
+      "passed_count": 70
+    }
+  ],
+  "review": {
+    "head": "98cb67d53c96d2c9646955abbfdb07213235eeee",
+    "worker": "astra",
+    "summary": "da982a1..98cb67d 독립 소스 리뷰 완료. 조치할 결함 없음. src/app/report/page.tsx:42–76에서 제출 취소·trim 한도·첫 오류 포커스·접근성 연결, :180–237에서 첨부 묶음 검증·삭제·재선택, :99/:233에서 성공 안내 초기화, :247–249에서 미전송 안내를 확인했다. 승인 입력·테스트·AppShell·카테고리와 Git 상태는 보존됐다.",
+    "at": 1791853420
+  }
+}

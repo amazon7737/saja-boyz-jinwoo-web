@@ -29,7 +29,7 @@ pnpm run dev
 
 의존성은 페이지 → 기능의 api/ui, api/ui → model 방향으로 둔다. API 타입을 UI 파일에서 가져오지 않는다. 재사용 근거가 없는 공통 API 클라이언트·저장소 계층·상태관리·일괄 barrel 파일은 만들지 않는다.
 
-컴포넌트의 테스트와 필요한 CSS는 해당 컴포넌트 폴더에 함께 둔다. 모든 컴포넌트에 테스트·CSS 파일을 의무적으로 만들지 않는다. 이미지 오류 테스트는 목록 유지·새 URL 복구까지 검증하므로 article-list 폴더에 둔다. API 테스트는 실제 라우트의 통합 테스트이므로 app/incidents에 유지한다. 테스트 확장자는 현재 수집 규칙에 맞춰 `.test.ts`를 유지한다.
+컴포넌트의 테스트는 해당 컴포넌트 폴더에 함께 두며, 모든 컴포넌트에 테스트 파일을 의무적으로 만들지 않는다. 화면 스타일은 아래 Tailwind 기준을 따르고 새 CSS Module은 만들지 않는다. 이미지 오류 테스트는 목록 유지·새 URL 복구까지 검증하므로 article-list 폴더에 둔다. API 테스트는 실제 라우트의 통합 테스트이므로 app/incidents에 유지한다. 테스트 확장자는 현재 수집 규칙에 맞춰 `.test.ts`를 유지한다.
 
 기사의 pubDate는 발행 시각이며 사건의 occurredAt과 다르다. 기존 사건 모델의 분류·상태·위치를 기사 API 데이터로 추정하지 않는다. [뉴스 API 소비 계약과 규약 확인 요청](news-api-contract.md)에 현행 동작, 기존 협업 정보와 서버 명세 확인 항목을 구분해 기록한다.
 
@@ -39,11 +39,14 @@ Tailwind theme/utilities와 PostCSS 플러그인을 사용한다. 기존 화면�
 
 색상·반경·그림자 토큰은 globals.css의 `@theme static`에 유지한다. 전역 기본 스타일은 `@layer base`에 두어 컴포넌트 유틸리티를 덮어쓰지 않게 한다. 헤더·탐색·카드·제목·문단 스타일은 해당 컴포넌트가 소유하며 전역 h1/p 선택자에 의존하지 않는다.
 
-사건 배지의 data 속성별 색상과 color-mix 규칙만 incident-list.module.css에 남긴다. 클래스 문자열을 동적으로 조립하거나 모든 CSS를 없애기 위한 별도 추상화는 도입하지 않는다.
+새 화면과 기존 화면의 스타일 수정은 Tailwind 유틸리티를 사용한다. 사건 배지의 data 속성별 색상과 color-mix 규칙만 `src/features/incident-list/ui/incident-list/incident-list.module.css`에 남긴다. 이 파일 외 새 CSS Module은 추가하지 않는다. 클래스 문자열을 동적으로 조립하거나 모든 CSS를 없애기 위한 별도 추상화는 도입하지 않는다.
+
+`sh scripts/check-styles.sh`는 전체 `src`에서 위 예외 외 `.module.css`·`.module.scss`·`.module.sass`·`.module.less` 파일이 있으면 실패한다. PR의 코드 컨벤션 CI도 같은 검사를 실행한다. 전역 토큰·기본 스타일을 제공하는 `globals.css`는 CSS Module이 아니며 그대로 유지한다.
 
 ## 검증
 
 ```sh
+sh scripts/check-styles.sh
 pnpm run lint
 pnpm run typecheck
 pnpm test

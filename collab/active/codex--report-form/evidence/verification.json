@@ -1,0 +1,19 @@
+{
+  "source_head": "98cb67d53c96d2c9646955abbfdb07213235eeee",
+  "runtime": "Node 24.19.0 / pnpm 10.34.6",
+  "full_suite": {
+    "command": "./node_modules/.bin/vitest run",
+    "passed": 70,
+    "files": 18
+  },
+  "format": "passed",
+  "lint": "passed",
+  "typecheck": "next typegen && tsc --noEmit: passed in isolated source copy",
+  "production_build": "next build --webpack: passed in isolated source copy",
+  "independent_browser_review": "12 checks passed; no interaction requests or page errors",
+  "source_scope": [
+    "src/app/report/page.tsx",
+    "src/app/report/report-form.module.css",
+    "src/app/report/report-form.test.ts"
+  ]
+}
