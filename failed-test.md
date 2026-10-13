@@ -190,7 +190,7 @@ test('reportRequiredFields: whitespace errors are linked and corrected', async (
 });
 ```
 
-- [ ] reportTextLimits — 문자 수 초과와 앞뒤 공백을 제외한 경계값
+- [x] reportTextLimits — 문자 수 초과와 앞뒤 공백을 제외한 경계값
 
 ```ts
 test('reportTextLimits: trimmed field limits reject overflow and allow boundaries', async () => {

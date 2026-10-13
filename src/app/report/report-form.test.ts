@@ -173,3 +173,24 @@ test('reportRequiredFields: whitespace errors are linked and corrected', async (
   expect(container.textContent).toContain('입력 확인 완료');
   expect(field('title').value).toBe('도로 점검 제보');
 });
+
+test('reportTextLimits: trimmed field limits reject overflow and allow boundaries', async () => {
+  await renderReport();
+  await fillValid();
+  for (const [name, limit] of [
+    ['title', 100],
+    ['location', 200],
+    ['description', 5000],
+  ] as const) {
+    await changeField(name, '가'.repeat(limit + 1));
+    await checkInput();
+    expectFieldError(name, `${limit}자를 초과했어요`);
+    expect(container.textContent).not.toContain('입력 확인 완료');
+    await changeField(name, `  ${'가'.repeat(limit)}  `);
+    await checkInput();
+    expect(field(name).getAttribute('aria-invalid')).not.toBe('true');
+    expect(container.textContent).toContain('입력 확인 완료');
+    expect(field(name).value.trim()).toBe('가'.repeat(limit));
+  }
+  expect(fetchMock).not.toHaveBeenCalled();
+});

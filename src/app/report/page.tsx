@@ -17,23 +17,42 @@ const requiredFields = [
 
 type RequiredField = (typeof requiredFields)[number];
 
+const textLimits: Partial<Record<RequiredField, number>> = {
+  title: 100,
+  location: 200,
+  description: 5000,
+};
+
 export default function ReportPage() {
-  const [errors, setErrors] = useState<RequiredField[]>([]);
+  const [errors, setErrors] = useState<Partial<Record<RequiredField, string>>>(
+    {},
+  );
   const [confirmed, setConfirmed] = useState(false);
 
   function checkInput(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = event.currentTarget;
     const values = new FormData(form);
-    const missing = requiredFields.filter(
-      (name) => !String(values.get(name) ?? '').trim(),
-    );
+    const nextErrors: Partial<Record<RequiredField, string>> = {};
 
-    setErrors(missing);
-    setConfirmed(missing.length === 0);
+    for (const name of requiredFields) {
+      const value = String(values.get(name) ?? '').trim();
+      const limit = textLimits[name];
 
-    if (missing.length > 0) {
-      const firstField = form.elements.namedItem(missing[0]);
+      if (!value) {
+        nextErrors[name] = '필수 항목이에요';
+      } else if (limit !== undefined && value.length > limit) {
+        nextErrors[name] = `${limit}자를 초과했어요`;
+      }
+    }
+
+    const firstInvalid = requiredFields.find((name) => nextErrors[name]);
+
+    setErrors(nextErrors);
+    setConfirmed(firstInvalid === undefined);
+
+    if (firstInvalid !== undefined) {
+      const firstField = form.elements.namedItem(firstInvalid);
 
       if (firstField instanceof HTMLElement) firstField.focus();
     }
@@ -41,17 +60,15 @@ export default function ReportPage() {
 
   function errorAttributes(name: RequiredField) {
     return {
-      'aria-invalid': errors.includes(name) || undefined,
-      'aria-describedby': errors.includes(name)
-        ? `report-${name}-error`
-        : undefined,
+      'aria-invalid': Boolean(errors[name]) || undefined,
+      'aria-describedby': errors[name] ? `report-${name}-error` : undefined,
     };
   }
 
   function fieldError(name: RequiredField) {
-    return errors.includes(name) ? (
+    return errors[name] ? (
       <p id={`report-${name}-error`} className={styles.error}>
-        필수 항목이에요
+        {errors[name]}
       </p>
     ) : null;
   }
