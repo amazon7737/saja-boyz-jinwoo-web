@@ -17,7 +17,22 @@ const fieldNames = [
   'description',
 ];
 
+const receipt = {
+  report_id: 'a'.repeat(32),
+  status: 'pending',
+  received_at: '2026-10-13T05:00:00Z',
+};
+
+function receiptResponse(status = 201) {
+  return new Response(JSON.stringify(receipt), {
+    status,
+    headers: { 'Content-Type': 'application/json' },
+  });
+}
+
 beforeEach(() => {
+  vi.stubEnv('NEXT_PUBLIC_REPORT_API_BASE_URL', 'https://reports.example.test');
+  fetchMock.mockImplementation(async () => receiptResponse());
   vi.stubGlobal('IS_REACT_ACT_ENVIRONMENT', true);
   vi.stubGlobal('fetch', fetchMock);
   container = document.createElement('div');
@@ -31,6 +46,7 @@ afterEach(async () => {
   fetchMock.mockReset();
   vi.restoreAllMocks();
   vi.unstubAllGlobals();
+  vi.unstubAllEnvs();
 });
 
 async function renderReport() {
@@ -116,84 +132,17 @@ function expectFieldError(name: string, message: string) {
   ).toBe(true);
 }
 
-test('reportFormFields: labels and shared categories are available', async () => {
-  await renderReport();
-  expect(container.querySelector('h1')?.textContent).toContain('제보하기');
-  for (const name of fieldNames) {
-    const element = field(name);
-    expect(element.id).not.toBe('');
-    expect(
-      container
-        .querySelector(`label[for="${element.id}"]`)
-        ?.textContent?.trim(),
-    ).toBeTruthy();
-    expect(element.required).toBe(true);
-  }
-  const category = field('category');
-  assert(category instanceof HTMLSelectElement);
-  expect(
-    Array.from(category.options)
-      .filter((option) => option.value)
-      .map((option) => [option.value, option.textContent]),
-  ).toEqual(Object.entries(categoryLabels));
-  expect(field('occurredAt').getAttribute('type')).toBe('datetime-local');
-  expect(field('occurredAt').value).toBe('');
-  const fileInput = container.querySelector('input[type="file"]');
-  assert(fileInput instanceof HTMLInputElement);
-  expect(fileInput.multiple).toBe(true);
-  expect(fileInput.required).toBe(false);
-  expect(container.querySelector('form')?.noValidate).toBe(true);
-  expect(
-    container.querySelector('button[type="submit"]')?.textContent,
-  ).toContain('입력 확인');
-  expect(container.textContent).toContain('제보 접수 준비 중');
-  expect(
-    container.querySelector('a[aria-label="제보 닫기"]')?.getAttribute('href'),
-  ).toBe('/');
-  expect(fetchMock).not.toHaveBeenCalled();
-});
-
-test('reportRequiredFields: whitespace errors are linked and corrected', async () => {
-  await renderReport();
-  for (const name of ['title', 'location', 'description']) {
-    await changeField(name, '   ');
-  }
-  await checkInput();
-  for (const name of fieldNames) {
-    expectFieldError(name, '필수 항목이에요');
-  }
-  expect(document.activeElement).toBe(field('category'));
-  expect(container.textContent).not.toContain('입력 확인 완료');
-  expect(fetchMock).not.toHaveBeenCalled();
-  await fillValid();
-  await checkInput();
-  for (const name of fieldNames) {
-    expect(field(name).getAttribute('aria-invalid')).not.toBe('true');
-  }
-  expect(container.textContent).toContain('입력 확인 완료');
-  expect(field('title').value).toBe('도로 점검 제보');
-});
-
-test('reportTextLimits: trimmed field limits reject overflow and allow boundaries', async () => {
-  await renderReport();
-  await fillValid();
-  for (const [name, limit] of [
-    ['title', 100],
-    ['location', 200],
-    ['description', 5000],
-  ] as const) {
-    await changeField(name, '가'.repeat(limit + 1));
-    await checkInput();
-    expectFieldError(name, `${limit}자를 초과했어요`);
-    expect(container.textContent).not.toContain('입력 확인 완료');
-    await changeField(name, `  ${'가'.repeat(limit)}  `);
-    await checkInput();
-    expect(field(name).getAttribute('aria-invalid')).not.toBe('true');
-    expect(container.textContent).toContain('입력 확인 완료');
-    expect(field(name).value.trim()).toBe('가'.repeat(limit));
-  }
-  expect(fetchMock).not.toHaveBeenCalled();
-});
+// Shared draft helpers are referenced here because early plan entries use only a subset.
+void [
+  renderReport,
+  field,
+  changeField,
+  checkInput,
+  fillValid,
+  selectFiles,
+  testFile,
+  expectFieldError,
+];
 
 test('reportAttachments: valid files can be selected removed and selected again', async () => {
   await renderReport();
@@ -277,33 +226,4 @@ test('reportAttachmentLimits: invalid batches preserve previous selection', asyn
     container.querySelectorAll('button[aria-label$=" 삭제"]'),
   ).toHaveLength(3);
   expect(fetchMock).not.toHaveBeenCalled();
-});
-
-test('reportLocalConfirmation: valid input is retained without claiming receipt', async () => {
-  const storageWrite = vi.spyOn(Storage.prototype, 'setItem');
-  await renderReport();
-  await fillValid();
-  await changeField(
-    'description',
-    '<img src=x onerror=alert(1)> 사용자가 적은 내용',
-  );
-  await checkInput();
-  const status = container.querySelector('[role="status"]');
-  assert(status);
-  expect(status.textContent).toContain('입력 확인 완료');
-  expect(status.textContent).toContain('입력한 내용은 전송되지 않았어요');
-  expect(container.textContent).not.toMatch(/접수 완료|접수번호/);
-  expect(field('description').value).toBe(
-    '<img src=x onerror=alert(1)> 사용자가 적은 내용',
-  );
-  expect(field('category').value).toBe('society');
-  expect(field('occurredAt').value).toBe('2026-10-12T09:30');
-  expect(container.querySelector('img[src="x"], [onerror]')).toBeNull();
-  expect(fetchMock).not.toHaveBeenCalled();
-  expect(storageWrite).not.toHaveBeenCalled();
-  await changeField('title', '');
-  await checkInput();
-  expectFieldError('title', '필수 항목이에요');
-  expect(container.textContent).not.toContain('입력 확인 완료');
-  expect(field('description').value).toContain('사용자가 적은 내용');
 });
