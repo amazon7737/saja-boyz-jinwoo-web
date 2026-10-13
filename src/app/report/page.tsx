@@ -136,7 +136,7 @@ export default function ReportPage() {
             htmlFor="report-occurred-at"
             className="text-[13px]/[normal] font-bold text-muted"
           >
-            발생 날짜 및 시간
+            발생 날짜 및 시간 (한국시간)
           </label>
           <input
             className="box-border w-full min-w-0 rounded-[10px] border border-solid border-border bg-[#f8fafc] px-3.5 py-3 text-[14px]/[normal] text-text placeholder:text-[#94a3b8]"
@@ -293,7 +293,9 @@ export default function ReportPage() {
             </ul>
           )}
         </div>
-        <p className="m-0 text-[13px]/[normal] text-muted">제보 접수 준비 중</p>
+        <p className="m-0 text-[13px]/[normal] text-muted">
+          접수된 제보 내용과 첨부파일은 비공개로 저장돼요
+        </p>
         {confirmed && (
           <p role="status">입력 확인 완료. 입력한 내용은 전송되지 않았어요</p>
         )}
@@ -301,7 +303,7 @@ export default function ReportPage() {
           className="min-h-[52px] cursor-pointer rounded-card border-0 bg-brand text-[16px]/[normal] font-extrabold text-surface"
           type="submit"
         >
-          입력 확인
+          제보 접수
         </button>
       </form>
     </section>
