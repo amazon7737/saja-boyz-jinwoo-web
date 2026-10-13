@@ -43,6 +43,41 @@ function getReportEndpoint() {
   }
 }
 
+function isReceiptTimestamp(value: string) {
+  const timestamp =
+    /^(\d{4})-(\d{2})-(\d{2})[Tt](?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:[Zz]|[+-](?:[01]\d|2[0-3]):[0-5]\d)$/.exec(
+      value,
+    );
+
+  if (!timestamp) return false;
+
+  const year = Number(timestamp[1]);
+  const month = Number(timestamp[2]);
+  const day = Number(timestamp[3]);
+  const leapYear = year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0);
+  const monthLengths = [
+    31,
+    leapYear ? 29 : 28,
+    31,
+    30,
+    31,
+    30,
+    31,
+    31,
+    30,
+    31,
+    30,
+    31,
+  ];
+
+  return (
+    month >= 1 && month <= 12 && day >= 1 && day <= monthLengths[month - 1]
+  );
+}
+
+const uncertainReceiptMessage =
+  '접수 여부를 확인하지 못했어요. 다시 시도해 주세요';
+
 export default function ReportPage() {
   const [errors, setErrors] = useState<Partial<Record<RequiredField, string>>>(
     {},
@@ -131,22 +166,31 @@ export default function ReportPage() {
         )
           ? previousRequest.key
           : crypto.randomUUID();
+
+      retryRequest.current = { key: requestKey, fields, attachments };
+
       const response = await fetch(endpoint, {
         method: 'POST',
         credentials: 'omit',
         headers: { 'Idempotency-Key': requestKey },
         body,
       }).catch(() => {
-        retryRequest.current = { key: requestKey, fields, attachments };
-        setSubmissionError('접수 여부를 확인하지 못했어요. 다시 시도해 주세요');
+        setSubmissionError(uncertainReceiptMessage);
 
         return null;
       });
 
       if (response === null) return;
 
-      retryRequest.current = null;
-      const receipt: unknown = await response.json();
+      let receipt: unknown;
+
+      try {
+        receipt = await response.json();
+      } catch {
+        setSubmissionError(uncertainReceiptMessage);
+
+        return;
+      }
 
       if (
         (response.status !== 200 && response.status !== 201) ||
@@ -159,13 +203,19 @@ export default function ReportPage() {
         receipt.status !== 'pending' ||
         !('received_at' in receipt) ||
         typeof receipt.received_at !== 'string' ||
-        Number.isNaN(Date.parse(receipt.received_at))
+        !isReceiptTimestamp(receipt.received_at)
       ) {
-        setSubmissionError('제보를 접수하지 못했어요. 다시 시도해 주세요');
+        setSubmissionError(
+          response.status >= 500 ||
+            (response.status >= 200 && response.status < 300)
+            ? uncertainReceiptMessage
+            : '제보를 접수하지 못했어요. 다시 시도해 주세요',
+        );
 
         return;
       }
 
+      retryRequest.current = null;
       setConfirmedReportId(receipt.report_id);
     } catch {
       setSubmissionError('제보를 접수하지 못했어요. 다시 시도해 주세요');
@@ -421,6 +471,7 @@ export default function ReportPage() {
             type="button"
             onClick={(event) => {
               event.currentTarget.form?.reset();
+              retryRequest.current = null;
               setErrors({});
               setConfirmedReportId('');
               setSubmissionError('');
