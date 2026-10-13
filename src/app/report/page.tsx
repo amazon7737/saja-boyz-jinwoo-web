@@ -91,7 +91,12 @@ export default function ReportPage() {
           <span aria-hidden="true">✕</span>
         </Link>
       </header>
-      <form className={styles.form} noValidate onSubmit={checkInput}>
+      <form
+        className={styles.form}
+        noValidate
+        onSubmit={checkInput}
+        onChange={() => setConfirmed(false)}
+      >
         <div className={styles.field}>
           <label htmlFor="report-category">카테고리 선택</label>
           <select
@@ -223,11 +228,12 @@ export default function ReportPage() {
                   <button
                     type="button"
                     aria-label={`${file.name} 삭제`}
-                    onClick={() =>
+                    onClick={() => {
+                      setConfirmed(false);
                       setAttachments((previous) =>
                         previous.filter((_, position) => position !== index),
-                      )
-                    }
+                      );
+                    }}
                   >
                     삭제
                   </button>
