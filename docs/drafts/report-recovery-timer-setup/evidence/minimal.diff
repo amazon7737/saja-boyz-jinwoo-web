@@ -1,0 +1,10 @@
+--- approved/report-recovery.test.ts
++++ candidate/report-recovery.test.ts
+@@ -132,6 +132,7 @@
+
+ async function renderReport() {
+   await act(async () => root.render(createElement(ReportPage)));
++  await advance(1);
+ }
+
+ function field(name: string) {

@@ -1,0 +1,25 @@
+test('reportRequestDeadline: a pending upload aborts at 60000ms and unlocks the preserved form', async () => {
+  const request = delayedRequest();
+  await renderReport();
+  await fillValid();
+  const file = new File(['fixture'], 'road.png', { type: 'image/png' });
+  await selectFile(file);
+  const values = fieldNames.map((name) => field(name).value);
+  await submit();
+  await advance(59999);
+  expect(fetchMock).toHaveBeenCalledTimes(1);
+  expect(submitButton().disabled).toBe(true);
+  expect(container.textContent).not.toContain(uncertainMessage);
+  expect(request.signal?.aborted).toBe(false);
+  await advance(1);
+  expect(request.signal?.aborted).toBe(true);
+  expect(container.querySelector('[role="alert"]')?.textContent).toContain(
+    uncertainMessage,
+  );
+  expect(boundaryErrors).toHaveBeenCalledTimes(1);
+  expectDraft(values, file);
+  expect(container.textContent).not.toContain(receipt.report_id);
+  expect(vi.getTimerCount()).toBe(0);
+  await advance(120000);
+  expect(fetchMock).toHaveBeenCalledTimes(1);
+});

@@ -139,6 +139,7 @@ afterEach(async () => {
 
 async function renderReport() {
   await act(async () => root.render(createElement(ReportPage)));
+  await advance(1);
 }
 
 function field(name: string) {
