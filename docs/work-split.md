@@ -19,7 +19,7 @@
 | amazon    | 사건 상세·타임라인·출처·공유                          | src/app/incidents/[id]/, src/features/incident-detail/ (추가 가능)                                           |
 | amazon    | 제보 폼·입력 검증·첨부·제출 상태                      | src/app/report/, src/features/report/ (추가 가능)                                                            |
 
-공용 파일은 easter721이 관리한다. amazon은 화면별 CSS Module을 사용한다. 공용 API 변경이 필요하면 `ask @easter721` 저널 이벤트로 알려 순서를 조율한다. package.json·pnpm-lock.yaml 등 허브 파일은 두 사람이 동시에 수정하지 않는다.
+공용 파일은 easter721이 관리한다. 모든 담당자는 화면 스타일에 Tailwind 유틸리티와 공용 디자인 토큰을 사용하며 새 CSS Module을 추가하지 않는다. 기존 사건 배지의 `src/features/incident-list/ui/incident-list/incident-list.module.css`만 예외로 유지한다. [스타일 기준과 검사](architecture.md#스타일)를 따른다. 공용 API 변경이 필요하면 `ask @easter721` 저널 이벤트로 알려 순서를 조율한다. package.json·pnpm-lock.yaml 등 허브 파일은 두 사람이 동시에 수정하지 않는다.
 
 ## amazon 시작 안내
 

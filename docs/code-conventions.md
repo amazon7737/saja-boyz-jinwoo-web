@@ -46,6 +46,12 @@ export default function RootLayout({ children }: { children: ReactNode }) {
 
 JSX는 헤더·본문·탐색 등 의미 있는 책임을 기준으로 읽히게 묶는다. 필요하면 책임 사이에 빈 줄을 두되 모든 요소 사이의 빈 줄이나 컴포넌트 추출을 강제하지 않는다. 단순한 표현식을 없애기 위한 훅·컴포넌트 분리는 하지 않는다.
 
+## 화면 스타일
+
+화면 스타일은 Tailwind 유틸리티와 `globals.css`의 디자인 토큰을 사용한다. 새 CSS Module은 추가하지 않는다. 기존 사건 배지의 `src/features/incident-list/ui/incident-list/incident-list.module.css`만 예외다. 승인된 과거 계획·테스트·저널은 이 규칙에 맞춰 소급 수정하지 않는다.
+
+Preflight를 활성화하지 않은 구성이므로 기본 여백·테두리 스타일·폰트·줄높이를 확인한다. 기존 CSS를 전환할 때에는 화면 크기와 키보드 포커스 표시도 비교한다. 클래스는 정적인 문자열로 쓰며 스타일 이름만 옮긴 상수나 불필요한 공용 컴포넌트를 만들지 않는다. 자세한 설정은 [개발 기반의 스타일 기준](architecture.md#스타일)을 따른다.
+
 ## 도구와 리뷰의 역할
 
 - Prettier: 들여쓰기, 따옴표, 줄바꿈 등 기계적인 형식을 처리한다.
@@ -59,5 +65,7 @@ JSX는 헤더·본문·탐색 등 의미 있는 책임을 기준으로 읽히게
 ## CI 검사
 
 PR과 `dev`·`main` push에서 `app-check` workflow의 **코드 컨벤션 검사** job이 실행된다. `pnpm run lint`로 ESLint 규칙을 검사하고, `pnpm run format:check`로 코드 형식을 검사한다. 컨벤션 문서와 해당 CI 설정도 `pnpm exec prettier --check docs/code-conventions.md .github/workflows/app-check.yml`로 확인한다. 수정 없이 검사만 수행하며 규칙 위반은 실패로 표시한다.
+
+같은 job의 **Tailwind 스타일 규칙 검사**는 `sh scripts/check-styles.sh`를 실행한다. 전체 `src`의 `.module.css`·`.module.scss`·`.module.sass`·`.module.less` 파일을 확인하고 기존 사건 배지의 정확한 경로만 허용한다. 로컬에서도 같은 명령을 실행하며, 새 화면에 CSS Module이 다시 추가되면 CI가 실패한다. 이 검사는 파일 규칙을 검증하며 화면 모양이나 Tailwind 클래스의 의미는 브라우저·리뷰로 확인한다.
 
 기존 필수 체크인 **앱 lint·타입·테스트·빌드**의 lint·포맷 검사도 유지한다. 별도 컨벤션 체크를 추가하면서 기존 브랜치 보호의 필수 검사 범위를 줄이지 않는다. 로컬에서 같은 명령으로 확인한 뒤 커밋한다. 의미상 구획과 이름·책임은 계속 사람의 리뷰로 확인한다.
