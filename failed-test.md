@@ -307,7 +307,7 @@ test('reportAttachmentLimits: invalid batches preserve previous selection', asyn
 });
 ```
 
-- [ ] reportLocalConfirmation — 기본 제출 차단·값 보존·접수 미완료 상태
+- [x] reportLocalConfirmation — 기본 제출 차단·값 보존·접수 미완료 상태
 
 ```ts
 test('reportLocalConfirmation: valid input is retained without claiming receipt', async () => {

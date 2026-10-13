@@ -237,7 +237,9 @@ export default function ReportPage() {
           )}
         </div>
         <p className={styles.notice}>제보 접수 준비 중</p>
-        {confirmed && <p role="status">입력 확인 완료</p>}
+        {confirmed && (
+          <p role="status">입력 확인 완료. 입력한 내용은 전송되지 않았어요</p>
+        )}
         <button className={styles.submit} type="submit">
           입력 확인
         </button>
