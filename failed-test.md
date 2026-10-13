@@ -124,7 +124,7 @@ function expectFieldError(name: string, message: string) {
 }
 ```
 
-- [ ] reportFormFields: labels and shared categories are available — 접근 가능한 필드·기존 카테고리·미접수 안내
+- [ ] reportFormFields — 접근 가능한 필드·기존 카테고리·미접수 안내
 
 ```ts
 test('reportFormFields: labels and shared categories are available', async () => {
@@ -165,7 +165,7 @@ test('reportFormFields: labels and shared categories are available', async () =>
 });
 ```
 
-- [ ] reportRequiredFields: whitespace errors are linked and corrected — 공백 필수값 오류·포커스·수정 후 확인
+- [ ] reportRequiredFields — 공백 필수값 오류·포커스·수정 후 확인
 
 ```ts
 test('reportRequiredFields: whitespace errors are linked and corrected', async () => {
@@ -190,7 +190,7 @@ test('reportRequiredFields: whitespace errors are linked and corrected', async (
 });
 ```
 
-- [ ] reportTextLimits: trimmed field limits reject overflow and allow boundaries — 문자 수 초과와 앞뒤 공백을 제외한 경계값
+- [ ] reportTextLimits — 문자 수 초과와 앞뒤 공백을 제외한 경계값
 
 ```ts
 test('reportTextLimits: trimmed field limits reject overflow and allow boundaries', async () => {
@@ -215,7 +215,7 @@ test('reportTextLimits: trimmed field limits reject overflow and allow boundarie
 });
 ```
 
-- [ ] reportAttachments: valid files can be selected removed and selected again — 허용 첨부 선택·삭제·재선택 이벤트
+- [ ] reportAttachments — 허용 첨부 선택·삭제·재선택 이벤트
 
 ```ts
 test('reportAttachments: valid files can be selected removed and selected again', async () => {
@@ -248,7 +248,7 @@ test('reportAttachments: valid files can be selected removed and selected again'
 });
 ```
 
-- [ ] reportAttachmentLimits: invalid batches preserve previous selection — 잘못된 첨부 묶음 거부와 기존 3개 보존
+- [ ] reportAttachmentLimits — 잘못된 첨부 묶음 거부와 기존 3개 보존
 
 ```ts
 test('reportAttachmentLimits: invalid batches preserve previous selection', async () => {
@@ -307,7 +307,7 @@ test('reportAttachmentLimits: invalid batches preserve previous selection', asyn
 });
 ```
 
-- [ ] reportLocalConfirmation: valid input is retained without claiming receipt — 기본 제출 차단·값 보존·접수 미완료 상태
+- [ ] reportLocalConfirmation — 기본 제출 차단·값 보존·접수 미완료 상태
 
 ```ts
 test('reportLocalConfirmation: valid input is retained without claiming receipt', async () => {

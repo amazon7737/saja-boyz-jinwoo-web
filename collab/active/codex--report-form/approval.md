@@ -8,3 +8,4 @@
 - 정확한 원본 SHA-256은 evidence/draft-inputs.json 및 검토본에 남아 있다. 복사 전 모든 해시를 확인했다. 실행 코드·헤더·기존 테스트는 바꾸지 않았다.
 - 구현 전 최신 dev 78ebbc8(솔피 PR #14)을 일반 merge로 반영했다. 제보 제품 변경과 겹치지 않는다.
 - 모든 누적 테스트 헤더/본문의 lint exit 0을 확인했다. 초기 항목의 미래 helper 미사용 warning은 기존 lint 계약을 변경할 이유가 아니며, 전체 6개 파일에서는 warning이 없다.
+- 등록 전 `next.sh`에서 체크리스트의 `reportFormFields: 설명` 표기가 하네스 문법에 맞지 않음을 발견했다. 실행용 plan의 체크리스트 표시만 검토본의 기존 식별자(`reportFormFields`)로 정규화했다. 승인된 원본 draft·spec·실행 헤더 및 6개 테스트는 보존했고, 일곱 코드 블록 바이트 일치를 재확인했다. 변경한 표시 6줄은 evidence/plan-packaging.json에 기록했다. 요구사항·assertion·테스트 순서의 변경은 없다.
