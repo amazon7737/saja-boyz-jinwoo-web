@@ -1,0 +1,33 @@
+
+ RUN  v5.0.3 /Users/kangminkim/lunch/sobaya/apps/saja-boyz-jinwoo-codex--map-article-markers
+
+ ❯ src/features/map/ui/map-home/map-articles.test.ts (6 tests | 1 failed) 37ms
+   × attributes the representative coordinate catalog beside the region marker summary 3ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/features/map/ui/map-home/map-articles.test.ts > attributes the representative coordinate catalog beside the region marker summary
+AssertionError: expected undefined to be '지역 좌표: 기상청' // Object.is equality
+
+- Expected:
+"지역 좌표: 기상청"
+
++ Received:
+undefined
+
+ ❯ src/features/map/ui/map-home/map-articles.test.ts:240:31
+    238|   await mount();
+    239|   const source = container.querySelector('a[href="https://www.data.go.…
+    240|   expect(source?.textContent).toBe('지역 좌표: 기상청');
+       |                               ^
+    241| });
+    242|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 5 passed (6)
+   Start at  14:19:39
+   Duration  349ms (environment 61%, tests 13%, import 13%, transform 11%, worker 1%)
+
