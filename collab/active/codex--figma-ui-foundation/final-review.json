@@ -1,0 +1,29 @@
+{
+  "head": "ce49cd7cc6be41e5164ef21dba5f42298f7442a4",
+  "worker": "astra",
+  "summary": "독립 검토 결과는 유지됩니다: ce49cd7에서 actionable 결함을 발견하지 못했습니다. brand.tsx:8의 브랜드 텍스트와 app-shell.tsx:15의 화면 분리를 확인했습니다. 이번 검토에서는 파일을 변경하지 않았습니다.",
+  "at": 1791977023,
+  "baseline": "7b20675a418aee55fb96227fab36c73896c2ff4b",
+  "receipts": [
+    {
+      "entry": "foundationDedicatedScreensPreserveTheirContent",
+      "head": "f5b4a7583275caae2a4ac73857de0cec560af309",
+      "executed": 98
+    },
+    {
+      "entry": "foundationNavigationAnnouncesItsCurrentDestination",
+      "head": "c556c8c0dc9dbf8941253f99f5e6ea71786c2c85",
+      "executed": 99
+    },
+    {
+      "entry": "foundationBrandHasALocalAccessibleSvgAndSearchLink",
+      "head": "b169e7fdb41c326a9ca8fbb6791452560f9b0d19",
+      "executed": 100
+    },
+    {
+      "entry": "foundationUnconnectedArticleFiltersCannotPretendToFilter",
+      "head": "a8dbe6a8bd12d5a7662f3c01f4cb1a51222071cc",
+      "executed": 101
+    }
+  ]
+}

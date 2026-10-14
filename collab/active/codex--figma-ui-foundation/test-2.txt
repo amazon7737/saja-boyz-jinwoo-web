@@ -1,0 +1,25 @@
+test('foundationNavigationAnnouncesItsCurrentDestination', async () => {
+  for (const [route, currentHref, currentValue] of [
+    ['/', '/', 'page'],
+    ['/incidents', '/incidents', 'page'],
+    ['/search', '/', 'location'],
+  ]) {
+    await withShell(route, (host) => {
+      const nav = host.querySelector('nav[aria-label="주 메뉴"]');
+      assert(nav);
+      const links = Array.from(nav.querySelectorAll('a'));
+      expect(links.map((link) => link.getAttribute('href'))).toEqual([
+        '/',
+        '/report',
+        '/incidents',
+      ]);
+      const current = nav.querySelectorAll('a[aria-current]');
+      expect(current).toHaveLength(1);
+      expect(current[0].getAttribute('href')).toBe(currentHref);
+      expect(current[0].getAttribute('aria-current')).toBe(currentValue);
+      expect(
+        nav.querySelector('a[href="/report"]')?.getAttribute('aria-label'),
+      ).toBe('제보하기');
+    });
+  }
+});

@@ -1,51 +1,44 @@
-# 공용 UI와 사건 데이터 계약
+# 공용 UI와 기사 데이터 계약
 
-> 2026-10-01 정정: 아래 계약은 재개발 목표다. 기존 직접 구현한 컴포넌트·자산·필터 유틸은 사용자 요청으로 제거했으며 초기 scaffold로 돌아갔다. 실제 공용 구현은 sobaya 승인·루프·gate·독립 review 후 다시 제공한다.
+2026-10-14 공통 디자인 기반 구현 기준. 이전 scaffold의 미구현 컴포넌트·URL 필터 설명을 실제 계약으로 교체했다.
 
-## 컴포넌트
+| 컴포넌트         | 경로                                                          | 입력과 역할                                                                                                          |
+| ---------------- | ------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| Brand            | src/components/layout/brand/brand.tsx                         | 흉흉 홈 링크. 로컬 SVG 64×24px, 이미지 alt와 화면 읽기 도구용 브랜드 텍스트                                          |
+| SearchHeader     | src/components/layout/search-header/search-header.tsx         | isHome: boolean. 지도에서 떠 있는 헤더, 목록에서 일반 흐름 헤더. 검색 링크 /search                                   |
+| ArticleFilters   | src/components/layout/article-filters/article-filters.tsx     | isHome: boolean. 기간·카테고리·상태 준비 중 버튼. 지도에서 원본 필터 아이콘 추가                                     |
+| BottomNavigation | src/components/layout/bottom-navigation/bottom-navigation.tsx | pathname: string. /, /report, /incidents 이동. 지도·목록은 aria-current=page, 검색은 지도 영역 aria-current=location |
+| AppShell         | src/components/layout/app-shell/app-shell.tsx                 | children: ReactNode. 화면별 조합과 FeatureErrorBoundary. 본문과 API 로직은 각 기능이 소유                            |
 
-| 컴포넌트               | 경로                                           | 입력과 용도                                                               |
-| ---------------------- | ---------------------------------------------- | ------------------------------------------------------------------------- |
-| SearchHeader           | src/components/ui/search-header.tsx            | query?, brand?; 검색 화면으로 연결. 기본 브랜드 흉흉                      |
-| FilterBar              | src/components/ui/filter-bar.tsx               | value: IncidentFilterSelection, onChange(value); 화면 상태로 제어         |
-| IncidentFilterControls | src/components/ui/incident-filter-controls.tsx | URL 필터를 읽고 변경. useSearchParams를 쓰므로 Suspense 안에 배치         |
-| IncidentBadges         | src/components/ui/incident-badges.tsx          | category, status; 공용 한글 라벨과 색상                                   |
-| BottomNav              | src/components/ui/bottom-nav.tsx               | 현재 경로에 따른 활성 표시·지도/목록/제보 이동. 지도↔목록은 URL 필터 유지 |
-| AppShell               | src/components/layout/app-shell/app-shell.tsx  | 공용 레이아웃. 지도·목록에 검색/필터, 상세·제보에서는 검색/메뉴 숨김      |
+각 UI는 해당 이름의 폴더 안에 두고 의미 있는 행동 테스트가 필요한 경우에만 테스트를 함께 둔다. 공통 행동 테스트는 app-shell/app-shell-foundation.test.ts에 있다.
 
-Figma 기준 노드: 검색 헤더 `18:2360`, 필터 행 `18:2368`, 상태 드롭다운 `45:3691`, 배지 `18:2408`·`18:2410`, 메뉴 `18:2428`. 정적 SVG는 `public/figma/shared/`에 로컬 보관하며 원본 치수를 유지한다.
+## 화면별 조합
 
-확인용 `/ui-preview`는 공용 요소를 보여주는 개발 미리보기다. 서비스 메뉴에는 노출하지 않는다.
+- `/`: 전체 높이 실제 Naver 지도 위에 검색 헤더·필터·메뉴. SDK 네이티브 로고·저작권·축척을 메뉴·선택 시트 위로 배치하고 컨트롤 미지원 시 기본값으로 복구한다.
+- `/search`: 기능 내부 전용 검색 행과 공통 메뉴. 공통 검색 헤더·필터는 추가하지 않는다. 최근 검색·키워드 검색·더 보기·재시도는 유지한다.
+- `/incidents`: 검색 헤더·필터·메뉴. 접근성 목록 제목은 시각적으로 숨기고 카드 좌우 여백은 shell에서 한 번 적용한다.
+- `/incidents/[id]`, `/report`: 공통 검색 헤더·주 메뉴 없이 흰 전체 화면. 전용 헤더와 본문은 각 라우트가 소유한다.
 
-## URL 필터와 사건 필터
+393px에서 헤더52px, 메뉴68px, 제보 버튼54px, 좌우16px가 기준이다. 지도 헤더 top8px, 목록 top12px, 검색 top20px에 safe-area를 더한다. 메뉴 bottom8px에 safe-area를 더하고 넓은 화면은 shell max640px, 메뉴 max608px를 적용한다. 기기 목업의 시각·배터리·홈 바는 넣지 않는다.
 
-`src/features/incidents/filter-selection.ts`의 API를 사용한다.
+## 자산과 폰트
 
-| URL 키   | 허용값                                     | 의미                                     |
-| -------- | ------------------------------------------ | ---------------------------------------- |
-| q        | 문자열                                     | 검색어. 앞뒤 공백 제거                   |
-| category | society, security, politics, international | 사건 카테고리                            |
-| status   | ongoing, publicized, closed                | 진행 중·공론화 성공·종결                 |
-| period   | 1w, 1m, 3m                                 | 최근 7·30·90일. 달력 월이 아닌 고정 일수 |
+globals.css의 로컬 @font-face는 라틴·숫자 Inter Variable v4.1, 한글 Pretendard Variable v1.3.9 순서로 연결한다. public/fonts에 원본 woff2와 OFL 라이선스를 보관한다. 외부 CDN이나 새 의존성은 없다.
 
-- `readFilterSelection(params)`: URL을 읽고 알 수 없는 분류·상태·기간을 무시한다.
-- `writeFilterSelection(value, existing?)`: 선택을 URL로 만들고 나머지 파라미터를 보존한다. 입력 params를 변경하지 않는다.
-- `toIncidentFilters(value, now?)`: 기간을 ISO UTC since로 변환한다.
-- `filterIncidents(incidents, filters)`: 검색·카테고리·상태·시작 일시를 적용한다.
+- 창작 브랜드: public/brand/hyunghyung.svg, viewBox 0 0 128 48. 글자는 path이며 런타임 폰트에 의존하지 않는다.
+- Figma 지도 아이콘: public/navigation/map-pin.svg, 원본22×22px.
+- Figma 필터 아이콘: public/filters/filter.svg, 원본18×18px.
 
-```tsx
-const selection = readFilterSelection(new URLSearchParams(searchParams));
-const results = filterIncidents(incidents, toIncidentFilters(selection));
-```
+원본 출처·SHA256은 collab/active/codex--figma-ui-foundation/asset-sources.md와 asset-manifest.json, 노드 링크는 [디자인 분석](figma-analysis.md)에 기록한다.
 
-상태 변경 시 페이지 번호처럼 필터 결과에 종속되는 파라미터는 호출하는 화면에서 초기화한다. 일반 어댑터는 화면별 파라미터를 지우지 않는다. API에서도 같은 필터 계약을 쓰되 서버에서 입력과 접근 권한을 별도 검증한다.
+## 실제 데이터와 준비 중 표면
 
-필터 아이콘 버튼은 기간·카테고리·상태를 초기화하며 검색어는 보존한다. 검색 전체 삭제는 검색 화면에서 처리한다. 드롭다운은 라디오 선택, Escape, 바깥 클릭·포커스 이동으로 닫힌다.
+뉴스·지도 계약은 docs의 API 계약 문서를 확인한다. 기사 UI 타입은 src/features/article-list/model/article.types.ts에 있다. 발행 시각을 사건 발생 시각으로 바꾸어 표시하지 않는다.
 
-## 사건 모델
+기간·카테고리·상태 필터는 모두 disabled이며 title에 준비 중 안내가 있다. URL을 변경하거나 가짜 결과를 만들지 않는다. 이전 목표 문서의 FilterBar, IncidentFilterControls, IncidentBadges, /ui-preview, URL category/status/period 유틸은 현재 공용 구현 계약이 아니다.
 
-`src/features/incidents/model/types.ts`의 기존 Incident와 IncidentFilters를 유지한다. id, title, summary, category, status, occurredAt, location, source, timeline이 필수이며 imageUrl은 선택이다. 날짜는 시간대가 있는 ISO 8601 문자열이다. 출처 URL은 실제 기사 링크가 확인됐을 때 사용한다.
+API에 없는 사건 분류·상태·발생 시각·타임라인·인용 수·거리·LIVE 수치를 임의 생성하지 않는다. API 필터 규약이 확정되면 별도 승인한 기능으로 연결한다.
 
-한글 라벨은 `labels.ts`에서 가져온다. 소방·교통·미제 등 다른 시안의 표현을 독립적으로 enum에 추가하지 않고 공용 계약 변경으로 조율한다. 브랜드도 최종 확인 전까지 흉흉을 기본값으로 유지한다.
+## 후속 디자인 작업
 
-지도 SDK·뉴스 수집·API 응답 형식·제보 저장소는 이번 계약에 포함하지 않는다.
+이 기반 PR은 전체 디자인 완료가 아니다. 지역 고정 좌표와 기사 수에 따른 숫자 원(1건 포함), 지도 가로 기사 카드, 목록·검색 카드 본문, 상세 타임라인/위치, 선택·공유 시트와 제보 본문 세부 모양은 후속 범위다. 화면별 비교는 같은 브랜치 visual-verification.md를 확인한다.

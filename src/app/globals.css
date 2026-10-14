@@ -2,9 +2,25 @@
 @import 'tailwindcss/theme.css' layer(theme);
 @import 'tailwindcss/utilities.css' layer(utilities);
 
+@font-face {
+  font-family: 'Inter';
+  src: url('/fonts/InterVariable.woff2') format('woff2');
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Pretendard';
+  src: url('/fonts/PretendardVariable.woff2') format('woff2');
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+}
+
 /* Preserve the existing browser defaults while adopting Tailwind utilities. */
 @theme static {
-  --color-background: #f7f9fc;
+  --color-background: #f8fafc;
   --color-surface: #fff;
   --color-floating: rgb(255 255 255 / 88%);
   --color-text: #0f172a;
@@ -25,7 +41,8 @@
     margin: 0;
     color: var(--color-text);
     background: var(--color-background);
-    font-family: 'Pretendard', 'Inter', system-ui, sans-serif;
+    font-family: 'Inter', 'Pretendard', system-ui, sans-serif;
+    line-height: 1.5;
   }
   a {
     color: inherit;
@@ -33,7 +50,8 @@
   }
   button,
   input,
-  textarea {
+  textarea,
+  select {
     font: inherit;
   }
   :focus-visible {

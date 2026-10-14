@@ -17,7 +17,9 @@ import {
   restoreMapViewport,
 } from '../../model/map-viewport';
 
+type ControlCollection = { getArray(): HTMLElement[] };
 type MapInstance = {
+  controls?: Partial<Record<string | number, ControlCollection>>;
   destroy(): void;
   getCenter?(): { lat(): number; lng(): number };
   getZoom?(): number;
@@ -37,6 +39,11 @@ type MapInstance = {
 };
 type MarkerInstance = { setMap(map: MapInstance | null): void };
 type NaverMaps = {
+  Position?: {
+    BOTTOM_LEFT: string | number;
+    BOTTOM_CENTER?: string | number;
+    BOTTOM_RIGHT: string | number;
+  };
   Size: new (width: number, height: number) => unknown;
   Point: new (x: number, y: number) => unknown;
   Marker: new (options: {
@@ -49,7 +56,7 @@ type NaverMaps = {
   }) => MarkerInstance;
   Event: {
     addListener(
-      target: MarkerInstance,
+      target: MapInstance | MarkerInstance | ControlCollection,
       event: string,
       callback: () => void,
     ): unknown;
@@ -73,6 +80,8 @@ export function MapHome({
     [],
   );
   const canvas = useRef<HTMLDivElement>(null);
+  const controlClearance = useRef<HTMLDivElement>(null);
+  const updateControls = useRef<(() => void) | null>(null);
   const fitArticles = useRef<(() => void) | null>(null);
   const clearSelection = useRef<((restoreFocus?: boolean) => void) | null>(
     null,
@@ -106,6 +115,67 @@ export function MapHome({
     let pending = false;
     let requestId = 0;
     let observer: ResizeObserver | undefined;
+    const controlListeners: unknown[] = [];
+    let removeControlListener: ((listener: unknown) => void) | undefined;
+    let controlFrame: number | undefined;
+    const controlTransforms = new Map<
+      HTMLElement,
+      { original: string; base: string }
+    >();
+    const clearControls = () => {
+      updateControls.current = null;
+
+      if (controlFrame !== undefined) {
+        cancelAnimationFrame(controlFrame);
+        controlFrame = undefined;
+      }
+
+      for (const listener of controlListeners.splice(0)) {
+        removeControlListener?.(listener);
+      }
+
+      for (const [element, transform] of controlTransforms) {
+        element.style.transform = transform.original;
+      }
+
+      controlTransforms.clear();
+    };
+    const positionControls = () => {
+      if (disposed || loadFailed) return;
+      const positions = (window as Window & { naver?: { maps: NaverMaps } })
+        .naver?.maps.Position;
+
+      if (!map?.controls || !positions) return;
+      const clearance = controlClearance.current?.clientHeight || 84;
+
+      for (const position of [
+        positions.BOTTOM_LEFT,
+        positions.BOTTOM_CENTER,
+        positions.BOTTOM_RIGHT,
+      ]) {
+        if (position === undefined) continue;
+
+        for (const element of map.controls[position]?.getArray() ?? []) {
+          if (!(element instanceof HTMLElement)) continue;
+          let transform = controlTransforms.get(element);
+
+          if (!transform) {
+            const computed = window.getComputedStyle(element).transform;
+
+            transform = {
+              original: element.style.transform,
+              base: computed === 'none' ? '' : computed,
+            };
+            controlTransforms.set(element, transform);
+          }
+
+          // Keep the SDK's automatic content and updates; move only its public
+          // containers, retaining their existing transform without accumulation.
+          element.style.transform =
+            `translateY(-${clearance}px) ${transform.base}`.trim();
+        }
+      }
+    };
     const resize = () => {
       const maps = (window as Window & { naver?: { maps: NaverMaps } }).naver
         ?.maps;
@@ -117,6 +187,7 @@ export function MapHome({
             canvas.current.clientHeight,
           ),
         );
+        positionControls();
       }
     };
     const sdkWindow = window as Window & { navermap_authFailure?: () => void };
@@ -130,6 +201,53 @@ export function MapHome({
         center: new maps.LatLng(viewport.latitude, viewport.longitude),
         zoom: viewport.zoom,
       });
+
+      // The SDK creates native control collections during map initialization.
+      // Wait for init, then let its layout finish before positioning them.
+      removeControlListener = (listener) => maps.Event.removeListener(listener);
+
+      if (maps.Position) {
+        const positions = maps.Position;
+        const scheduleControls = () => {
+          if (disposed || loadFailed || controlFrame !== undefined) return;
+          controlFrame = requestAnimationFrame(() => {
+            controlFrame = undefined;
+            positionControls();
+          });
+        };
+
+        const initializeControls = () => {
+          if (disposed || loadFailed) return;
+
+          for (const position of [
+            positions.BOTTOM_LEFT,
+            positions.BOTTOM_CENTER,
+            positions.BOTTOM_RIGHT,
+          ]) {
+            const collection =
+              position === undefined ? undefined : map?.controls?.[position];
+
+            if (collection) {
+              controlListeners.push(
+                maps.Event.addListener(
+                  collection,
+                  'insert_at',
+                  scheduleControls,
+                ),
+              );
+            }
+          }
+
+          scheduleControls();
+        };
+
+        controlListeners.push(
+          maps.Event.addListener(map, 'init', initializeControls),
+        );
+      }
+
+      positionControls();
+      updateControls.current = positionControls;
 
       removeArticleListener = (listener) => maps.Event.removeListener(listener);
 
@@ -227,6 +345,8 @@ export function MapHome({
       if (typeof ResizeObserver !== 'undefined') {
         observer = new ResizeObserver(resize);
         observer.observe(canvas.current);
+        if (controlClearance.current)
+          observer.observe(controlClearance.current);
       }
 
       window.addEventListener('resize', resize);
@@ -339,6 +459,7 @@ export function MapHome({
       setLocationError('');
       observer?.disconnect();
       window.removeEventListener('resize', resize);
+      clearControls();
       clearArticles();
       marker?.setMap(null);
       marker = undefined;
@@ -365,6 +486,7 @@ export function MapHome({
       clearSelection.current = null;
       observer?.disconnect();
       window.removeEventListener('resize', resize);
+      clearControls();
       clearArticles();
       marker?.setMap(null);
       clearTimeout(timeout);
@@ -384,11 +506,23 @@ export function MapHome({
     };
   }, [clientId, attempt, articles]);
 
+  // The sheet is bounded at 65dvh; reserve that area without measuring its DOM
+  // or changing the map viewport when selection changes.
+  useEffect(() => {
+    updateControls.current?.();
+  }, [selectedArticles, ready]);
+
   return (
     <section aria-label="주변 지도" className="relative">
+      <div ref={canvas} className="h-dvh overflow-hidden" />
       <div
-        ref={canvas}
-        className="h-[calc(100dvh-max(110px,env(safe-area-inset-bottom)_+_90px))] overflow-hidden"
+        ref={controlClearance}
+        aria-hidden="true"
+        className={`pointer-events-none invisible absolute bottom-0 w-0 ${
+          ready && selectedArticles.length > 0 && articles
+            ? 'h-[max(calc(84px_+_env(safe-area-inset-bottom)),calc(65dvh_+_8px))]'
+            : 'h-[calc(84px_+_env(safe-area-inset-bottom))]'
+        }`}
       />
       <button
         type="button"
@@ -396,14 +530,14 @@ export function MapHome({
         aria-busy={locating}
         disabled={!ready || locating}
         onClick={() => locate.current?.()}
-        className="absolute right-4 bottom-12 flex size-11 items-center justify-center rounded-full bg-white shadow-floating disabled:opacity-50"
+        className="absolute right-4 bottom-[calc(132px_+_env(safe-area-inset-bottom))] flex size-11 items-center justify-center rounded-full bg-white shadow-floating disabled:opacity-50"
       >
         <Image src="/naver-map-crosshair.svg" alt="" width={20} height={20} />
       </button>
       {ready && articles !== undefined && !articles?.items.length && (
         <div
           role="status"
-          className="absolute top-26 right-4 left-4 rounded-2xl bg-floating p-3 text-sm text-muted shadow-floating"
+          className="absolute top-[calc(112px_+_env(safe-area-inset-top))] right-4 left-4 rounded-2xl bg-floating p-3 text-sm text-muted shadow-floating"
         >
           {articles === null ? (
             <>
@@ -429,7 +563,7 @@ export function MapHome({
         </div>
       )}
       {ready && Boolean(articles?.items.length) && (
-        <div className="absolute top-26 right-4 left-4 flex items-center justify-between gap-2 rounded-2xl bg-floating p-3 shadow-floating">
+        <div className="absolute top-[calc(112px_+_env(safe-area-inset-top))] right-4 left-4 flex items-center justify-between gap-2 rounded-2xl bg-floating p-3 shadow-floating">
           <div className="text-xs text-muted">
             <p className="m-0">지도 기사 {articles!.items.length}건</p>
             {articles!.items.some(
@@ -465,7 +599,7 @@ export function MapHome({
       {locationError && (
         <p
           role="status"
-          className="absolute top-26 right-4 left-4 rounded-2xl bg-floating p-4 shadow-floating"
+          className="absolute top-[calc(112px_+_env(safe-area-inset-top))] right-4 left-4 rounded-2xl bg-floating p-4 shadow-floating"
         >
           {locationError}
         </p>
@@ -473,7 +607,7 @@ export function MapHome({
       {failed && (
         <div
           role="alert"
-          className="absolute top-26 right-4 left-4 rounded-2xl bg-floating p-4 shadow-floating"
+          className="absolute top-[calc(112px_+_env(safe-area-inset-top))] right-4 left-4 rounded-2xl bg-floating p-4 shadow-floating"
         >
           <p>지도를 불러오지 못했습니다. 다시 시도해 주세요.</p>
           <button
@@ -493,7 +627,7 @@ export function MapHome({
         <div
           role="status"
           aria-busy="true"
-          className="absolute top-26 right-4 left-4 rounded-2xl bg-floating p-4 shadow-floating"
+          className="absolute top-[calc(112px_+_env(safe-area-inset-top))] right-4 left-4 rounded-2xl bg-floating p-4 shadow-floating"
         >
           지도를 불러오는 중입니다.
         </div>
