@@ -20,6 +20,16 @@
 
 배포 계정과 프로젝트를 확정한 다음 GitHub 저장소를 연결한다. 이 저장소는 독립 앱이므로 로컬 Sobaya 경로 `apps/...`를 Root Directory에 입력하지 않는다.
 
+### Hobby 계정과 조직 저장소
+
+현재 원본 저장소는 **공개 조직 저장소**이고, 확인한 `amazon7737s-projects` 계정은 Hobby다. 2026-10-14 공식 문서의 설명 범위가 다르다. [Limits](https://vercel.com/docs/limits#connecting-a-project-to-a-git-repository)는 Hobby에서 조직 소유 Git 저장소 연결을 지원하지 않는다고 하고, [Git 배포 문서](https://vercel.com/docs/git#using-hobby-teams)는 비공개 조직 저장소를 제한한다고 설명한다. 따라서 공개 저장소라는 사실만으로 Hobby 직접 연결이 보장된다고 판단하지 않는다.
+
+- 무료 테스트 배포를 준비하려면 개인 GitHub 계정에 원본의 공개 fork를 만들고 그 fork를 Hobby에 연결하는 안을 선택할 수 있다. 원본 개발·PR은 `team-poem`에 유지하며, fork의 `dev`와 `main`을 원본에서 동기화한 뒤 배포 커밋 SHA를 확인한다. fork는 자동으로 최신 원본을 따라가지 않는다.
+- 조직 저장소를 직접 연결하는 팀 운영은 Pro에서 준비할 수 있다. 플랜 변경이나 결제는 별도 선택 사항이다.
+- Hobby는 개인 비상업적 사용 범위이므로 실제 서비스 용도에 맞는 플랜도 확인한다. [Hobby 사용 범위](https://vercel.com/docs/plans/hobby)
+
+아래 표는 원본을 직접 연결하는 설정이다. 개인 fork를 선택하면 Git Repository만 승인한 fork 경로로 바꾸고 나머지 빌드 설정과 배포 전 검증은 동일하게 적용한다. 현재는 fork 생성·플랜 변경·프로젝트 연결을 수행하지 않았다.
+
 | 설정              | 값                                                      |
 | ----------------- | ------------------------------------------------------- |
 | Git Repository    | `team-poem/saja-boyz-jinwoo`                            |
