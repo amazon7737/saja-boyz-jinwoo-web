@@ -1,0 +1,17 @@
+{
+  "verified_source": "20498c3c2c1966a5288b9468337b91648dde883c",
+  "archive_commit": "2af96c82a1fab88e7fac1d73a4890b2a5f451b07",
+  "submission_base": "32a2a6a9ba519b2755815422e0a375df4072793d",
+  "integration": "final diff excluding collab/active/codex--report-recovery/**; evidence copied byte-for-byte into submission-owned recovery directory",
+  "product_test_diff_against_verified_archive": "empty",
+  "test_files": 19,
+  "tests_passed": 81,
+  "full_suite_exit_code": 0,
+  "typecheck_exit_code": 0,
+  "format_exit_code": 0,
+  "lint_exit_code": 0,
+  "files": {
+    "src/app/report/page.tsx": "baa8deda9f73089c02ea457038bd0f696fbb490df0a9231e7a814d2c84cde985",
+    "src/app/report/report-recovery.test.ts": "95fa4c53e498be31795766cf2a31d81b417dcbce0c52d7b7581bb7bd9157b8f6"
+  }
+}

@@ -1,0 +1,54 @@
+test('reportAttachmentLimits: invalid batches preserve previous selection', async () => {
+  await renderReport();
+  await selectFiles([testFile('kept.png', 'image/png')]);
+  for (const rejected of [
+    testFile('large.webp', 'image/webp', 10 * 1024 * 1024 + 1),
+    testFile('empty.png', 'image/png', 0),
+    testFile('unsafe.svg', 'image/svg+xml'),
+    testFile('unknown.jpg', ''),
+  ]) {
+    await selectFiles([rejected, testFile('batch.webm', 'video/webm')]);
+    expect(
+      container.querySelector('[role="alert"]')?.textContent?.trim(),
+    ).toBeTruthy();
+    expect(
+      container.querySelector('button[aria-label="kept.png 삭제"]'),
+    ).not.toBeNull();
+    expect(
+      container.querySelector('button[aria-label="batch.webm 삭제"]'),
+    ).toBeNull();
+    expect(
+      container.querySelector(`button[aria-label="${rejected.name} 삭제"]`),
+    ).toBeNull();
+  }
+  await selectFiles([
+    testFile('two.webp', 'image/webp'),
+    testFile('three.webm', 'video/webm'),
+  ]);
+  expect(
+    container.querySelector('button[aria-label="two.webp 삭제"]'),
+  ).not.toBeNull();
+  expect(
+    container.querySelector('button[aria-label="three.webm 삭제"]'),
+  ).not.toBeNull();
+  await selectFiles([testFile('four.jpg', 'image/jpeg')]);
+  expect(
+    container.querySelector('button[aria-label="four.jpg 삭제"]'),
+  ).toBeNull();
+  expect(
+    container.querySelector('[role="alert"]')?.textContent?.trim(),
+  ).toBeTruthy();
+  expect(
+    container.querySelector('button[aria-label="kept.png 삭제"]'),
+  ).not.toBeNull();
+  expect(
+    container.querySelector('button[aria-label="two.webp 삭제"]'),
+  ).not.toBeNull();
+  expect(
+    container.querySelector('button[aria-label="three.webm 삭제"]'),
+  ).not.toBeNull();
+  expect(
+    container.querySelectorAll('button[aria-label$=" 삭제"]'),
+  ).toHaveLength(3);
+  expect(fetchMock).not.toHaveBeenCalled();
+});

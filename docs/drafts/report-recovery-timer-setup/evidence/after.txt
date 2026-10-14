@@ -1,0 +1,8 @@
+
+ RUN  v5.0.3 /private/tmp/poem-report-recovery-link-timer/app
+
+
+ Test Files  1 passed (1)
+      Tests  6 passed (6)
+   Start at  21:46:55
+   Duration  371ms (environment 50%, tests 30%, transform 10%, import 10%, worker 1%)

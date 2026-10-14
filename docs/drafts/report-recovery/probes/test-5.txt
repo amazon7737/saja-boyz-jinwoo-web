@@ -1,0 +1,31 @@
+
+ RUN  v5.0.3 /private/tmp/poem-report-recovery-probe
+
+ ❯ src/app/report/zz_sobaya_probe_It7WsT.test.ts (1 test | 1 failed) 24ms
+   × reportFailureCleanup: async failures enter the real local boundary and settled attempts leave no deadline 23ms
+
+ Test Files  1 failed (1)
+      Tests  1 failed (1)
+   Start at  18:29:56
+   Duration  312ms (environment 66%, transform 12%, import 11%, tests 10%, worker 1%)
+
+npm notice run saja-boyz-jinwoo@0.1.0 npx
+npm notice run 'vitest' run src/app/report/zz_sobaya_probe_It7WsT.test.ts -t ^reportFailureCleanup: async failures enter the real local boundary and settled attempts leave no deadline$
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/app/report/zz_sobaya_probe_It7WsT.test.ts > reportFailureCleanup: async failures enter the real local boundary and settled attempts leave no deadline
+AssertionError: expected "vi.fn()" to be called 1 times, but got 0 times
+ ❯ src/app/report/zz_sobaya_probe_It7WsT.test.ts:288:28
+    286|     fetchMock.mockResolvedValueOnce(failure.response);
+    287|     await submit();
+    288|     expect(boundaryErrors).toHaveBeenCalledTimes(index + 1);
+       |                            ^
+    289|     expect(container.querySelector('[role="alert"]')?.textContent).toC…
+    290|       failure.message,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+RED    reportFailureCleanup: async failures enter the real local boundary and settled attempts leave no deadline  (fails: assertion/test failure; diagnostics above)
+
+PROBE_EXIT: 0

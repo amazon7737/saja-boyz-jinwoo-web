@@ -1,0 +1,78 @@
+ALREADY GREEN reportFailureCleanup
+
+> saja-boyz-jinwoo@0.1.0 format:check /Users/kangminkim/lunch/sobaya/apps/saja-boyz-jinwoo-codex--report-recovery
+> prettier --check src docs/project.md docs/architecture.md docs/figma-analysis.md *.json *.mjs *.ts
+
+Checking formatting...
+All matched files use Prettier code style!
+
+> saja-boyz-jinwoo@0.1.0 lint /Users/kangminkim/lunch/sobaya/apps/saja-boyz-jinwoo-codex--report-recovery
+> eslint .
+
+GREEN reportFailureCleanup
+workspace checks passed
+
+> saja-boyz-jinwoo@0.1.0 format:check /Users/kangminkim/lunch/sobaya/apps/saja-boyz-jinwoo-codex--report-recovery
+> prettier --check src docs/project.md docs/architecture.md docs/figma-analysis.md *.json *.mjs *.ts
+
+Checking formatting...
+All matched files use Prettier code style!
+
+> saja-boyz-jinwoo@0.1.0 lint /Users/kangminkim/lunch/sobaya/apps/saja-boyz-jinwoo-codex--report-recovery
+> eslint .
+
+[codex/report-recovery 8c95ab7] feat: satisfy reportFailureCleanup
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+Checkpoint reportFailureCleanup: 8c95ab7cd0d735ac560677e1e61789e064adf918
+ALREADY GREEN reportAttemptIsolation
+
+> saja-boyz-jinwoo@0.1.0 format:check /Users/kangminkim/lunch/sobaya/apps/saja-boyz-jinwoo-codex--report-recovery
+> prettier --check src docs/project.md docs/architecture.md docs/figma-analysis.md *.json *.mjs *.ts
+
+Checking formatting...
+All matched files use Prettier code style!
+
+> saja-boyz-jinwoo@0.1.0 lint /Users/kangminkim/lunch/sobaya/apps/saja-boyz-jinwoo-codex--report-recovery
+> eslint .
+
+GREEN reportAttemptIsolation
+workspace checks passed
+
+> saja-boyz-jinwoo@0.1.0 format:check /Users/kangminkim/lunch/sobaya/apps/saja-boyz-jinwoo-codex--report-recovery
+> prettier --check src docs/project.md docs/architecture.md docs/figma-analysis.md *.json *.mjs *.ts
+
+Checking formatting...
+All matched files use Prettier code style!
+
+> saja-boyz-jinwoo@0.1.0 lint /Users/kangminkim/lunch/sobaya/apps/saja-boyz-jinwoo-codex--report-recovery
+> eslint .
+
+[codex/report-recovery 20498c3] feat: satisfy reportAttemptIsolation
+ 2 files changed, 38 insertions(+), 1 deletion(-)
+Checkpoint reportAttemptIsolation: 20498c3c2c1966a5288b9468337b91648dde883c
+
+> saja-boyz-jinwoo@0.1.0 format:check /Users/kangminkim/lunch/sobaya/apps/saja-boyz-jinwoo-codex--report-recovery
+> prettier --check src docs/project.md docs/architecture.md docs/figma-analysis.md *.json *.mjs *.ts
+
+Checking formatting...
+All matched files use Prettier code style!
+
+> saja-boyz-jinwoo@0.1.0 lint /Users/kangminkim/lunch/sobaya/apps/saja-boyz-jinwoo-codex--report-recovery
+> eslint .
+
+Worker astra (gpt-6-astra), review, call 1/20
+PASS — exact commit validated and independently reviewed.
+{
+  "run_id": "1791896242-29564-29631",
+  "calls": 1,
+  "duration_seconds": 129,
+  "usage": [
+    {
+      "input_tokens": 372972,
+      "cached_input_tokens": 314240,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 2190,
+      "reasoning_output_tokens": 147
+    }
+  ]
+}

@@ -1,0 +1,51 @@
+test('reportFailureCleanup: async failures enter the real local boundary and settled attempts leave no deadline', async () => {
+  const bodyFailure = new Response(null, { status: 201 });
+  vi.spyOn(bodyFailure, 'json').mockRejectedValue(
+    new TypeError('body interrupted'),
+  );
+  const cases = [
+    { response: bodyFailure, message: uncertainMessage },
+    { response: new Response('{', { status: 201 }), message: uncertainMessage },
+    {
+      response: new Response(
+        JSON.stringify({ ...receipt, report_id: 'invalid' }),
+        { status: 201 },
+      ),
+      message: uncertainMessage,
+    },
+    {
+      response: new Response('{}', { status: 503 }),
+      message: uncertainMessage,
+    },
+    {
+      response: new Response('{}', { status: 413 }),
+      message: '제보를 접수하지 못했어요',
+    },
+  ];
+  await renderReport();
+  await fillValid();
+  const file = new File(['fixture'], 'retained.png', { type: 'image/png' });
+  await selectFile(file);
+  const values = fieldNames.map((name) => field(name).value);
+  for (const [index, failure] of cases.entries()) {
+    fetchMock.mockResolvedValueOnce(failure.response);
+    await submit();
+    expect(boundaryErrors).toHaveBeenCalledTimes(index + 1);
+    expect(container.querySelector('[role="alert"]')?.textContent).toContain(
+      failure.message,
+    );
+    expectDraft(values, file);
+    expect(vi.getTimerCount()).toBe(0);
+    await act(async () => closeErrorButton().click());
+    await advance(60001);
+    expect(container.querySelector('[role="alert"]')).toBeNull();
+    expect(fetchMock).toHaveBeenCalledTimes(index + 1);
+  }
+  await submit();
+  expect(container.textContent).toContain(receipt.report_id);
+  expect(vi.getTimerCount()).toBe(0);
+  await advance(60001);
+  expect(container.querySelector('[role="alert"]')).toBeNull();
+  expect(submitButton().disabled).toBe(true);
+  expect(fetchMock).toHaveBeenCalledTimes(cases.length + 1);
+});

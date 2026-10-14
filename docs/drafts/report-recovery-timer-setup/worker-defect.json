@@ -1,0 +1,5 @@
+{
+  "status": "defect",
+  "summary": "reportFailureCleanup 실패는 기존 Next Link의 타이머와 승인 테스트 간 충돌입니다. 구현·테스트·Git 메타데이터는 변경하지 않았습니다.",
+  "reason": "Node24에서 `vitest run src/app/report/report-recovery.test.ts -t reportFailureCleanup` 실행 시 419행에서 타이머 0개 기대, 실제 1개로 실패했습니다. 독립 진단에서 next/link만 렌더해도 jsdom의 useIntersection → requestIdleCallback 경로가 1ms 타이머를 생성함을 확인했습니다. 요청 deadline은 이미 finally에서 정리됩니다. 전체 타이머를 검사하는 승인 테스트의 환경 또는 검증 범위에 대한 재검토가 필요합니다."
+}

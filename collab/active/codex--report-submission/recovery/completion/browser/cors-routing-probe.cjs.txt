@@ -1,0 +1,8 @@
+const http = require('node:http');
+const {chromium} = require('/Users/kangminkim/lunch/sobaya/apps/saja-boyz-jinwoo-codex--report-recovery/node_modules/playwright-core');
+(async()=>{let browser; const seen=[];
+const front=http.createServer((q,s)=>s.end('<html><body>local CORS diagnostic</body></html>'));
+const api=http.createServer((q,s)=>{seen.push(q.method);s.writeHead(q.method==='OPTIONS'?204:200,{'Access-Control-Allow-Origin':q.headers.origin||'*','Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'Idempotency-Key'});s.end(q.method==='OPTIONS'?'':'ok');});
+try {await new Promise(r=>front.listen(0,'127.0.0.1',r));await new Promise(r=>api.listen(0,'127.0.0.1',r));browser=await chromium.launch({channel:'chrome',headless:true});
+for(const routed of [false,true]){seen.length=0;const context=await browser.newContext();if(routed)await context.route('**/*',r=>r.continue());const page=await context.newPage();await page.goto('http://127.0.0.1:'+front.address().port);await page.evaluate(async url=>(await fetch(url,{method:'POST',headers:{'Idempotency-Key':'synthetic-local'},body:'x'})).text(),'http://127.0.0.1:'+api.address().port);console.log(JSON.stringify({routed,methods:seen.slice()}));await context.close();}
+}finally{if(browser)await browser.close();front.closeAllConnections();api.closeAllConnections();await Promise.all([new Promise(r=>front.close(r)),new Promise(r=>api.close(r))]);}})().catch(e=>{console.error(e);process.exitCode=1;});

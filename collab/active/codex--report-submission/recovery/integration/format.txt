@@ -1,0 +1,6 @@
+
+> saja-boyz-jinwoo@0.1.0 format:check /Users/kangminkim/lunch/sobaya/apps/saja-boyz-jinwoo-codex--report-submission
+> prettier --check src docs/project.md docs/architecture.md docs/figma-analysis.md *.json *.mjs *.ts
+
+Checking formatting...
+All matched files use Prettier code style!

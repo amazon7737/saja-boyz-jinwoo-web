@@ -1,0 +1,36 @@
+test('reportAttemptIsolation: abandoned responses cannot finish a newer attempt and unmount aborts active work', async () => {
+  const oldRequest = delayedRequest();
+  const newRequest = delayedRequest();
+  await renderReport();
+  await fillValid();
+  await submit();
+  await advance(60000);
+  expect(oldRequest.signal?.aborted).toBe(true);
+  expect(submitButton().disabled).toBe(false);
+  await submit();
+  expect(fetchMock).toHaveBeenCalledTimes(2);
+  expect(requestKey(1)).toBe(requestKey(0));
+  expect(submitButton().disabled).toBe(true);
+  await act(async () => {
+    oldRequest.headers.resolve(oldRequest.response);
+    oldRequest.body.resolve(receipt);
+  });
+  expect(container.textContent).not.toContain(receipt.report_id);
+  expect(submitButton().disabled).toBe(true);
+  expect(newRequest.signal?.aborted).toBe(false);
+  await advance(59999);
+  expect(submitButton().disabled).toBe(true);
+  const relayedErrors = boundaryErrors.mock.calls.length;
+  await act(async () => root.unmount());
+  mounted = false;
+  expect(boundaryErrors).toHaveBeenCalledTimes(relayedErrors);
+  expect(newRequest.signal?.aborted).toBe(true);
+  expect(vi.getTimerCount()).toBe(0);
+  await act(async () => {
+    newRequest.headers.resolve(newRequest.response);
+    newRequest.body.resolve(receipt);
+  });
+  await advance(60001);
+  expect(boundaryErrors).toHaveBeenCalledTimes(relayedErrors);
+  expect(fetchMock).toHaveBeenCalledTimes(2);
+});

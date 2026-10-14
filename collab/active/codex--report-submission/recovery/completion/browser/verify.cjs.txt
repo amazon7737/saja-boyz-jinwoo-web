@@ -1,0 +1,355 @@
+'use strict';
+
+// Local diagnostic only. Run after implementation is committed and no writer is active.
+const assert = require('node:assert/strict');
+const crypto = require('node:crypto');
+const fs = require('node:fs');
+const http = require('node:http');
+const https = require('node:https');
+const net = require('node:net');
+const path = require('node:path');
+const { spawn, execFileSync } = require('node:child_process');
+const { setTimeout: sleep } = require('node:timers/promises');
+
+process.umask(0o077);
+assert.equal(Number(process.versions.node.split('.')[0]), 24, 'Run with existing Node 24');
+const checkout = path.resolve(process.argv[2] || '/Users/kangminkim/lunch/sobaya/apps/saja-boyz-jinwoo-codex--report-recovery');
+const revision = process.argv[3];
+assert.match(revision || '', /^[0-9a-f]{40}$/, 'Pass the final committed source SHA as argument 2');
+const git = (...args) => execFileSync('git', ['-C', checkout, ...args], { encoding: 'utf8' }).trim();
+assert.equal(git('rev-parse', 'HEAD'), revision, 'Source HEAD differs from the supplied revision');
+assert.equal(git('diff', 'HEAD', '--name-only'), '', 'Tracked work must be committed before snapshotting');
+const { chromium } = require(path.join(checkout, 'node_modules/playwright-core'));
+const certDir = '/tmp/poem-report-e2e/certs';
+const fixturePath = '/tmp/poem-report-e2e/fixtures/one-pixel.png';
+for (const name of ['cert.pem', 'key.pem']) assert(fs.existsSync(path.join(certDir, name)), 'Prior disposable localhost TLS material must exist');
+const png = fs.readFileSync(fixturePath);
+const hash = (value) => crypto.createHash('sha256').update(value).digest('hex');
+assert.equal(hash(png), '431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460');
+
+const startedAt = new Date().toISOString();
+const runDir = path.join(__dirname, 'runs', startedAt.replace(/[:.]/g, '-'));
+const appDir = path.join(runDir, 'app');
+fs.mkdirSync(appDir, { recursive: true, mode: 0o700 });
+const evidence = {
+  scope: 'Actual Chrome and isolated Next webpack build against a local HTTPS mock only. No Go storage, production, upload-performance or proxy-timeout verification.',
+  source_revision: revision,
+  source_checkout: checkout,
+  started_at: startedAt,
+  checks: {},
+  browser_errors: [],
+  console_errors: [],
+  failed_requests: [],
+  external_requests_observed: [],
+  options: [],
+  posts: [],
+};
+const children = new Set();
+const ownedTimers = new Set();
+const receipt = { report_id: 'b'.repeat(32), status: 'pending', received_at: '2026-10-13T05:00:00Z' };
+const fieldValues = {
+  category: 'society',
+  occurredAt: '2026-10-13T12:34',
+  title: '합성 오류 복구 브라우저 제보',
+  location: '가상 검증 장소 101',
+  description: '개인정보나 실제 사건이 없는 로컬 오류 복구 검증입니다.',
+};
+let backend;
+let browser;
+let page;
+let frontendOrigin;
+let apiOrigin;
+let firstResponse;
+let interrupted = false;
+const operationAbort = new AbortController();
+const checkActive = () => operationAbort.signal.throwIfAborted();
+const delay = (milliseconds, cancellable = true) => sleep(milliseconds, undefined, cancellable ? { signal: operationAbort.signal } : {});
+async function until(check, milliseconds, message) {
+  const deadline = performance.now() + milliseconds;
+  while (!check()) {
+    assert(performance.now() < deadline, message);
+    await delay(50);
+  }
+}
+async function freePort() {
+  const reserve = net.createServer();
+  await new Promise((resolve, reject) => { reserve.once('error', reject); reserve.listen(0, '127.0.0.1', resolve); });
+  const port = reserve.address().port;
+  await new Promise((resolve) => reserve.close(resolve));
+  return port;
+}
+function startChild(args, cwd, env, label) {
+  checkActive();
+  const output = fs.openSync(path.join(runDir, `${label}.log`), 'w', 0o600);
+  const child = spawn(process.execPath, args, { cwd, env, detached: true, stdio: ['ignore', output, output] });
+  fs.closeSync(output);
+  children.add(child);
+  // Retain the process group until final cleanup, even if its leader exits.
+  return child;
+}
+async function stopChild(child) {
+  if (!child.pid) return;
+  const exists = () => {
+    try { process.kill(-child.pid, 0); return true; }
+    catch (error) { if (error.code === 'ESRCH') return false; throw error; }
+  };
+  if (!exists()) return;
+  try { process.kill(-child.pid, 'SIGTERM'); } catch (error) { if (error.code !== 'ESRCH') throw error; }
+  const deadline = performance.now() + 1500;
+  while (exists() && performance.now() < deadline) await delay(50, false);
+  if (exists()) {
+    try { process.kill(-child.pid, 'SIGKILL'); } catch (error) { if (error.code !== 'ESRCH') throw error; }
+  }
+}
+async function finishChild(child, timeout) {
+  let timer;
+  let onAbort;
+  try {
+    return await Promise.race([
+      new Promise((resolve, reject) => {
+        child.once('error', reject);
+        child.once('exit', (code, signal) => code === 0 ? resolve() : reject(new Error(`Child failed: ${code ?? signal}`)));
+      }),
+      new Promise((_, reject) => { timer = setTimeout(() => reject(new Error('Isolated build timed out')), timeout); }),
+      new Promise((_, reject) => {
+        onAbort = () => reject(operationAbort.signal.reason);
+        if (operationAbort.signal.aborted) onAbort();
+        else operationAbort.signal.addEventListener('abort', onAbort, { once: true });
+      }),
+    ]);
+  } finally {
+    clearTimeout(timer);
+    if (onAbort) operationAbort.signal.removeEventListener('abort', onAbort);
+  }
+}
+async function serveRequest(request, response) {
+  response.on('error', (error) => { evidence.mock_write_error = error.code || error.name; });
+  if (request.url !== '/reports') { response.writeHead(404); response.end(); return; }
+  if (request.headers.origin !== frontendOrigin) { response.writeHead(403); response.end(); return; }
+  const cors = { 'Access-Control-Allow-Origin': frontendOrigin, Vary: 'Origin' };
+  if (request.method === 'OPTIONS') {
+    evidence.options.push({ method: request.headers['access-control-request-method'], headers: request.headers['access-control-request-headers'], origin: request.headers.origin });
+    response.writeHead(204, { ...cors, 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'Content-Type, Idempotency-Key' });
+    response.end();
+    return;
+  }
+  if (request.method !== 'POST') { response.writeHead(405); response.end(); return; }
+  const record = {
+    number: evidence.posts.length + 1,
+    received_at: new Date().toISOString(),
+    arrived_monotonic_ms: performance.now(),
+    idempotency_key: request.headers['idempotency-key'],
+    origin: request.headers.origin,
+    content_type: request.headers['content-type'],
+    has_cookie: Boolean(request.headers.cookie),
+  };
+  evidence.posts.push(record);
+  response.on('close', () => {
+    record.connection_closed_after_ms = performance.now() - record.arrived_monotonic_ms;
+    record.response_finished = response.writableFinished;
+  });
+  const chunks = [];
+  let byteCount = 0;
+  for await (const chunk of request) {
+    byteCount += chunk.length;
+    assert(byteCount < 1024 * 1024, 'Diagnostic uploads must stay below 1 MiB');
+    chunks.push(chunk);
+  }
+  const form = await new Request('http://127.0.0.1/reports', { method: 'POST', headers: { 'Content-Type': record.content_type }, body: Buffer.concat(chunks) }).formData();
+  record.fields = {};
+  record.files = [];
+  for (const [name, value] of form) {
+    if (typeof value === 'string') record.fields[name] = value;
+    else record.files.push({ field: name, name: value.name, type: value.type, bytes: value.size, sha256: hash(Buffer.from(await value.arrayBuffer())) });
+  }
+  record.parsed = true;
+  if (record.number === 1) {
+    firstResponse = response;
+    const timer = setTimeout(() => {
+      ownedTimers.delete(timer);
+      if (response.destroyed) return;
+      response.writeHead(200, { ...cors, 'Content-Type': 'application/json', 'Cache-Control': 'no-store' });
+      response.flushHeaders();
+      response.write('{"report_id":');
+      record.headers_sent_after_ms = performance.now() - record.arrived_monotonic_ms;
+      // Deliberately do not end the body. Native browser Fetch must abort it.
+    }, 45000);
+    ownedTimers.add(timer);
+    response.once('close', () => { clearTimeout(timer); ownedTimers.delete(timer); });
+    return;
+  }
+  assert.equal(record.number, 2, 'There must be one explicit retry, never an automatic resend');
+  response.writeHead(200, { ...cors, 'Content-Type': 'application/json', 'Cache-Control': 'no-store' });
+  response.end(JSON.stringify(receipt));
+}
+async function ready(url, child) {
+  const deadline = performance.now() + 30000;
+  while (performance.now() < deadline) {
+    assert(child.exitCode === null && child.signalCode === null, 'Next exited before readiness');
+    try {
+      const response = await fetch(url, { signal: AbortSignal.timeout(1000) });
+      if (response.status === 200) { await response.arrayBuffer(); return; }
+    } catch { /* Local listener may not yet be ready. */ }
+    await delay(100);
+  }
+  throw new Error('Next did not become ready');
+}
+async function assertPreserved() {
+  for (const [name, value] of Object.entries(fieldValues)) {
+    const input = page.locator(`form [name="${name}"]`);
+    assert.equal(await input.inputValue(), value, `preserved field ${name}`);
+    assert(await input.isEnabled(), `unlocked field ${name}`);
+  }
+  assert(await page.getByLabel('사진/동영상 첨부', { exact: true }).isEnabled(), 'file input unlocked');
+  assert(await page.getByRole('button', { name: 'one-pixel.png 삭제', exact: true }).isEnabled(), 'retained attachment is editable');
+  assert(await page.getByRole('button', { name: '제보 접수', exact: true }).isEnabled(), 'retry enabled');
+}
+async function main() {
+  try {
+    const frontendPort = await freePort();
+    checkActive();
+    frontendOrigin = `http://127.0.0.1:${frontendPort}`;
+    backend = https.createServer({ key: fs.readFileSync(path.join(certDir, 'key.pem')), cert: fs.readFileSync(path.join(certDir, 'cert.pem')), requestTimeout: 0 }, (request, response) => {
+      serveRequest(request, response).catch((error) => {
+        evidence.mock_error = { name: error.name, message: error.message };
+        response.destroy();
+      });
+    });
+    await new Promise((resolve, reject) => { backend.once('error', reject); backend.listen(0, '127.0.0.1', resolve); });
+    checkActive();
+    apiOrigin = `https://127.0.0.1:${backend.address().port}`;
+    evidence.frontend = frontendOrigin;
+    evidence.mock_api = apiOrigin;
+    const archive = path.join(runDir, 'source.tar');
+    fs.writeFileSync(archive, execFileSync('git', ['-C', checkout, 'archive', '--format=tar', revision], { maxBuffer: 100 * 1024 * 1024 }), { mode: 0o600 });
+    execFileSync('tar', ['-xf', archive, '-C', appDir]);
+    fs.unlinkSync(archive);
+    for (const name of ['.env', '.env.local', '.env.production', '.env.production.local']) assert(!fs.existsSync(path.join(appDir, name)), 'Do not load real environment files into the diagnostic');
+    fs.symlinkSync(fs.realpathSync(path.join(checkout, 'node_modules')), path.join(appDir, 'node_modules'), 'dir');
+    const environment = {
+      PATH: `/tmp/poem-submission-worker:${process.env.PATH || '/usr/bin:/bin'}`,
+      HOME: process.env.HOME,
+      LANG: 'en_US.UTF-8',
+      CI: '1',
+      NODE_ENV: 'production',
+      NEXT_TELEMETRY_DISABLED: '1',
+      NEXT_PUBLIC_REPORT_API_BASE_URL: apiOrigin,
+      NEWS_API_BASE_URL: '',
+      NEXT_PUBLIC_NAVER_MAP_CLIENT_ID: '',
+    };
+    const nextCLI = path.join(appDir, 'node_modules/next/dist/bin/next');
+    const build = startChild([nextCLI, 'build', '--webpack'], appDir, environment, 'build');
+    await finishChild(build, 75000);
+    const next = startChild([nextCLI, 'start', '--hostname', '127.0.0.1', '--port', String(frontendPort)], appDir, environment, 'next');
+    next.once('error', (error) => { evidence.next_spawn_error = error.message; });
+    await ready(`${frontendOrigin}/report`, next);
+    checkActive();
+    browser = await chromium.launch({ executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome', headless: true });
+    checkActive();
+    const context = await browser.newContext({ ignoreHTTPSErrors: true, viewport: { width: 393, height: 852 }, locale: 'ko-KR', serviceWorkers: 'block' });
+    checkActive();
+    // Observe only: Playwright routing suppresses Chrome's native CORS preflight.
+    // This isolated build has only owned origins configured and no real secrets.
+    context.on('request', (request) => {
+      const url = new URL(request.url());
+      if (![frontendOrigin, apiOrigin].includes(url.origin)) {
+        evidence.external_requests_observed.push(url.origin + url.pathname);
+      }
+    });
+    page = await context.newPage();
+    checkActive();
+    page.setDefaultTimeout(15000);
+    page.on('pageerror', (error) => evidence.browser_errors.push(error.message));
+    page.on('console', (message) => { if (message.type() === 'error') evidence.console_errors.push(message.text()); });
+    page.on('requestfailed', (request) => evidence.failed_requests.push({ url: request.url(), error: request.failure()?.errorText }));
+    page.on('response', (response) => {
+      if (response.url() === `${apiOrigin}/reports` && response.request().method() === 'POST') {
+        evidence.last_browser_response = { status: response.status(), received_monotonic_ms: performance.now() };
+      }
+    });
+    await page.goto(`${frontendOrigin}/report`, { waitUntil: 'networkidle' });
+    await page.getByLabel('카테고리 선택', { exact: true }).selectOption(fieldValues.category);
+    for (const name of ['occurredAt', 'title', 'location', 'description']) await page.locator(`form [name="${name}"]`).fill(fieldValues[name]);
+    await page.getByLabel('사진/동영상 첨부', { exact: true }).setInputFiles({ name: 'one-pixel.png', mimeType: 'image/png', buffer: png });
+    await page.evaluate(() => { window.__reportDiagnosticNodes = [document.querySelector('form'), ...document.querySelectorAll('form [name]:not([type="file"])')]; });
+    await page.screenshot({ path: path.join(runDir, '01-filled.png'), fullPage: true });
+    const submitStart = performance.now();
+    await page.getByRole('button', { name: '제보 접수', exact: true }).click();
+    await until(() => evidence.posts[0]?.parsed, 10000, 'First upload did not reach the local HTTPS mock');
+    const first = evidence.posts[0];
+    assert.match(first.idempotency_key || '', /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i);
+    assert.equal(first.has_cookie, false);
+    assert.deepEqual(first.fields, { category: fieldValues.category, occurred_at: '2026-10-13T03:34:00.000Z', title: fieldValues.title, location: fieldValues.location, description: fieldValues.description });
+    assert.deepEqual(first.files, [{ field: 'attachments', name: 'one-pixel.png', type: 'image/png', bytes: png.length, sha256: hash(png) }]);
+    await delay(Math.max(0, 55000 - (performance.now() - submitStart)));
+    assert(first.headers_sent_after_ms >= 44000 && first.headers_sent_after_ms < 55000, 'Mock headers must arrive after about 45 seconds');
+    assert.equal(evidence.last_browser_response?.status, 200, 'Chrome received headers before the deadline');
+    assert(await page.getByRole('button', { name: '접수 중', exact: true }).isDisabled(), 'Still pending after headers at about 55 seconds');
+    assert.equal(await page.locator('form').getByRole('alert').count(), 0, 'No premature timeout');
+    await page.locator('form').getByRole('alert').filter({ hasText: '접수 여부를 확인하지 못했어요' }).waitFor({ state: 'visible', timeout: 15000 });
+    evidence.deadline_ui_elapsed_ms = performance.now() - submitStart;
+    assert(evidence.deadline_ui_elapsed_ms >= 59000 && evidence.deadline_ui_elapsed_ms < 70000, 'Native deadline should occur near 60 seconds, not 60 seconds after headers');
+    await until(() => first.connection_closed_after_ms !== undefined, 3000, 'Native fetch must close its stalled response');
+    assert.equal(first.response_finished, false, 'The stalled response must be aborted before completion');
+    await assertPreserved();
+    assert.equal(await page.getByRole('status').count(), 0, 'An incomplete receipt must not become success');
+    assert.equal(evidence.posts.length, 1, 'Timeout must not auto retry');
+    evidence.checks.body_deadline = true;
+    await page.screenshot({ path: path.join(runDir, '02-timeout.png'), fullPage: true });
+    // A late server write cannot reopen the natively aborted response.
+    firstResponse.end(JSON.stringify(receipt).slice('{"report_id":'.length));
+    await page.getByRole('button', { name: '오류 닫기', exact: true }).click();
+    assert.equal(await page.locator('form').getByRole('alert').count(), 0, 'Reset removes only the error panel');
+    await assertPreserved();
+    assert(await page.evaluate(() => {
+      const current = [document.querySelector('form'), ...document.querySelectorAll('form [name]:not([type="file"])')];
+      return current.length === window.__reportDiagnosticNodes.length && current.every((node, index) => node === window.__reportDiagnosticNodes[index]);
+    }), 'Error reset must retain the existing form DOM');
+    await delay(250);
+    assert.equal(evidence.posts.length, 1, 'Error reset must not auto submit');
+    assert.equal(await page.getByRole('status').count(), 0, 'Late aborted response must not set stale success');
+    evidence.checks.reset_preserves_draft = true;
+    await page.screenshot({ path: path.join(runDir, '03-reset.png'), fullPage: true });
+    await page.getByRole('button', { name: '제보 접수', exact: true }).click();
+    await page.getByRole('status').filter({ hasText: receipt.report_id }).waitFor({ state: 'visible' });
+    assert.equal(evidence.posts.length, 2, 'Exactly one explicit retry');
+    const second = evidence.posts[1];
+    assert.equal(second.idempotency_key, first.idempotency_key, 'Unchanged retry retains request key');
+    assert.deepEqual(second.fields, first.fields);
+    assert.deepEqual(second.files, first.files, 'Retained File is uploaded byte-for-byte after reset');
+    assert.equal(await page.locator('form').getByRole('alert').count(), 0);
+    for (const name of ['category', 'occurredAt', 'title', 'location', 'description', 'attachments']) assert(await page.locator(`form [name="${name}"]`).isDisabled(), `Success locks ${name}`);
+    assert(await page.getByRole('button', { name: '제보 접수', exact: true }).isDisabled());
+    await page.screenshot({ path: path.join(runDir, '04-retry-success.png'), fullPage: true });
+    evidence.checks.same_key_retry_success = true;
+    assert(evidence.options.length >= 1 && evidence.options.every((value) => value.method === 'POST' && value.headers.toLowerCase().includes('idempotency-key')), 'Browser performed native CORS preflight');
+    assert.deepEqual(evidence.browser_errors, [], 'No uncaught browser errors');
+    assert.deepEqual(evidence.external_requests_observed, [], 'The report flow attempted no external requests');
+    assert.equal(evidence.mock_error, undefined);
+    assert.equal(git('rev-parse', 'HEAD'), revision, 'The source checkout changed during the diagnostic');
+    evidence.result = 'passed';
+  } catch (error) {
+    evidence.result = 'failed';
+    evidence.error = { name: error.name, message: error.message, stack: error.stack };
+    process.exitCode = 1;
+    if (page) await page.screenshot({ path: path.join(runDir, 'failure.png'), fullPage: true }).catch(() => {});
+  } finally {
+    for (const timer of ownedTimers) clearTimeout(timer);
+    if (browser) await browser.close().catch(() => {});
+    for (const child of [...children]) {
+      try { await stopChild(child); } catch (error) { (evidence.cleanup_errors ||= []).push(error.message); process.exitCode = 1; }
+    }
+    if (backend?.listening) { backend.closeAllConnections(); await new Promise((resolve) => backend.close(resolve)); }
+    if (interrupted || evidence.cleanup_errors?.length) evidence.result = 'failed';
+    evidence.finished_at = new Date().toISOString();
+    fs.writeFileSync(path.join(runDir, 'evidence.json'), JSON.stringify(evidence, null, 2) + '\n', { mode: 0o600 });
+    process.stdout.write(JSON.stringify({ result: evidence.result, evidence: path.join(runDir, 'evidence.json'), run_dir: runDir }) + '\n');
+    if (interrupted) process.exitCode = 1;
+  }
+}
+for (const signal of ['SIGINT', 'SIGTERM']) process.once(signal, () => {
+  interrupted = true;
+  evidence.interrupted = signal;
+  operationAbort.abort(new Error(`Diagnostic interrupted by ${signal}`));
+});
+main();

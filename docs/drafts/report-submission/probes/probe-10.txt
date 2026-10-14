@@ -1,0 +1,33 @@
+
+ RUN  v5.0.3 /Users/kangminkim/lunch/sobaya/apps/saja-boyz-jinwoo-codex--report-submission
+
+ ❯ src/app/report/zz_sobaya_probe_vuwMzB.test.ts (1 test | 1 failed) 21ms
+   × reportSubmissionConfiguration: missing or unsafe public endpoint does not send the report 21ms
+
+ Test Files  1 failed (1)
+      Tests  1 failed (1)
+   Start at  15:04:03
+   Duration  309ms (environment 70%, import 10%, transform 10%, tests 9%, worker 1%)
+
+npm notice run saja-boyz-jinwoo@0.1.0 npx
+npm notice run 'vitest' run src/app/report/zz_sobaya_probe_vuwMzB.test.ts -t ^reportSubmissionConfiguration: missing or unsafe public endpoint does not send the report$
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/app/report/zz_sobaya_probe_vuwMzB.test.ts > reportSubmissionConfiguration: missing or unsafe public endpoint does not send the report
+AssertionError: expected '제보하기✕카테고리 선택카테고리를 선택하세요사회안보정치국제발생 날짜 …' to contain '제보 접수 연결이 준비되지 않았어요'
+
+Expected: "제보 접수 연결이 준비되지 않았어요"
+Received: "제보하기✕카테고리 선택카테고리를 선택하세요사회안보정치국제발생 날짜 및 시간제보 제목발생 위치상세내용사진/동영상 첨부＋이미지 첨부제보 접수 준비 중입력 확인 완료. 입력한 내용은 전송되지 않았어요입력 확인"
+
+ ❯ src/app/report/zz_sobaya_probe_vuwMzB.test.ts:160:35
+    158|     await fillValid();
+    159|     await checkInput();
+    160|     expect(container.textContent).toContain(
+       |                                   ^
+    161|       '제보 접수 연결이 준비되지 않았어요',
+    162|     );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+RED    reportSubmissionConfiguration: missing or unsafe public endpoint does not send the report  (fails: assertion/test failure; diagnostics above)

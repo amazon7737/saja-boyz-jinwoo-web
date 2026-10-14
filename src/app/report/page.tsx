@@ -1,7 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { useState, type FormEvent } from 'react';
+import { ErrorBoundary, useErrorBoundary } from '@suspensive/react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 
 import { categoryLabels } from '@/features/incidents/model/labels';
 
@@ -29,16 +30,107 @@ const attachmentTypes = [
   'video/webm',
 ];
 
+function getReportEndpoint() {
+  try {
+    const baseUrl = new URL(process.env.NEXT_PUBLIC_REPORT_API_BASE_URL ?? '');
+
+    if (baseUrl.protocol !== 'https:' || baseUrl.username || baseUrl.password) {
+      return null;
+    }
+
+    return new URL('/reports', baseUrl);
+  } catch {
+    return null;
+  }
+}
+
+function isReceiptTimestamp(value: string) {
+  const timestamp =
+    /^(\d{4})-(\d{2})-(\d{2})[Tt](?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:[Zz]|[+-](?:[01]\d|2[0-3]):[0-5]\d)$/.exec(
+      value,
+    );
+
+  if (!timestamp) return false;
+
+  const year = Number(timestamp[1]);
+  const month = Number(timestamp[2]);
+  const day = Number(timestamp[3]);
+  const leapYear = year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0);
+  const monthLengths = [
+    31,
+    leapYear ? 29 : 28,
+    31,
+    30,
+    31,
+    30,
+    31,
+    31,
+    30,
+    31,
+    30,
+    31,
+  ];
+
+  return (
+    month >= 1 && month <= 12 && day >= 1 && day <= monthLengths[month - 1]
+  );
+}
+
+const uncertainReceiptMessage =
+  '접수 여부를 확인하지 못했어요. 다시 시도해 주세요';
+
+type ReportRequest = {
+  controller: AbortController;
+  deadline?: ReturnType<typeof setTimeout>;
+};
+
+function SubmissionError({ message }: { message: string }) {
+  const { setError } = useErrorBoundary();
+
+  useEffect(() => {
+    if (message) setError(new Error(message));
+  }, [message, setError]);
+
+  return null;
+}
+
 export default function ReportPage() {
   const [errors, setErrors] = useState<Partial<Record<RequiredField, string>>>(
     {},
   );
-  const [confirmed, setConfirmed] = useState(false);
+  const [confirmedReportId, setConfirmedReportId] = useState('');
+  const [submissionError, setSubmissionError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const submissionInFlight = useRef(false);
+  const activeRequest = useRef<ReportRequest | null>(null);
+  const submissionBoundary = useRef<{ reset: () => void }>(null);
+  const retryRequest = useRef<{
+    key: string;
+    fields: string;
+    attachments: File[];
+  } | null>(null);
   const [attachments, setAttachments] = useState<File[]>([]);
   const [attachmentError, setAttachmentError] = useState('');
+  const formLocked = isSubmitting || Boolean(confirmedReportId);
 
-  function checkInput(event: FormEvent<HTMLFormElement>) {
+  useEffect(() => {
+    return () => {
+      const request = activeRequest.current;
+
+      activeRequest.current = null;
+
+      if (request) {
+        clearTimeout(request.deadline);
+        request.controller.abort();
+      }
+    };
+  }, []);
+
+  async function checkInput(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+
+    if (submissionInFlight.current || confirmedReportId) return;
+
     const form = event.currentTarget;
     const values = new FormData(form);
     const nextErrors: Partial<Record<RequiredField, string>> = {};
@@ -58,12 +150,131 @@ export default function ReportPage() {
 
     setErrors(nextErrors);
     setAttachmentError('');
-    setConfirmed(firstInvalid === undefined);
+    setConfirmedReportId('');
+    setSubmissionError('');
+    submissionBoundary.current?.reset();
 
     if (firstInvalid !== undefined) {
       const firstField = form.elements.namedItem(firstInvalid);
 
       if (firstField instanceof HTMLElement) firstField.focus();
+
+      return;
+    }
+
+    const endpoint = getReportEndpoint();
+
+    if (endpoint === null) {
+      setSubmissionError('제보 접수 연결이 준비되지 않았어요');
+
+      return;
+    }
+
+    submissionInFlight.current = true;
+    setIsSubmitting(true);
+
+    const request: ReportRequest = { controller: new AbortController() };
+
+    activeRequest.current = request;
+
+    try {
+      const body = new FormData();
+
+      for (const name of requiredFields) {
+        const value = String(values.get(name) ?? '').trim();
+
+        if (name === 'occurredAt') {
+          body.append('occurred_at', new Date(`${value}+09:00`).toISOString());
+        } else {
+          body.append(name, value);
+        }
+      }
+
+      const fields = JSON.stringify(Array.from(body.entries()));
+
+      for (const file of attachments) body.append('attachments', file);
+
+      const previousRequest = retryRequest.current;
+      const requestKey =
+        previousRequest?.fields === fields &&
+        previousRequest.attachments.length === attachments.length &&
+        attachments.every(
+          (file, index) => file === previousRequest.attachments[index],
+        )
+          ? previousRequest.key
+          : crypto.randomUUID();
+
+      retryRequest.current = { key: requestKey, fields, attachments };
+
+      request.deadline = setTimeout(() => request.controller.abort(), 60000);
+
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        credentials: 'omit',
+        headers: { 'Idempotency-Key': requestKey },
+        body,
+        signal: request.controller.signal,
+      }).catch(() => {
+        if (activeRequest.current === request) {
+          setSubmissionError(uncertainReceiptMessage);
+        }
+
+        return null;
+      });
+
+      if (response === null || activeRequest.current !== request) return;
+
+      let receipt: unknown;
+
+      try {
+        receipt = await response.json();
+      } catch {
+        if (activeRequest.current === request) {
+          setSubmissionError(uncertainReceiptMessage);
+        }
+
+        return;
+      }
+
+      if (activeRequest.current !== request) return;
+
+      if (
+        (response.status !== 200 && response.status !== 201) ||
+        typeof receipt !== 'object' ||
+        receipt === null ||
+        !('report_id' in receipt) ||
+        typeof receipt.report_id !== 'string' ||
+        !/^[a-f0-9]{32}$/.test(receipt.report_id) ||
+        !('status' in receipt) ||
+        receipt.status !== 'pending' ||
+        !('received_at' in receipt) ||
+        typeof receipt.received_at !== 'string' ||
+        !isReceiptTimestamp(receipt.received_at)
+      ) {
+        setSubmissionError(
+          response.status >= 500 ||
+            (response.status >= 200 && response.status < 300)
+            ? uncertainReceiptMessage
+            : '제보를 접수하지 못했어요. 다시 시도해 주세요',
+        );
+
+        return;
+      }
+
+      retryRequest.current = null;
+      setConfirmedReportId(receipt.report_id);
+    } catch {
+      if (activeRequest.current === request) {
+        setSubmissionError('제보를 접수하지 못했어요. 다시 시도해 주세요');
+      }
+    } finally {
+      clearTimeout(request.deadline);
+
+      if (activeRequest.current === request) {
+        activeRequest.current = null;
+        submissionInFlight.current = false;
+        setIsSubmitting(false);
+      }
     }
   }
 
@@ -103,7 +314,6 @@ export default function ReportPage() {
         className="flex flex-col gap-5 px-4 pt-4 pb-6"
         noValidate
         onSubmit={checkInput}
-        onChange={() => setConfirmed(false)}
       >
         <div className="flex min-w-0 flex-col gap-2">
           <label
@@ -116,6 +326,7 @@ export default function ReportPage() {
             className="box-border w-full min-w-0 rounded-[10px] border border-solid border-border bg-[#f8fafc] px-3.5 py-3 font-[family-name:inherit] text-[14px]/[normal] text-text invalid:text-[#94a3b8]"
             id="report-category"
             name="category"
+            disabled={formLocked}
             required
             defaultValue=""
             {...errorAttributes('category')}
@@ -136,12 +347,13 @@ export default function ReportPage() {
             htmlFor="report-occurred-at"
             className="text-[13px]/[normal] font-bold text-muted"
           >
-            발생 날짜 및 시간
+            발생 날짜 및 시간 (한국시간)
           </label>
           <input
             className="box-border w-full min-w-0 rounded-[10px] border border-solid border-border bg-[#f8fafc] px-3.5 py-3 text-[14px]/[normal] text-text placeholder:text-[#94a3b8]"
             id="report-occurred-at"
             name="occurredAt"
+            disabled={formLocked}
             {...errorAttributes('occurredAt')}
             type="datetime-local"
             required
@@ -159,6 +371,7 @@ export default function ReportPage() {
             className="box-border w-full min-w-0 rounded-[10px] border border-solid border-border bg-[#f8fafc] px-3.5 py-3 text-[14px]/[normal] text-text placeholder:text-[#94a3b8]"
             id="report-title"
             name="title"
+            disabled={formLocked}
             {...errorAttributes('title')}
             placeholder="사건 제목을 입력하세요"
             required
@@ -176,6 +389,7 @@ export default function ReportPage() {
             className="box-border w-full min-w-0 rounded-[10px] border border-solid border-border bg-[#f8fafc] px-3.5 py-3 text-[14px]/[normal] text-text placeholder:text-[#94a3b8]"
             id="report-location"
             name="location"
+            disabled={formLocked}
             {...errorAttributes('location')}
             placeholder="위치를 입력하세요"
             required
@@ -193,6 +407,7 @@ export default function ReportPage() {
             className="box-border h-[120px] w-full min-w-0 resize-y rounded-[10px] border border-solid border-border bg-[#f8fafc] p-3.5 text-[14px]/[normal] text-text placeholder:text-[#94a3b8]"
             id="report-description"
             name="description"
+            disabled={formLocked}
             {...errorAttributes('description')}
             placeholder="상세 내용을 입력하세요"
             required
@@ -214,6 +429,7 @@ export default function ReportPage() {
               id="report-attachments"
               name="attachments"
               type="file"
+              disabled={formLocked}
               multiple
               accept={attachmentTypes.join(',')}
               aria-invalid={Boolean(attachmentError) || undefined}
@@ -221,6 +437,8 @@ export default function ReportPage() {
                 attachmentError ? 'report-attachments-error' : undefined
               }
               onChange={(event) => {
+                if (submissionInFlight.current || confirmedReportId) return;
+
                 const selected = Array.from(event.currentTarget.files ?? []);
 
                 event.currentTarget.value = '';
@@ -277,9 +495,12 @@ export default function ReportPage() {
                   <button
                     className="shrink-0 cursor-pointer rounded-[10px] border border-solid border-border bg-surface px-3 py-2 text-muted"
                     type="button"
+                    disabled={formLocked}
                     aria-label={`${file.name} 삭제`}
                     onClick={() => {
-                      setConfirmed(false);
+                      if (submissionInFlight.current || confirmedReportId)
+                        return;
+
                       setAttachmentError('');
                       setAttachments((previous) =>
                         previous.filter((_, position) => position !== index),
@@ -293,15 +514,53 @@ export default function ReportPage() {
             </ul>
           )}
         </div>
-        <p className="m-0 text-[13px]/[normal] text-muted">제보 접수 준비 중</p>
-        {confirmed && (
-          <p role="status">입력 확인 완료. 입력한 내용은 전송되지 않았어요</p>
+        <p className="m-0 text-[13px]/[normal] text-muted">
+          접수된 제보 내용과 첨부파일은 비공개로 저장돼요
+        </p>
+        <ErrorBoundary
+          ref={submissionBoundary}
+          onReset={() => setSubmissionError('')}
+          fallback={({ error, reset }) => (
+            <div>
+              <p role="alert">{error.message}</p>
+              <button
+                className="cursor-pointer rounded-[10px] border border-solid border-border bg-surface px-3 py-2 text-muted"
+                type="button"
+                onClick={reset}
+              >
+                오류 닫기
+              </button>
+            </div>
+          )}
+        >
+          <SubmissionError message={submissionError} />
+        </ErrorBoundary>
+        {confirmedReportId && (
+          <p role="status">제보가 접수됐어요 · 접수번호: {confirmedReportId}</p>
+        )}
+        {confirmedReportId && (
+          <button
+            className="cursor-pointer rounded-[10px] border border-solid border-border bg-surface px-3 py-2 text-muted"
+            type="button"
+            onClick={(event) => {
+              event.currentTarget.form?.reset();
+              retryRequest.current = null;
+              setErrors({});
+              setConfirmedReportId('');
+              setSubmissionError('');
+              setAttachments([]);
+              setAttachmentError('');
+            }}
+          >
+            새 제보 작성
+          </button>
         )}
         <button
           className="min-h-[52px] cursor-pointer rounded-card border-0 bg-brand text-[16px]/[normal] font-extrabold text-surface"
           type="submit"
+          disabled={formLocked}
         >
-          입력 확인
+          {isSubmitting ? '접수 중' : '제보 접수'}
         </button>
       </form>
     </section>

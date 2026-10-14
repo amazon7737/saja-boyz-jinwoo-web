@@ -1,0 +1,72 @@
+{
+  "scope": "Independent /tmp diagnostic; candidate header is not approved or applied to original checkout.",
+  "source_revision": "b23c5323c5e622d48289afc0a5657f787c356652",
+  "product_page_sha256": "baa8deda9f73089c02ea457038bd0f696fbb490df0a9231e7a814d2c84cde985",
+  "original_checkout_page_unchanged": true,
+  "scratch_other_src_files_byte_identical_to_commit": 58,
+  "scratch_source_changed_paths": [
+    "src/app/report/report-recovery.test.ts"
+  ],
+  "candidate_change": "Only await advance(1) after initial root.render act; before any submit/fetch.",
+  "candidate_one_line_reconstruction_pass": true,
+  "six_approved_test_bodies_byte_identical": true,
+  "before_test_sha256": "7b2d59864161e9c47a59ef4255e83ef8e60c80bc1ada107d84fe2b1542b93b75",
+  "after_test_sha256": "95fa4c53e498be31795766cf2a31d81b417dcbce0c52d7b7581bb7bd9157b8f6",
+  "checks": {
+    "original_six": {
+      "exit_code": 1,
+      "passed": 5,
+      "failed": 1,
+      "failure": "reportFailureCleanup: timer count expected 0, received 1",
+      "output": "before.txt"
+    },
+    "candidate_six": {
+      "exit_code": 0,
+      "passed": 6,
+      "failed": 0,
+      "output": "after.txt"
+    },
+    "timer_origin": {
+      "exit_code": 0,
+      "passed": 1,
+      "output": "timer-origin.txt",
+      "finding": "Before submit: fetch=0 and timers=1; missing IntersectionObserver leads Next Link use-intersection to requestIdleCallback fallback setTimeout(1). After advance1ms: fetch=0 and timers=0."
+    },
+    "typecheck": {
+      "exit_code": 0,
+      "output": "typecheck.txt"
+    },
+    "lint": {
+      "exit_code": 0,
+      "output": "lint.txt"
+    },
+    "format_check": {
+      "exit_code": 0,
+      "output": "format.txt"
+    },
+    "full_suite": {
+      "exit_code": 0,
+      "files": 19,
+      "passed": 81,
+      "failed": 0,
+      "duration_seconds": 106.58,
+      "output": "full-suite.txt",
+      "environment": "Escalated permission for existing local HTTP/Chrome tests."
+    }
+  },
+  "limitations": [
+    "Candidate is only a human-review proposal, not a replacement approval or harness acceptance.",
+    "No product source changes; no original approved files, plans, fixtures, refs or PRs changed by this diagnostic.",
+    "An initial invocation used original cwd by mistake and was disclosed; the stored before.txt is the subsequent correct independent scratch six-test run."
+  ],
+  "evidence_sha256": {
+    "before.txt": "cba44de05a201095c49f09ffe4f0c007f4561dfc9c2a579c77ed7dfe2af07432",
+    "after.txt": "042341fccd87295e4fdd9391f2a68961c456051556e67a69bffb79755de2662a",
+    "timer-origin.txt": "2c8dbcdf7c4b899bc7e1e73e0a5f449603402652cf3981a9077d5a9b9a699baa",
+    "typecheck.txt": "5c7ed77d37ac8c362f07b5b4083d40bc147b4cf935a347b5f94f28f64c817157",
+    "lint.txt": "6f28ce70f61b5ecf27265add249fad0ef325a4bc9376e4687c7748ccbfc39a82",
+    "format.txt": "eb4641e1c07208d80dfd0d6688ff93014772c36d5858c308157227ecc1a8e241",
+    "full-suite.txt": "78a2a9b66bf96bb584fc57e0884adb4e22897a4e226b9b9d1b67ccde6d5c8d45",
+    "minimal.diff": "e48378a5cd0afa948f107389d8ec83673cccee0cfbba58d905b9e2c89d2a9942"
+  }
+}
