@@ -1,0 +1,27 @@
+{
+  "checkedAt": "2026-10-14",
+  "origin": "https://saja-boyz-jinwoo.vercel.app",
+  "checks": [
+    {
+      "path": "/",
+      "status": 200
+    },
+    {
+      "path": "/incidents",
+      "status": 200
+    },
+    {
+      "path": "/search",
+      "status": 200
+    },
+    {
+      "path": "/report",
+      "status": 200
+    },
+    {
+      "path": "/incidents/2378404d1e9e182697a17deb150bf51757c6fd3728d13872c699fcf9713e8ff0",
+      "status": 200
+    }
+  ],
+  "passed": true
+}

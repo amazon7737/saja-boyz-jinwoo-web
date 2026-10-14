@@ -1,0 +1,49 @@
+{
+  "checkedAt": "2026-10-14T02:40:09.302Z",
+  "sourceBase": "20b9471",
+  "runtime": "v24.19.0",
+  "apiOrigin": "https://poem-news.168.107.37.12.sslip.io",
+  "steps": [
+    {
+      "name": "production news list",
+      "count": 4,
+      "selectedArticleId": "2378404d1e9e182697a17deb150bf51757c6fd3728d13872c699fcf9713e8ff0",
+      "images": [
+        {
+          "loaded": true,
+          "src": "https://poem-news.168.107.37.12.sslip.io/images/2378404d1e9e182697a17deb150bf51757c6fd3728d13872c699fcf9713e8ff0.jpg"
+        }
+      ]
+    },
+    {
+      "name": "list to detail",
+      "titleMatched": true
+    },
+    {
+      "name": "detail deep link",
+      "titleMatched": true
+    },
+    {
+      "name": "keyword search via UI",
+      "keyword": "현대엔지니어링",
+      "selectedArticlePresent": true
+    },
+    {
+      "name": "report form route",
+      "submitted": false,
+      "note": "dev has form only; PR16 and production backend pending"
+    }
+  ],
+  "errors": [],
+  "imageResponses": [
+    {
+      "url": "https://poem-news.168.107.37.12.sslip.io/images/2378404d1e9e182697a17deb150bf51757c6fd3728d13872c699fcf9713e8ff0.jpg",
+      "status": 200
+    },
+    {
+      "url": "https://poem-news.168.107.37.12.sslip.io/images/2378404d1e9e182697a17deb150bf51757c6fd3728d13872c699fcf9713e8ff0.jpg",
+      "status": 200
+    }
+  ],
+  "passed": true
+}

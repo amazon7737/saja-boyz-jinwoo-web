@@ -1,0 +1,28 @@
+{
+  "checkedAt": "2026-10-14T02:39:17.123Z",
+  "sourceBase": "20b9471",
+  "runtime": "v24.19.0",
+  "apiOrigin": "https://poem-news.168.107.37.12.sslip.io",
+  "steps": [
+    {
+      "name": "production news list",
+      "count": 4,
+      "selectedArticleId": "2378404d1e9e182697a17deb150bf51757c6fd3728d13872c699fcf9713e8ff0",
+      "images": [
+        {
+          "loaded": true,
+          "src": "https://poem-news.168.107.37.12.sslip.io/images/2378404d1e9e182697a17deb150bf51757c6fd3728d13872c699fcf9713e8ff0.jpg"
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "imageResponses": [
+    {
+      "url": "https://poem-news.168.107.37.12.sslip.io/images/2378404d1e9e182697a17deb150bf51757c6fd3728d13872c699fcf9713e8ff0.jpg",
+      "status": 200
+    }
+  ],
+  "passed": false,
+  "failure": "AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:\n\n  assert.ok(await page.getByRole('link', { name: '기사 원문', exact: true }).count())\n\n    at file:///private/tmp/poem-vercel-browser-check.mjs:61:10"
+}

@@ -1,0 +1,101 @@
+import assert from 'node:assert/strict';
+import { spawn } from 'node:child_process';
+import { once } from 'node:events';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { createServer } from 'node:net';
+import { pathToFileURL } from 'node:url';
+
+const app = '/Users/kangminkim/lunch/sobaya/apps/saja-boyz-jinwoo-codex--vercel-preparation';
+const evidenceDir = app + '/collab/active/codex--vercel-preparation/verification';
+const { chromium } = await import(pathToFileURL(app + '/node_modules/playwright-core/index.mjs'));
+const sample = JSON.parse(await readFile('/tmp/poem-vercel-news-sample.json', 'utf8'));
+const item = sample.items[0];
+const keyword = item.article.title.match(/[가-힣]{2,}/)?.[0];
+assert.ok(keyword);
+const reservation = createServer();
+await new Promise(resolve => reservation.listen(0, '127.0.0.1', resolve));
+const port = reservation.address().port;
+await new Promise(resolve => reservation.close(resolve));
+const origin = `http://127.0.0.1:${port}`;
+const server = spawn(process.execPath, [app + '/node_modules/next/dist/bin/next', 'start', '--hostname', '127.0.0.1', '--port', String(port)], {
+  cwd: app,
+  env: { PATH: process.env.PATH, NODE_ENV: 'production', NEWS_API_BASE_URL: 'https://poem-news.168.107.37.12.sslip.io', NEXT_TELEMETRY_DISABLED: '1' },
+  stdio: ['ignore', 'pipe', 'pipe'],
+});
+let output = '';
+server.stdout.on('data', chunk => { output += chunk; });
+server.stderr.on('data', chunk => { output += chunk; });
+let browser;
+const result = { checkedAt: new Date().toISOString(), sourceBase: '20b9471', runtime: process.version, apiOrigin: 'https://poem-news.168.107.37.12.sslip.io', steps: [], errors: [], imageResponses: [] };
+try {
+  for (let attempt = 0; ; attempt++) {
+    if (attempt >= 100 || server.exitCode !== null) throw new Error('Next startup failed: ' + output);
+    try {
+      const response = await fetch(origin + '/search', { signal: AbortSignal.timeout(1000) });
+      await response.body?.cancel();
+      if (response.ok) break;
+    } catch {}
+    await new Promise(resolve => setTimeout(resolve, 100));
+  }
+  browser = await chromium.launch({ channel: 'chrome', headless: true });
+  const context = await browser.newContext({ viewport: { width: 393, height: 852 } });
+  const page = await context.newPage();
+  page.on('pageerror', error => result.errors.push(error.message));
+  page.on('response', response => {
+    if (response.url().startsWith(result.apiOrigin + '/images/')) result.imageResponses.push({ url: response.url(), status: response.status() });
+  });
+  await mkdir(evidenceDir, { recursive: true });
+  await page.goto(origin + '/incidents');
+  const articleLink = page.locator(`article a[href="/incidents/${item.article_id}"]`);
+  await articleLink.waitFor();
+  const title = await articleLink.innerText();
+  assert.ok(title.length > 0);
+  assert.equal(await page.locator('article').count(), sample.total);
+  await page.locator('article img').first().evaluate(async image => { if (!image.complete) await new Promise(resolve => { image.onload = resolve; image.onerror = resolve; }); });
+  const images = await page.locator('article img').evaluateAll(images => images.map(image => ({ loaded: image.complete && image.naturalWidth > 0, src: image.src })));
+  assert.ok(images.some(image => image.loaded));
+  result.steps.push({ name: 'production news list', count: sample.total, selectedArticleId: item.article_id, images });
+  await page.screenshot({ path: evidenceDir + '/incidents-mobile.png', fullPage: true });
+  await articleLink.click();
+  await page.getByRole('heading', { level: 1, name: title, exact: true }).waitFor();
+  assert.ok(await page.getByRole('link', { name: '기사 원문 보기', exact: true }).count());
+  result.steps.push({ name: 'list to detail', titleMatched: true });
+  await page.screenshot({ path: evidenceDir + '/detail-mobile.png', fullPage: true });
+  const direct = await context.newPage();
+  await direct.goto(origin + '/incidents/' + item.article_id);
+  await direct.getByRole('heading', { level: 1, name: title, exact: true }).waitFor();
+  await direct.close();
+  result.steps.push({ name: 'detail deep link', titleMatched: true });
+  await page.goBack();
+  await articleLink.waitFor();
+  await page.goto(origin + '/search');
+  await page.getByRole('searchbox', { name: '기사 키워드 검색' }).fill(keyword);
+  await page.getByRole('button', { name: '검색', exact: true }).click();
+  await page.waitForURL(url => url.searchParams.get('q') === keyword);
+  await articleLink.waitFor();
+  result.steps.push({ name: 'keyword search via UI', keyword, selectedArticlePresent: true });
+  await page.screenshot({ path: evidenceDir + '/search-mobile.png', fullPage: true });
+  const reportResponse = await page.goto(origin + '/report');
+  assert.equal(reportResponse.status(), 200);
+  assert.ok(await page.locator('form').count());
+  result.steps.push({ name: 'report form route', submitted: false, note: 'dev has form only; PR16 and production backend pending' });
+  assert.deepEqual(result.errors, []);
+  result.passed = true;
+} catch (error) {
+  result.passed = false;
+  result.failure = String(error.stack ?? error);
+  process.exitCode = 1;
+} finally {
+  await browser?.close();
+  if (server.exitCode === null && server.signalCode === null) {
+    const exited = once(server, 'exit');
+    server.kill('SIGTERM');
+    const timer = setTimeout(() => server.kill('SIGKILL'), 3000);
+    await exited;
+    clearTimeout(timer);
+  }
+  await mkdir(evidenceDir, { recursive: true });
+  await writeFile(evidenceDir + '/browser.json', JSON.stringify(result, null, 2) + '\n');
+  await writeFile(evidenceDir + '/server.log.txt', output);
+  console.log(JSON.stringify(result, null, 2));
+}
