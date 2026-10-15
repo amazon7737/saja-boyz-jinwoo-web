@@ -15,7 +15,7 @@ export function ArticleImage({ src }: { src: string | null }) {
   }
 
   return (
-    <figure className="col-start-1 row-span-4 row-start-1 m-0 flex w-20 flex-col gap-1 self-start text-[11px]/[13px] text-muted">
+    <figure className="col-start-1 row-span-4 row-start-1 relative m-0 w-20 self-start text-[11px]/[13px] text-muted">
       <Image
         className="block size-20 rounded-lg object-cover"
         src={src}
@@ -25,7 +25,9 @@ export function ArticleImage({ src }: { src: string | null }) {
         unoptimized
         onError={() => setFailed(true)}
       />
-      <figcaption>AI 생성 이미지</figcaption>
+      <figcaption className="absolute inset-x-0 bottom-0 rounded-b-lg bg-text/80 px-1 py-0.5 text-center text-[9px]/3 text-surface">
+        AI 생성 이미지
+      </figcaption>
     </figure>
   );
 }

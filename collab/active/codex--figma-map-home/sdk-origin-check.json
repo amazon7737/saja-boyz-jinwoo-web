@@ -1,0 +1,17 @@
+{
+  "checked_at": "2026-10-15T16:20:37+09:00",
+  "client_id_is_public": true,
+  "unregistered_port": {
+    "origin": "http://localhost:3021",
+    "sdkReady": true,
+    "authFailed": true,
+    "tiles": 0
+  },
+  "registered_port": {
+    "origin": "http://localhost:3000",
+    "sdkReady": true,
+    "authFailed": false,
+    "tiles": 19
+  },
+  "server_scope": "Temporary bare SDK page created and stopped by this task. No existing listener was stopped."
+}

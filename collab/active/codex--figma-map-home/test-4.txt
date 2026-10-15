@@ -1,0 +1,33 @@
+test('mapPeriodFiltersSynchronizeMarkersAndCardsWithoutResettingMap', async () => {
+  const unknown = item(4);
+  unknown.article.pubDate = 'invalid';
+  const fixture = await mount([
+    item(1, 0.5),
+    item(2, 1),
+    item(3, 8),
+    unknown,
+    item(5, -1),
+  ]);
+  await click('기간');
+  await click('최근 24시간');
+  expect(carousel().querySelectorAll('a[href^="/incidents/"]')).toHaveLength(2);
+  expect(
+    [...fixture.active].map((marker) => marker.content.textContent),
+  ).toEqual(['2']);
+  expect(host.querySelector('[aria-label="기사 필터"]')?.textContent).toContain(
+    '24시간',
+  );
+  expect(host.querySelector('[aria-label="기사 필터"]')?.textContent).toContain(
+    '발행일',
+  );
+  await click('기간: 최근 24시간');
+  await click('최근 7일');
+  expect(carousel().querySelectorAll('a[href^="/incidents/"]')).toHaveLength(2);
+  await click('기간: 최근 7일');
+  await click('전체 기간');
+  expect(carousel().querySelectorAll('a[href^="/incidents/"]')).toHaveLength(5);
+  expect(fixture.created).toHaveBeenCalledTimes(1);
+  expect(fixture.destroy).not.toHaveBeenCalled();
+  expect(fixture.setCenter).not.toHaveBeenCalled();
+  expect(fixture.setZoom).not.toHaveBeenCalled();
+});

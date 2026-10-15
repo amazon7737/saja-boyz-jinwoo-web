@@ -1,7 +1,8 @@
 'use server';
 
 import { fetchArticleList } from '@/features/article-list/api/fetch-articles';
-import { ArticleCard } from '@/features/article-list/ui/article-card/article-card';
+
+import { SearchResultCard } from '../ui/search-result-card/search-result-card';
 
 export async function loadSearchPage(keyword: string, offset: number) {
   if (
@@ -22,7 +23,7 @@ export async function loadSearchPage(keyword: string, offset: number) {
     received: result.items.length,
     cards: result.items.map((item) => ({
       id: item.article_id,
-      content: <ArticleCard item={item} apiOrigin={result.apiOrigin} />,
+      content: <SearchResultCard item={item} keyword={keyword} />,
     })),
   };
 }

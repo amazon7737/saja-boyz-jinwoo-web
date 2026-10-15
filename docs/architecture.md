@@ -25,6 +25,8 @@ pnpm run dev
 - `src/features/article-list/model/`: 기사 응답 타입과 발행 시각·본문·원문 링크 표시 규칙.
 - `src/features/article-list/ui/<컴포넌트>/`: 목록, 카드, 이미지. 이미지의 실패 상태만 클라이언트 컴포넌트가 소유한다.
 - `src/features/incident-list/ui/incident-list/`: 기존 사건 목록과 테스트. 현재 라우트의 로딩 표시에 사용하며 ready 화면은 기사 API와 통합하지 않았다.
+- `src/features/map/model/`: 지도 기사 타입, 고정 대표점별 집계, 발행일 기간·카드 정렬, 뷰포트 보존.
+- `src/features/map/ui/<컴포넌트>/`: 지도 홈, 숫자 원 선택 시트, carousel·카드·이미지, 기간·미제공·전체 필터. SDK 수명주기는 MapHome이 소유하고 필터는 마커 데이터만 갱신한다.
 - `src/features/incidents/model/`: 사건 모델, 라벨, 순수 필터 함수와 기존 단위 테스트.
 
 의존성은 페이지 → 기능의 api/ui, api/ui → model 방향으로 둔다. API 타입을 UI 파일에서 가져오지 않는다. 재사용 근거가 없는 공통 API 클라이언트·저장소 계층·상태관리·일괄 barrel 파일은 만들지 않는다.
@@ -65,3 +67,5 @@ Figma 이미지와 SVG는 실제 화면 구현 시 해당 노드에서 받아 �
 `pnpm-lock.yaml`을 유일한 잠금 파일로 유지하고 CI에서는 `pnpm install --frozen-lockfile`로 재현성을 검사한다. 다른 패키지 매니저의 잠금 파일을 추가하지 않는다.
 
 Next.js의 React lint 플러그인이 ESLint 10에서 실패하므로 현재 호환되는 ESLint 9.39.5를 사용한다. 플러그인 호환성이 확보되면 함께 갱신한다.
+
+검색 결과는features/search/ui/search-result-card의텍스트카드가소유하며, 목록의ArticleCard와표시구성을분리한다. 공통CSS의ui-모션클래스는요청된컨트롤/드롭다운/시트/검색결과에서만명시적으로사용하고,SDK/데이터수명주기와분리한다.

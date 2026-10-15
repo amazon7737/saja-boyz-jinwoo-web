@@ -32,7 +32,7 @@ export function MapArticleSheet({
   return createPortal(
     <section
       aria-label="선택한 기사"
-      className="fixed bottom-0 left-1/2 z-30 flex max-h-[65dvh] w-full max-w-[640px] -translate-x-1/2 flex-col gap-4 rounded-t-3xl border-0 border-t border-solid border-[#e3e8f0] bg-surface p-4 pb-[max(16px,env(safe-area-inset-bottom))] shadow-[0_-8px_16px_rgb(0_0_0/10%)]"
+      className="ui-sheet-enter fixed bottom-0 left-1/2 z-30 flex max-h-[65dvh] w-full max-w-[640px] -translate-x-1/2 flex-col gap-4 rounded-t-3xl border-0 border-t border-solid border-[#e3e8f0] bg-surface p-4 pb-[max(16px,env(safe-area-inset-bottom))] shadow-[0_-8px_16px_rgb(0_0_0/10%)]"
       onKeyDown={(event) => {
         if (event.key === 'Escape') onClose();
       }}
@@ -50,7 +50,7 @@ export function MapArticleSheet({
           type="button"
           aria-label="기사 선택 닫기"
           onClick={onClose}
-          className="relative size-6 shrink-0 border-0 bg-transparent p-0"
+          className="ui-control relative size-6 shrink-0 border-0 bg-transparent p-0"
         >
           <Image
             src="/map/sheet-close.svg"
@@ -110,7 +110,9 @@ export function MapArticleSheet({
               <p className="m-0 text-[11px]/4 text-muted">
                 {item.location.precision === 'address'
                   ? '기사에 언급된 주소 기준 위치'
-                  : '지역 대표 위치 · 실제 발생 지점과 다를 수 있습니다'}
+                  : item.location.precision === 'neighborhood'
+                    ? '기사에 언급된 동네 기준 위치 · 실제 발생 지점과 다를 수 있습니다'
+                    : '지역 대표 위치 · 실제 발생 지점과 다를 수 있습니다'}
               </p>
             </article>
           );

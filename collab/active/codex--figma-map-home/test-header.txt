@@ -1,0 +1,196 @@
+// file: src/features/map/ui/map-home/map-home-design.test.ts
+// @vitest-environment jsdom
+import { act, createElement } from 'react';
+import { createRoot, type Root } from 'react-dom/client';
+import { afterEach, assert, expect, test, vi } from 'vitest';
+
+import { MapHome } from './map-home';
+import type {
+  LocatedArticle,
+  MapArticleResult,
+} from '../../model/map-article.types';
+
+let root: Root | undefined;
+let host: HTMLDivElement;
+const now = Date.parse('2026-10-15T06:00:00Z');
+
+function item(
+  index: number,
+  daysAgo = 0,
+  region = '서울특별시 중구',
+): LocatedArticle {
+  return {
+    article_id: index.toString(16).padStart(64, '0'),
+    collection_id: 'fixture',
+    image_status: 'disabled',
+    image_url: null,
+    article: {
+      title: `기사 ${index}`,
+      description: `${region}에서 보도한 기사`,
+      pubDate: new Date(now - daysAgo * 86400000).toISOString(),
+      link: 'https://example.com/news',
+      originallink: 'https://example.com/news',
+    },
+    location_status: 'resolved',
+    location_reason: null,
+    location: {
+      latitude: region === '서울특별시 중구' ? 37.56 : 35.17,
+      longitude: region === '서울특별시 중구' ? 126.99 : 129.07,
+      label: region,
+      precision: 'region',
+      evidence: { field: 'description', text: region },
+    },
+  };
+}
+
+async function mount(items: LocatedArticle[], failure = false) {
+  vi.stubGlobal('IS_REACT_ACT_ENVIRONMENT', true);
+  vi.useFakeTimers({ toFake: ['Date'] });
+  vi.setSystemTime(now);
+  host = document.createElement('div');
+  document.body.append(host);
+  const active = new Set<{
+    content: HTMLButtonElement;
+    position: unknown;
+    anchor: unknown;
+  }>();
+  const callbacks = new Map<object, Map<string, () => void>>();
+  const created = vi.fn();
+  const destroy = vi.fn();
+  const setCenter = vi.fn();
+  const setZoom = vi.fn();
+  class LatLng {
+    constructor(
+      public latitude: number,
+      public longitude: number,
+    ) {}
+    lat() {
+      return this.latitude;
+    }
+    lng() {
+      return this.longitude;
+    }
+  }
+  class MapFixture {
+    constructor() {
+      created();
+    }
+    destroy = destroy;
+    setSize() {}
+    setCenter = setCenter;
+    setZoom = setZoom;
+    fitBounds() {}
+    getCenter() {
+      return new LatLng(37.56, 126.99);
+    }
+    getZoom() {
+      return 15;
+    }
+  }
+  class MarkerFixture {
+    entry: { content: HTMLButtonElement; position: unknown; anchor: unknown };
+    constructor(options: {
+      position: unknown;
+      icon: { content: HTMLButtonElement; anchor: unknown };
+    }) {
+      this.entry = {
+        content: options.icon.content,
+        position: options.position,
+        anchor: options.icon.anchor,
+      };
+      active.add(this.entry);
+      host
+        .querySelector('[aria-label="주변 지도"] > div')
+        ?.append(this.entry.content);
+    }
+    setMap(map: unknown) {
+      if (map === null) {
+        active.delete(this.entry);
+        this.entry.content.remove();
+      }
+    }
+  }
+  Object.assign(window, {
+    naver: {
+      maps: {
+        Map: MapFixture,
+        Marker: MarkerFixture,
+        LatLng,
+        Size: class {},
+        Point: class {
+          constructor(
+            public x: number,
+            public y: number,
+          ) {}
+        },
+        Event: {
+          addListener(target: object, name: string, callback: () => void) {
+            const events =
+              callbacks.get(target) ?? new Map<string, () => void>();
+            events.set(name, callback);
+            callbacks.set(target, events);
+            return { target, name };
+          },
+          removeListener(listener: { target: object; name: string }) {
+            callbacks.get(listener.target)?.delete(listener.name);
+          },
+        },
+      },
+    },
+  });
+  const articles: MapArticleResult | null = failure
+    ? null
+    : {
+        total: items.length,
+        items,
+        apiOrigin: 'https://news.example.com',
+      };
+  root = createRoot(host);
+  await act(async () =>
+    root!.render(createElement(MapHome, { clientId: 'design-test', articles })),
+  );
+  await act(async () =>
+    document
+      .querySelector('script[src*="oapi.map.naver.com"]')!
+      .dispatchEvent(new Event('load')),
+  );
+  return { active, callbacks, created, destroy, setCenter, setZoom };
+}
+
+function button(label: string, within: ParentNode = document) {
+  const found = Array.from(
+    within.querySelectorAll<HTMLButtonElement>('button'),
+  ).find(
+    (node) =>
+      node.getAttribute('aria-label') === label ||
+      node.textContent?.trim() === label,
+  );
+  assert(found, `button missing: ${label}`);
+  return found;
+}
+
+async function click(label: string, within: ParentNode = document) {
+  await act(async () => button(label, within).click());
+}
+
+function carousel() {
+  const section = host.querySelector<HTMLElement>(
+    'section[aria-label="지도 기사"]',
+  );
+  assert(section, '지도 기사 carousel missing');
+  return section;
+}
+
+afterEach(async () => {
+  if (root) await act(async () => root!.unmount());
+  root = undefined;
+  host?.remove();
+  document
+    .querySelectorAll('script[src*="oapi.map.naver.com"]')
+    .forEach((node) => node.remove());
+  Reflect.deleteProperty(window, 'naver');
+  Reflect.deleteProperty(window, 'navermap_authFailure');
+  vi.useRealTimers();
+  vi.unstubAllGlobals();
+  vi.restoreAllMocks();
+});

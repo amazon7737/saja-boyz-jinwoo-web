@@ -1,0 +1,40 @@
+[
+  {
+    "name": "related-screens",
+    "result": {
+      "status": "handoff",
+      "summary": "검색 전용 텍스트 카드와 아이콘 제출 버튼, 목록 정보 계층·AI 이미지 표기, 상세 간격·하단 공유 CTA를 보정했습니다. 기존 링크와 데이터 처리 동작을 유지했습니다. format·lint·tsc 통과. focused 테스트는 37개 통과, 추천검색 브라우저 테스트 1개는 90초 timeout으로 실패했습니다. 커밋·푸시는 하지 않았습니다.",
+      "reason": "전체 109개 gate·독립 리뷰·실제 브라우저 대조가 남았습니다. 추천검색 정상 동작은 브라우저에서 재확인해야 합니다. API에 없는 주소 매치·분류·상태·사건 위치/발생시각·타임라인·인용수는 추가하지 않아 원본과 차이가 남습니다. amazon의 article-card.tsx 제목 링크 작업 알림이 도착해 해당 파일의 추가 수정은 중단했습니다.",
+      "usage": {
+        "input_tokens": 764227,
+        "cached_input_tokens": 685696,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 4130,
+        "reasoning_output_tokens": 477
+      }
+    },
+    "runtime_receipt": false,
+    "model": "gpt-6-astra",
+    "wrapped_by": "scripts/collab.sh run",
+    "source_only": true
+  },
+  {
+    "name": "related-screens-polish",
+    "result": {
+      "status": "done",
+      "summary": "6개 소스 수정: 검색 SVG를 14px 🔍로 교체, 결과 제목·요약 한 줄 및 안전한 검색어 강조, 추천칩 32px·최근검색행 41px/삭제영역 40px, 상세 이미지·fallback 높이 190px/반경 14px, 지도 제목에 🔥 추가. format·lint·typecheck 통과, 지정 테스트 5파일 22개 통과.",
+      "reason": "article-card.tsx·테스트·plan·의존성·하네스·runtime·Git은 변경하지 않았으며 커밋·푸시·외부게시도 하지 않았습니다. 브라우저 시각 검증과 추천검색 브라우저 테스트·최종 전체 gate는 부모 작업에 남아 있습니다.",
+      "usage": {
+        "input_tokens": 259304,
+        "cached_input_tokens": 215808,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 2160,
+        "reasoning_output_tokens": 34
+      }
+    },
+    "runtime_receipt": false,
+    "model": "gpt-6-astra",
+    "wrapped_by": "scripts/collab.sh run",
+    "source_only": true
+  }
+]

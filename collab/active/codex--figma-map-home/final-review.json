@@ -1,0 +1,18 @@
+{
+  "baseline": "3b155aa950f4c23713f00b370845681ff1a9eaf4",
+  "review": {
+    "head": "89a013fc362af218903643ccc64d6652c1c20632",
+    "worker": "astra",
+    "summary": "HEAD 89a013fc362af218903643ccc64d6652c1c20632 검토 완료. 조치할 소스 결함을 발견하지 못했습니다. 지역 식별·중복 제거(map-region-groups.ts:3), 기간 양끝 경계(map-period-filter.ts:14), SDK 유지(map-home.tsx:545), 모달 정리(map-all-filters.tsx:87), reduced-motion(globals.css:156)을 확인했습니다. 검색·목록·상세 추가 변경과 기존 테스트 보존, 신규 승인 7개 본문의 바이트 일치도 확인했습니다.",
+    "at": 1792056633
+  },
+  "status": "complete",
+  "runtime_calls": 10,
+  "completed_entries": 7,
+  "test_suite": {
+    "passed": 109,
+    "failed": 0,
+    "skipped": 0
+  },
+  "source_manifest_matches": true
+}

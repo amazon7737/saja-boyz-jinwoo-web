@@ -1,0 +1,37 @@
+[
+  {
+    "name": "mapRegionCirclesCountUniqueArticlesAtFixedPoints",
+    "behavior": "대표점별 고유 기사 수·1건 숫자 원·크기 단계·줌 불변",
+    "file": "test-1.txt"
+  },
+  {
+    "name": "mapRegionCirclesGrowWithCountAndKeepSelection",
+    "behavior": "1·5·7·12건 원의 크기와 숫자 선택·닫기",
+    "file": "test-2.txt"
+  },
+  {
+    "name": "mapCarouselUsesRealArticlesAndSafeImages",
+    "behavior": "실제 기사 순서·고유 링크·HTML 텍스트·이미지 실패·전체보기",
+    "file": "test-3.txt"
+  },
+  {
+    "name": "mapPeriodFiltersSynchronizeMarkersAndCardsWithoutResettingMap",
+    "behavior": "발행일 기간 경계·미확인/미래 제외·집계와 카드 동기화·지도 보존",
+    "file": "test-4.txt"
+  },
+  {
+    "name": "mapUnavailableFiltersExplainMissingMetadataAndCloseAccessibly",
+    "behavior": "분류·상태 드롭다운과 선택 불가 안내·Escape 포커스 복원",
+    "file": "test-5.txt"
+  },
+  {
+    "name": "mapAllFiltersApplyOrDiscardDraftAndReset",
+    "behavior": "전체 필터 시트의 임시 선택·취소·적용·초기화",
+    "file": "test-6.txt"
+  },
+  {
+    "name": "mapFilteredEmptyAndApiFailureKeepRecoveryAndLocation",
+    "behavior": "필터 빈 결과·API 실패 안내와 지도·내 위치 유지",
+    "file": "test-7.txt"
+  }
+]

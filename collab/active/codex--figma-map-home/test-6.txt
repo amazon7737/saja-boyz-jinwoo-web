@@ -1,0 +1,29 @@
+test('mapAllFiltersApplyOrDiscardDraftAndReset', async () => {
+  const fixture = await mount([item(1, 0.5), item(2, 8)]);
+  const trigger = button('전체 필터');
+  await click('전체 필터');
+  let panel = document.querySelector('[role="dialog"][aria-label="전체 필터"]');
+  assert(panel);
+  expect(panel.textContent).toContain('카테고리');
+  expect(panel.textContent).toContain('상태');
+  await click('최근 24시간', panel);
+  expect(carousel().querySelectorAll('a[href^="/incidents/"]')).toHaveLength(2);
+  await click('필터 닫기', panel);
+  expect(document.activeElement).toBe(trigger);
+  await click('전체 필터');
+  panel = document.querySelector('[role="dialog"][aria-label="전체 필터"]');
+  assert(panel);
+  expect(button('전체 기간', panel).getAttribute('aria-pressed')).toBe('true');
+  await click('최근 24시간', panel);
+  await click('필터 적용하기', panel);
+  expect(carousel().querySelectorAll('a[href^="/incidents/"]')).toHaveLength(1);
+  expect(
+    [...fixture.active].map((marker) => marker.content.textContent),
+  ).toEqual(['1']);
+  await click('전체 필터');
+  panel = document.querySelector('[role="dialog"][aria-label="전체 필터"]');
+  assert(panel);
+  await click('초기화', panel);
+  await click('필터 적용하기', panel);
+  expect(carousel().querySelectorAll('a[href^="/incidents/"]')).toHaveLength(2);
+});

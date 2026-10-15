@@ -243,7 +243,9 @@ test('groups articles at the same representative coordinate and keeps every arti
   expect(marker.icon?.content.textContent).toBe('2');
   expect(marker.title).toContain('2건');
   await act(async () => fixture.selected[0]());
-  const links = document.querySelectorAll('a[href^="/incidents/"]');
+  const links = document
+    .querySelector('[aria-label="선택한 기사"]')!
+    .querySelectorAll('a[href^="/incidents/"]');
   expect([...links].map((link) => link.getAttribute('href'))).toEqual([
     '/incidents/' + 'a'.repeat(64),
     '/incidents/' + 'b'.repeat(64),
@@ -285,30 +287,27 @@ test('centers a single unique article position instead of sending a degenerate a
   }
 });
 
-test('uses the original Figma article marker and restores its unselected appearance when the sheet closes', async () => {
+test('uses a numeric region circle for one article and restores its unselected appearance when the sheet closes', async () => {
   const fixture = await mount();
   const marker = fixture.positions[0] as {
     icon?: { content: HTMLButtonElement };
   };
   const button = marker.icon?.content;
   expect(button?.getAttribute('aria-label')).toContain('지역 대표 위치');
-  expect(button?.querySelector('img')?.getAttribute('src')).toBe(
-    '/map/article-marker.svg',
-  );
+  expect(button?.textContent).toBe('1');
+  expect(button?.querySelector('img')).toBeNull();
   await act(async () => fixture.selected[0]());
   expect(button?.getAttribute('aria-pressed')).toBe('true');
-  expect(button?.querySelector('img')?.getAttribute('src')).toBe(
-    '/map/article-selected.svg',
-  );
+  expect(button?.textContent).toBe('1');
+  expect(button?.querySelector('img')).toBeNull();
   await act(async () =>
     document
       .querySelector<HTMLButtonElement>('button[aria-label="기사 선택 닫기"]')!
       .click(),
   );
   expect(button?.getAttribute('aria-pressed')).toBe('false');
-  expect(button?.querySelector('img')?.getAttribute('src')).toBe(
-    '/map/article-marker.svg',
-  );
+  expect(button?.textContent).toBe('1');
+  expect(button?.querySelector('img')).toBeNull();
   expect(document.querySelector('[aria-label="선택한 기사"]')).toBeNull();
 });
 

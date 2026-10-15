@@ -1,0 +1,24 @@
+{
+  "scope": "임시 src 사본만 수정. 실제 제품/승인 테스트 변경 없음.",
+  "passed": 6,
+  "failed": 4,
+  "failures": [
+    {
+      "name": "mapRegionCirclesCountUniqueArticlesAtFixedPoints",
+      "message": "AssertionError: expected [ { …(3) }, { …(3) }, { …(3) } ] to have a length of 2 but got 3\n    at Proxy.<anonymous> (file:///Users/jeong-gyuhwan/%E1%84%80%E1%85%B2%E1%84%92%E1%85%AA%E1%86%AB/projects/saja-boyz-jinwoo-codex--figma-map-home/node_modules/.pnpm/vitest@5.0.3_@types+node@24.19.0_jsdom@27.4.0_vite@8.3.1_@types+node@24.19.0_jiti@2.7.0_/node_modules/vitest/dist/chunks/index.C4tKZ0yW.js:2147:20)\n    at Proxy.<anonymous> (file:///Users/jeong-gyuhwan/%E1%84%80%E1%85%B2%E1%84%92%E1%85%AA%E1%86%AB/projects/saja-boyz-jinwoo-codex--figma-map-home/node_modules/.pnpm/vitest@5.0.3_@types+node@24."
+    },
+    {
+      "name": "mapOverlappingRegionMarkersCombineUniqueArticles",
+      "message": "AssertionError: expected [ '1', '1', '1' ] to deeply equal [ '1', '2' ]\n    at /private/tmp/map-overlap-probe-t76ocohi/src/features/map/ui/map-home/map-marker-overlap.test.ts:260:27\n    at file:///Users/jeong-gyuhwan/%E1%84%80%E1%85%B2%E1%84%92%E1%85%AA%E1%86%AB/projects/saja-boyz-jinwoo-codex--figma-map-home/node_modules/.pnpm/vitest@5.0.3_@types+node@24.19.0_jsdom@27.4.0_vite@8.3.1_@types+node@24.19.0_jiti@2.7.0_/node_modules/vitest/dist/chunks/run.BTlFXlnv.js:2783:20"
+    },
+    {
+      "name": "mapRegionDisplayClustersSplitAndRejoinOnZoom",
+      "message": "AssertionError: expected [ '1', '1', '1' ] to deeply equal [ '1', '2' ]\n    at /private/tmp/map-overlap-probe-t76ocohi/src/features/map/ui/map-home/map-marker-overlap.test.ts:309:27\n    at file:///Users/jeong-gyuhwan/%E1%84%80%E1%85%B2%E1%84%92%E1%85%AA%E1%86%AB/projects/saja-boyz-jinwoo-codex--figma-map-home/node_modules/.pnpm/vitest@5.0.3_@types+node@24.19.0_jsdom@27.4.0_vite@8.3.1_@types+node@24.19.0_jiti@2.7.0_/node_modules/vitest/dist/chunks/run.BTlFXlnv.js:2783:20"
+    },
+    {
+      "name": "mapDisplayClustersFollowPeriodAndDisposeListeners",
+      "message": "AssertionError: expected [ '1', '1', '1' ] to deeply equal [ '1', '2' ]\n    at /private/tmp/map-overlap-probe-t76ocohi/src/features/map/ui/map-home/map-marker-overlap.test.ts:330:27\n    at file:///Users/jeong-gyuhwan/%E1%84%80%E1%85%B2%E1%84%92%E1%85%AA%E1%86%AB/projects/saja-boyz-jinwoo-codex--figma-map-home/node_modules/.pnpm/vitest@5.0.3_@types+node@24.19.0_jsdom@27.4.0_vite@8.3.1_@types+node@24.19.0_jiti@2.7.0_/node_modules/vitest/dist/chunks/run.BTlFXlnv.js:2783:20"
+    }
+  ],
+  "format_checked": true
+}

@@ -1,0 +1,114 @@
+import {createRequire} from 'node:module';
+import {writeFile,mkdir} from 'node:fs/promises';
+import {spawn} from 'node:child_process';
+import {once} from 'node:events';
+import {createServer} from 'node:http';
+import assert from 'node:assert/strict';
+const app=process.cwd(), req=createRequire(app+'/package.json'), {chromium}=req('playwright-core');
+const out='/tmp/map-followup-evidence'; await mkdir(out,{recursive:true});
+const origin='https://poem-news.168.107.37.12.sslip.io', base='http://localhost:3000';
+let mode='fixture',server,browser,api; const errors=[]; const report={success:false,checks:[],metrics:{},liveReads:0,writes:0,errors};
+const now=Date.now();
+const items=[['울산광역시',35,129,0],['울산광역시 울주군',35.01,129.01,2],['서울특별시 중구',37.56,126.99,0]].map(([label,latitude,longitude,days],i)=>({
+ article_id:String(i+1).repeat(64),collection_id:'browser-fixture',image_status:'disabled',image_url:null,
+ article:{title:'AI ai Ai aI 안전 '+i,description:'aI Ai ai AI 보도 · '+label,pubDate:new Date(now-days*86400000).toISOString(),link:'https://example.com/news',originallink:'https://example.com/news'},
+ location_status:'resolved',location_reason:null,location:{label,latitude,longitude,precision:'region',evidence:{field:'description',text:label}}
+}));
+const pause=ms=>new Promise(r=>setTimeout(r,ms));
+const markers=page=>page.locator('button[aria-label*="지역 대표 위치"]');
+const counts=async page=>(await markers(page).allTextContents()).sort();
+async function snap(page,name){await page.screenshot({path:out+'/'+name+'.png',animations:'disabled'});}
+async function ready(page){await page.getByRole('button',{name:'내 위치',exact:true}).waitFor();await page.waitForFunction(()=>!document.querySelector('button[aria-label="내 위치"]')?.disabled);await pause(500);}
+try{
+ api=createServer(async(req,res)=>{try{
+  if(req.method!=='GET'){report.writes++;res.writeHead(405).end();return;}
+  const u=new URL(req.url,'http://fixture');
+  if(mode==='live'){report.liveReads++;const r=await fetch(origin+u.pathname+u.search);res.writeHead(r.status,{'Content-Type':r.headers.get('content-type')??'application/json'});const bytes=Buffer.from(await r.arrayBuffer());if(u.pathname==='/map/articles'&&r.ok)report.metrics.liveLocations=JSON.parse(bytes.toString()).items.filter(i=>i.location_status==='resolved').map(i=>i.location);res.end(bytes);return;}
+  res.setHeader('Content-Type','application/json');
+  if(u.pathname==='/map/articles'){res.end(JSON.stringify({total:items.length,items}));return;}
+  if(u.pathname==='/news'){res.end(JSON.stringify({total:items.length,items}));return;}
+  if(u.pathname.startsWith('/news/')){res.end(JSON.stringify(items[0]));return;}
+  res.writeHead(404).end('{}');
+ }catch(e){res.writeHead(502).end('{}');}});
+ await new Promise((r,j)=>{api.once('error',j);api.listen(4200,'127.0.0.1',r);});
+ server=spawn(process.execPath,[req.resolve('next/dist/bin/next'),'start','--hostname','localhost','--port','3000'],{cwd:app,env:{...process.env,NEWS_API_BASE_URL:'http://127.0.0.1:4200',NEXT_PUBLIC_NAVER_MAP_CLIENT_ID:'3p2jip9u35',NEXT_TELEMETRY_DISABLED:'1'},stdio:['ignore','pipe','pipe']});
+ let log='';server.stdout.on('data',b=>log+=b);server.stderr.on('data',b=>log+=b);
+ for(let i=0;i<200&&!log.includes('Ready');i++){assert.equal(server.exitCode,null,log);await pause(100);}
+ assert(log.includes('Ready'),log);
+ browser=await chromium.launch({channel:'chrome',headless:true});const page=await browser.newPage({viewport:{width:393,height:790}});
+ page.on('pageerror',e=>errors.push(e.message));
+ await page.addInitScript(()=>{
+  window.__maps=[];
+  document.addEventListener('load',e=>{
+   if(e.target instanceof HTMLScriptElement&&e.target.src.includes('oapi.map.naver.com')&&window.naver?.maps?.Map){
+    const Original=window.naver.maps.Map;
+    window.naver.maps.Map=new Proxy(Original,{construct(target,args){const map=Reflect.construct(target,args);window.__maps.push(map);return map;}});
+   }
+  },true);
+ });
+ await page.goto(base,{waitUntil:'networkidle'});await ready(page);
+ assert.equal(await page.evaluate(()=>window.__maps.length),1,'real SDK map captured');
+ await page.evaluate(()=>{const m=window.__maps[0];m.setCenter(new window.naver.maps.LatLng(35.6,128));m.setZoom(7,false);});await pause(800);
+ assert.deepEqual(await counts(page),['1','2']);const grouped=markers(page).filter({hasText:/^2$/});assert.equal(await grouped.count(),1);
+ const box=await grouped.boundingBox();assert(Math.abs(box.width-48)<.1);
+ await grouped.focus();await page.keyboard.press('Enter');const sheet=page.locator('[aria-label="선택한 기사"]');await sheet.waitFor();assert.equal(await sheet.locator('a[href^="/incidents/"]').count(),2);
+ await sheet.getByRole('button',{name:'기사 선택 닫기',exact:true}).click();assert(await grouped.evaluate(el=>el===document.activeElement));
+ await snap(page,'map-cluster-393');
+ await grouped.focus();await page.keyboard.press('Enter');await sheet.waitFor();
+ await grouped.evaluate(el=>window.__markerBeforeResize=el);
+ await page.setViewportSize({width:320,height:790});await pause(500);
+ assert.deepEqual(await counts(page),['1','2']);
+ assert(await grouped.evaluate(el=>el===window.__markerBeforeResize));
+ assert.equal(await sheet.locator('a[href^="/incidents/"]').count(),2);
+ report.checks.push('선택 중 리사이즈: 동일 묶음의 마커 DOM과 시트 유지');
+ await page.evaluate(()=>{const m=window.__maps[0];m.setCenter(new window.naver.maps.LatLng(35.005,129.005));m.setZoom(14,false);});await pause(800);assert((await counts(page)).filter(v=>v==='1').length>=2);
+ assert.equal(await sheet.count(),0,'changed display grouping dismisses stale selected sheet');
+ await page.setViewportSize({width:393,height:790});
+ await snap(page,'map-split-393');
+ await page.evaluate(()=>{const m=window.__maps[0];m.setCenter(new window.naver.maps.LatLng(35.6,128));m.setZoom(7,false);});await pause(800);assert.deepEqual(await counts(page),['1','2']);
+ report.checks.push('실제 Naver SDK 투영: 1+1→48px 숫자2, 확대 분리·축소 재합치기, 키보드 선택·2기사·닫기 포커스');
+ const before=await page.evaluate(()=>({center:window.__maps[0].getCenter().toString(),zoom:window.__maps[0].getZoom()}));
+ await page.getByRole('group',{name:'기사 필터',exact:true}).getByRole('button',{name:'기간',exact:true}).click();await page.getByRole('button',{name:'최근 24시간',exact:true}).click();await pause(400);
+ assert.deepEqual(await counts(page),['1','1']);assert.equal(await page.locator('section[aria-label="지도 기사"] a[href^="/incidents/"]').count(),2);
+ assert.deepEqual(await page.evaluate(()=>({center:window.__maps[0].getCenter().toString(),zoom:window.__maps[0].getZoom()})),before);
+ assert.equal(await page.evaluate(()=>window.__maps.length),1);
+ report.checks.push('기간 필터 뒤 묶음·카드 동기화 및 SDK·카메라 유지');
+ for(const width of [393,320]){
+  await page.setViewportSize({width,height:790});await pause(400);
+  const metric=await page.evaluate(()=>{
+   const link=[...document.querySelectorAll('a')].find(a=>a.textContent?.includes('지역 좌표:'));
+   const button=[...document.querySelectorAll('button')].find(b=>b.textContent==='기사 위치 보기');
+   const center=el=>{const r=el.getBoundingClientRect();return r.y+r.height/2;};
+   return {link:center(link),button:center(button),delta:Math.abs(center(link)-center(button)),overflow:document.documentElement.scrollWidth>innerWidth};
+  });assert(metric.delta<=1,JSON.stringify(metric));assert.equal(metric.overflow,false);report.metrics['alignment'+width]=metric;await snap(page,'map-aligned-'+width);
+ }
+ report.checks.push('393/320폭 출처 링크·기사 위치 보기 세로 중심1px 이내');
+ await page.goto(base+'/search?q=ai',{waitUntil:'networkidle'});await page.locator('article h2').first().waitFor();
+ assert.deepEqual(await page.locator('article h2').first().locator('mark').allTextContents(),['AI','ai','Ai','aI']);
+ assert.deepEqual(await page.locator('article').first().locator(':scope > p mark').allTextContents(),['aI','Ai','ai','AI']);
+ await snap(page,'search-ai-fixture');report.checks.push('검색 제목·설명 대소문자 무시 강조 및 원문 표기 보존');
+ mode='live';await page.setViewportSize({width:393,height:790});await page.goto(base,{waitUntil:'networkidle'});await ready(page);
+ await page.evaluate(()=>{const m=window.__maps.at(-1);m.setCenter(new window.naver.maps.LatLng(35.6,128));m.setZoom(7,false);});await pause(800);report.metrics.liveCounts=await counts(page);
+ assert(report.metrics.liveCounts.includes('2'),'live nearby Ulsan groups combine');await snap(page,'map-live-cluster');
+ const ulsan=report.metrics.liveLocations.filter(p=>p.label.includes('울산'));
+ assert(ulsan.length>=2);
+ const center=ulsan.reduce((a,p)=>({latitude:a.latitude+p.latitude/ulsan.length,longitude:a.longitude+p.longitude/ulsan.length}),{latitude:0,longitude:0});
+ await page.evaluate(center=>{const m=window.__maps.at(-1);m.setCenter(new window.naver.maps.LatLng(center.latitude-.05,center.longitude));m.setZoom(11,false);},center);await pause(800);
+ report.metrics.liveZoomCounts=await counts(page);assert(report.metrics.liveZoomCounts.filter(v=>v==='1').length>=2);report.metrics.liveVisibleSplit=await markers(page).evaluateAll(nodes=>nodes.map(n=>{const r=n.getBoundingClientRect();return {count:n.textContent,x:r.x,y:r.y,width:r.width,height:r.height,bottom:r.bottom};}).filter(r=>r.width>0&&r.x>=0&&r.x+r.width<=innerWidth&&r.y>=150&&r.bottom<=510));
+ assert.equal(report.metrics.liveVisibleSplit.length,2);
+ assert(report.metrics.liveVisibleSplit.every(m=>m.count==='1'));
+ await snap(page,'map-live-split');
+ for(const q of ['ai','Ai']){
+  await page.goto(base+'/search?q='+q,{waitUntil:'networkidle'});await page.locator('article h2').first().waitFor();
+  const entries=await page.locator('article h2').evaluateAll(nodes=>nodes.map(n=>({text:n.textContent,marks:[...n.querySelectorAll('mark')].map(m=>m.textContent)})));
+  assert(entries.some(e=>e.marks.some(m=>m.toLowerCase()==='ai')));report.metrics['liveSearch'+q]=entries;await snap(page,'search-live-'+(q==='ai'?'lowercase':'mixedcase'));
+ }
+ report.checks.push('운영 공개 API GET: 울산 묶음·확대 분리, ai/Ai 실제 검색 강조');
+ assert.equal(report.writes,0);assert.deepEqual(errors,[]);report.success=true;
+}catch(e){report.failure=e.stack;process.exitCode=1;}
+finally{
+ await writeFile(out+'/browser-report.json',JSON.stringify(report,null,2));console.log(JSON.stringify(report,null,2));
+ if(browser)await browser.close();
+ if(server&&server.exitCode===null){const ended=once(server,'exit');server.kill('SIGTERM');await Promise.race([ended,pause(3000)]);if(server.exitCode===null)server.kill('SIGKILL');}
+ if(api)await new Promise(r=>api.close(r));
+}

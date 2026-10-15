@@ -1,0 +1,20 @@
+{
+  "reason": "승인한 기존 테스트3개 전환 중2개가 첫 신규 항목 외 RED여서 runtime이 중단함. 테스트/승인을 변경하지 않고 소바야 앱 실행 어댑터를 통한 최소 소스 전환 후 원 루프 재개. 이 호출은 runtime calls와 별도이며 신규 항목 receipt로 계산하지 않음.",
+  "worker": "gpt-6-astra",
+  "files": [
+    "src/components/layout/app-shell/app-shell.tsx",
+    "src/features/map/ui/map-home/map-article-marker.ts"
+  ],
+  "result": {
+    "status": "done",
+    "summary": "요청한 소스 2곳만 수정했습니다. 단일 기사도 기존 ≤5 분기의 38.4px 숫자 원과 선택 ring을 사용하며, AppShell 홈 필터만 제거하고 /incidents 비활성 필터는 유지했습니다.",
+    "reason": "기존 map-articles.test.ts와 app-shell-foundation.test.ts: 14개 모두 통과. 새 테스트는 마커 3개 기대에 실제 2개로 RED 유지. 좌표만으로 그룹화하여 서로 다른 지역이 합쳐지고, 중복 ID도 집계되는 기존 로직은 그대로입니다. 877개 파일의 전후 해시 비교에서 지정 소스 2개만 변경됨을 확인했습니다. 테스트·계획·fixtures·메타데이터 변경 및 커밋은 없습니다. 전체 게이트·브라우저 시각 검증은 수행하지 않았습니다.",
+    "usage": {
+      "input_tokens": 260623,
+      "cached_input_tokens": 214400,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 1473,
+      "reasoning_output_tokens": 46
+    }
+  }
+}

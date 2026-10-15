@@ -30,16 +30,24 @@ export default async function SearchPage({
         <Link
           href="/"
           aria-label="지도로 돌아가기"
-          className="flex size-9 shrink-0 items-center justify-center rounded-xl border border-solid border-border bg-surface font-bold shadow-[0_4px_8px_rgb(0_0_0/5%)]"
+          className="ui-control flex size-9 shrink-0 items-center justify-center rounded-xl border border-solid border-border bg-surface font-bold shadow-[0_4px_8px_rgb(0_0_0/5%)]"
         >
           ←
         </Link>
         <form
           action="/search"
           method="get"
-          className="flex h-9 min-w-0 flex-1 items-center gap-2 rounded-card border-[1.5px] border-solid border-brand bg-surface px-3.5 shadow-[0_4px_8px_rgb(0_0_0/5%)]"
+          className="flex h-9 min-w-0 flex-1 items-center rounded-card border-[1.5px] border-solid border-brand bg-surface pl-0 pr-0 shadow-[0_4px_8px_rgb(0_0_0/5%)]"
         >
-          <span aria-hidden="true">🔍</span>
+          <button
+            type="submit"
+            aria-label="검색"
+            className="ui-control grid size-11 shrink-0 cursor-pointer place-items-center border-0 bg-transparent p-0 text-muted"
+          >
+            <span aria-hidden="true" className="text-[14px]">
+              🔍
+            </span>
+          </button>
           <input
             key={keyword}
             type="search"
@@ -47,23 +55,17 @@ export default async function SearchPage({
             defaultValue={keyword}
             aria-label="기사 키워드 검색"
             placeholder="기사 키워드 검색"
-            className="min-w-0 flex-1 border-0 bg-transparent"
+            className="min-w-0 flex-1 border-0 bg-transparent p-0 text-[14px]/[17px] font-semibold text-text"
           />
           {keyword && (
             <Link
               href="/search"
               aria-label="검색어 초기화"
-              className="shrink-0 text-muted"
+              className="ui-control grid size-11 shrink-0 place-items-center text-muted"
             >
               ✕
             </Link>
           )}
-          <button
-            type="submit"
-            className="shrink-0 cursor-pointer border-0 bg-transparent p-0 text-brand"
-          >
-            검색
-          </button>
         </form>
       </div>
       {keyword ? (
@@ -74,15 +76,13 @@ export default async function SearchPage({
             <p className="m-0">검색 결과를 불러오지 못했어요</p>
             <a
               href={`/search?q=${encodeURIComponent(keyword)}`}
-              className="text-brand underline"
+              className="ui-control text-brand underline"
             >
               다시 시도
             </a>
           </div>
         )
-      ) : (
-        <p className="m-0 text-muted">궁금한 기사의 키워드를 검색해 보세요.</p>
-      )}
+      ) : null}
       <RecentSearches executedKeyword={keyword} />
       <section
         aria-labelledby="suggested-keywords"
@@ -99,7 +99,7 @@ export default async function SearchPage({
             <Link
               key={keyword}
               href={`/search?q=${encodeURIComponent(keyword)}`}
-              className="rounded-lg border border-solid border-border bg-surface px-3 py-2 text-[13px]/[normal]"
+              className="ui-control inline-flex h-8 items-center rounded-lg border border-solid border-border bg-surface px-3 py-0 text-[12px]/[15px]"
             >
               {symbol && <span aria-hidden="true">{symbol} </span>}
               {keyword}

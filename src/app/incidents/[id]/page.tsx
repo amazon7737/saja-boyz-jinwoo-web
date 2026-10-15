@@ -109,28 +109,30 @@ export default async function IncidentDetailPage({
       : null;
 
   return (
-    <article className="flex min-w-0 flex-col gap-5 bg-surface px-4 pb-6 text-text">
+    <article className="flex min-h-[calc(100dvh_-_env(safe-area-inset-top)_-_env(safe-area-inset-bottom))] min-w-0 flex-col gap-4 bg-surface px-4 pb-6 text-text">
       <DetailNavigation />
-      <h1 className="m-0 text-[22px]/[30px] font-extrabold [overflow-wrap:anywhere]">
-        {articleText(article.title)}
-      </h1>
-      <p className="-mt-2 mb-0 text-[12px]/5 text-muted">
-        {Number.isNaN(publishedAt.getTime()) ? (
-          '발행 시각 미확인'
-        ) : (
-          <>
-            기사 발행{' '}
-            <time dateTime={publishedAt.toISOString()}>
-              {publicationText(publishedAt)}
-            </time>
-          </>
-        )}
-      </p>
+      <div className="flex flex-col gap-2">
+        <h1 className="m-0 text-[22px]/[30px] font-extrabold [overflow-wrap:anywhere]">
+          {articleText(article.title)}
+        </h1>
+        <p className="m-0 text-[12px]/4 text-muted">
+          {Number.isNaN(publishedAt.getTime()) ? (
+            '발행 시각 미확인'
+          ) : (
+            <>
+              기사 발행{' '}
+              <time dateTime={publishedAt.toISOString()}>
+                {publicationText(publishedAt)}
+              </time>
+            </>
+          )}
+        </p>
+      </div>
       <DetailImage key={imageUrl} src={imageUrl} />
       {sourceUrl ? (
         <a
           href={sourceUrl}
-          className="self-start text-sm text-muted underline underline-offset-4"
+          className="self-start text-[12px]/4 font-semibold text-muted underline underline-offset-4"
         >
           기사 원문 보기
         </a>

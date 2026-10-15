@@ -1,0 +1,35 @@
+test('mapCarouselUsesRealArticlesAndSafeImages', async () => {
+  const recent = item(2);
+  recent.article.title = '서울 <b>화재</b> &amp; 소식';
+  recent.image_status = 'ready';
+  recent.image_url = `/images/${recent.article_id}.jpg`;
+  const unknown = item(3);
+  unknown.article.pubDate = 'invalid';
+  await mount([
+    item(1, 3),
+    recent,
+    { ...recent, collection_id: 'duplicate' },
+    unknown,
+  ]);
+  const cards = carousel();
+  const links = [...cards.querySelectorAll('a[href^="/incidents/"]')];
+  expect(links.map((link) => link.getAttribute('href'))).toEqual(
+    [2, 1, 3].map((index) => `/incidents/${item(index).article_id}`),
+  );
+  expect(cards.textContent).toContain('서울 화재 & 소식');
+  expect(cards.querySelector('b')).toBeNull();
+  expect(cards.querySelector('a[href="/incidents"]')?.textContent).toContain(
+    '전체보기',
+  );
+  expect(cards.textContent).toContain('최근 보도 기사');
+  expect(cards.textContent).toContain('발행 시각 미확인');
+  expect(cards.textContent).not.toMatch(/진행 중|공론화 성공|종결|인기 순위/);
+  const image = cards.querySelector<HTMLImageElement>(
+    `img[src="https://news.example.com/images/${recent.article_id}.jpg"]`,
+  );
+  assert(image);
+  expect(cards.textContent).toContain('AI 생성 이미지');
+  await act(async () => image.dispatchEvent(new Event('error')));
+  expect(cards.textContent).toContain('이미지 없음');
+  expect(cards.querySelectorAll('a[href^="/incidents/"]')).toHaveLength(3);
+});

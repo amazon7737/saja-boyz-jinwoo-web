@@ -1,0 +1,151 @@
+{
+  "success": true,
+  "checks": [
+    "선택 중 리사이즈: 동일 묶음의 마커 DOM과 시트 유지",
+    "실제 Naver SDK 투영: 1+1→48px 숫자2, 확대 분리·축소 재합치기, 키보드 선택·2기사·닫기 포커스",
+    "기간 필터 뒤 묶음·카드 동기화 및 SDK·카메라 유지",
+    "393/320폭 출처 링크·기사 위치 보기 세로 중심1px 이내",
+    "검색 제목·설명 대소문자 무시 강조 및 원문 표기 보존",
+    "운영 공개 API GET: 울산 묶음·확대 분리, ai/Ai 실제 검색 강조"
+  ],
+  "metrics": {
+    "alignment393": {
+      "link": 130,
+      "button": 130,
+      "delta": 0,
+      "overflow": false
+    },
+    "alignment320": {
+      "link": 130,
+      "button": 130,
+      "delta": 0,
+      "overflow": false
+    },
+    "liveLocations": [
+      {
+        "latitude": 35.4315805555555,
+        "longitude": 129.316863888888,
+        "label": "울산광역시 울주군 온산읍",
+        "precision": "region",
+        "evidence": {
+          "field": "description",
+          "text": "14일 울산소방본부에 따르면 이날 오전 9시 41분쯤 울산 울주군 온산읍 부승화학에서 발생한 <b>화재</b>는 오후 1시... <b>화재</b> 여파로 인근 산업단지에도 비상이 걸렸다. 부승화학 직원과 주변 사업장 근로자, 공사현장 작업자 등... "
+        }
+      },
+      {
+        "latitude": 36.5765138888888,
+        "longitude": 128.147752777777,
+        "label": "경상북도 상주시 이안면",
+        "precision": "region",
+        "evidence": {
+          "field": "description",
+          "text": "경북 상주시 이안면 중부내륙고속도로 양평 방향 북상주 IC 인근"
+        }
+      },
+      {
+        "latitude": 35.5354083333333,
+        "longitude": 129.313688888888,
+        "label": "울산광역시",
+        "precision": "region",
+        "evidence": {
+          "field": "description",
+          "text": "울산소방본부"
+        }
+      }
+    ],
+    "liveCounts": [
+      "1",
+      "2"
+    ],
+    "liveZoomCounts": [
+      "1",
+      "1",
+      "1"
+    ],
+    "liveVisibleSplit": [
+      {
+        "count": "1",
+        "x": 180,
+        "y": 379,
+        "width": 38.390625,
+        "height": 38.390625,
+        "bottom": 417.390625
+      },
+      {
+        "count": "1",
+        "x": 175,
+        "y": 194,
+        "width": 38.390625,
+        "height": 38.390625,
+        "bottom": 232.390625
+      }
+    ],
+    "liveSearchai": [
+      {
+        "text": "인텔리빅스, 범죄·재난 감지 AI 앞세워 코스닥 도전…국방 사업도 확대",
+        "marks": [
+          "AI"
+        ]
+      },
+      {
+        "text": "[마켓뷰] 또 고개 든 AI 수익성 논란…설상가상 반도체주",
+        "marks": [
+          "AI"
+        ]
+      },
+      {
+        "text": "\"AI가 못하는 일은 무엇인가\"…인간의 역할을 다시 묻다",
+        "marks": [
+          "AI"
+        ]
+      },
+      {
+        "text": "AI 열풍에 웃는 한국…거품 꺼지면 경제 직격탄",
+        "marks": [
+          "AI"
+        ]
+      },
+      {
+        "text": "현대엔지니어링, 8700억 군산 AI 데이터센터 수주",
+        "marks": [
+          "AI"
+        ]
+      }
+    ],
+    "liveSearchAi": [
+      {
+        "text": "인텔리빅스, 범죄·재난 감지 AI 앞세워 코스닥 도전…국방 사업도 확대",
+        "marks": [
+          "AI"
+        ]
+      },
+      {
+        "text": "[마켓뷰] 또 고개 든 AI 수익성 논란…설상가상 반도체주",
+        "marks": [
+          "AI"
+        ]
+      },
+      {
+        "text": "\"AI가 못하는 일은 무엇인가\"…인간의 역할을 다시 묻다",
+        "marks": [
+          "AI"
+        ]
+      },
+      {
+        "text": "AI 열풍에 웃는 한국…거품 꺼지면 경제 직격탄",
+        "marks": [
+          "AI"
+        ]
+      },
+      {
+        "text": "현대엔지니어링, 8700억 군산 AI 데이터센터 수주",
+        "marks": [
+          "AI"
+        ]
+      }
+    ]
+  },
+  "liveReads": 6,
+  "writes": 0,
+  "errors": []
+}

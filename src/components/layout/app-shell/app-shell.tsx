@@ -23,9 +23,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   return (
     <div className={shellClassName}>
       {showHeader && <SearchHeader isHome={isHome} />}
-      {(isHome || pathname === '/incidents') && (
-        <ArticleFilters isHome={isHome} />
-      )}
+      {pathname === '/incidents' && <ArticleFilters isHome={isHome} />}
       <main id="main-content" className={isHome ? 'relative z-0' : undefined}>
         <FeatureErrorBoundary>{children}</FeatureErrorBoundary>
       </main>

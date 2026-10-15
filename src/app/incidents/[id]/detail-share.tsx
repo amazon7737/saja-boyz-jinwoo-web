@@ -44,11 +44,11 @@ export function DetailShare({ id, title }: { id: string; title: string }) {
   }
 
   return (
-    <div className="mt-1">
+    <div className="mt-auto pt-4">
       <button
         type="button"
         onClick={share}
-        className="min-h-12 w-full cursor-pointer rounded-card border border-solid border-brand bg-surface px-4 py-3 font-bold text-brand hover:bg-background"
+        className="ui-control min-h-12 w-full cursor-pointer rounded-card border border-solid border-brand bg-surface px-4 py-3 text-[16px]/5 font-extrabold text-brand"
       >
         기사 공유하기
       </button>

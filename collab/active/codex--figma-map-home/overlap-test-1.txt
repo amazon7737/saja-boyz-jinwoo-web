@@ -1,0 +1,55 @@
+test('mapOverlappingRegionMarkersCombineUniqueArticles', async () => {
+  const first = nearby(1);
+  const fixture = await mount([
+    first,
+    { ...first, collection_id: 'duplicate' },
+    nearby(2),
+    item(3),
+  ]);
+  expect(counts(fixture)).toEqual(['1', '2']);
+  const cluster = [...fixture.active].find(
+    (entry) => entry.content.textContent === '2',
+  );
+  const single = [...fixture.active].find(
+    (entry) => entry.content.textContent === '1',
+  );
+  assert(cluster && single);
+  expect(cluster.anchor).toMatchObject({ x: 24, y: 24 });
+  expect(single.anchor).toMatchObject({ x: 19.2, y: 19.2 });
+  expect(cluster.content.getAttribute('aria-label')).toContain('묶음');
+  expect(
+    [first.location, nearby(2).location].some((point) => {
+      const position = cluster.position as {
+        latitude: number;
+        longitude: number;
+      };
+      return (
+        point.latitude === position.latitude &&
+        point.longitude === position.longitude
+      );
+    }),
+  ).toBe(true);
+  cluster.content.focus();
+  await act(async () =>
+    cluster.content.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }),
+    ),
+  );
+  const sheet = host.querySelector('[aria-label="선택한 기사"]');
+  assert(sheet);
+  expect(
+    [...sheet.querySelectorAll('a[href^="/incidents/"]')]
+      .map((link) => link.getAttribute('href'))
+      .sort(),
+  ).toEqual(
+    [first.article_id, nearby(2).article_id]
+      .map((id) => '/incidents/' + id)
+      .sort(),
+  );
+  await click('기사 선택 닫기', sheet);
+  expect(document.activeElement).toBe(cluster.content);
+  expect(fixture.created).toHaveBeenCalledTimes(1);
+  expect(fixture.setCenter).not.toHaveBeenCalled();
+  expect(fixture.setZoom).not.toHaveBeenCalled();
+});
+

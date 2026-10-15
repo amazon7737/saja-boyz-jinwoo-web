@@ -125,7 +125,7 @@ test('foundationBrandHasALocalAccessibleSvgAndSearchLink', async () => {
 });
 
 test('foundationUnconnectedArticleFiltersCannotPretendToFilter', async () => {
-  for (const route of ['/', '/incidents']) {
+  for (const route of ['/incidents']) {
     await withShell(route, (host) => {
       const filters = host.querySelector('[aria-label="기사 필터"]');
       assert(filters);
@@ -140,6 +140,10 @@ test('foundationUnconnectedArticleFiltersCannotPretendToFilter', async () => {
       expect(host.querySelector('main')?.textContent).toContain('기능 내용');
     });
   }
+  await withShell('/', (host) => {
+    expect(host.querySelector('[aria-label="기사 필터"]')).toBeNull();
+    expect(host.querySelector('header')).not.toBeNull();
+  });
   await withShell('/search', (host) => {
     expect(host.querySelector('[aria-label="기사 필터"]')).toBeNull();
   });

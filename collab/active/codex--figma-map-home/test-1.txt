@@ -1,0 +1,35 @@
+test('mapRegionCirclesCountUniqueArticlesAtFixedPoints', async () => {
+  const first = item(1);
+  const items = [
+    first,
+    { ...first, collection_id: 'duplicate' },
+    item(2),
+    item(3, 0, '부산광역시'),
+    item(4, 0, '부산광역시 중구'),
+  ];
+  const fixture = await mount(items);
+  const markers = [...fixture.active];
+  expect(markers).toHaveLength(3);
+  expect(markers.map((marker) => marker.content.textContent).sort()).toEqual([
+    '1',
+    '1',
+    '2',
+  ]);
+  expect(markers[0].position).toMatchObject({
+    latitude: 37.56,
+    longitude: 126.99,
+  });
+  for (const marker of markers) {
+    expect(marker.content.querySelector('img')).toBeNull();
+    expect(marker.content.getAttribute('aria-label')).toContain(
+      '지역 대표 위치',
+    );
+  }
+  for (const events of fixture.callbacks.values())
+    events.get('zoom_changed')?.();
+  expect(
+    [...fixture.active].map((marker) => marker.content.textContent).sort(),
+  ).toEqual(['1', '1', '2']);
+  expect(fixture.setCenter).not.toHaveBeenCalled();
+  expect(fixture.setZoom).not.toHaveBeenCalled();
+});

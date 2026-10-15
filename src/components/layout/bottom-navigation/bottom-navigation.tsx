@@ -6,7 +6,7 @@ export function BottomNavigation({ pathname }: { pathname: string }) {
   const mapCurrent =
     pathname === '/' ? 'page' : pathname === '/search' ? 'location' : undefined;
   const tabClassName =
-    'flex min-w-0 flex-1 flex-col items-center justify-center gap-[2px] rounded-[20px] py-[6px] text-[10px]/[normal] font-bold';
+    'ui-control flex min-w-0 flex-1 flex-col items-center justify-center gap-[2px] rounded-[20px] py-[6px] text-[10px]/[normal] font-bold';
 
   return (
     <nav
@@ -30,7 +30,7 @@ export function BottomNavigation({ pathname }: { pathname: string }) {
       <Link
         href="/report"
         aria-label="제보하기"
-        className="flex size-[54px] shrink-0 items-center justify-center rounded-full bg-brand text-[22px]/[normal] text-white shadow-[0_6px_8px_rgba(232,26,43,0.35)]"
+        className="ui-control ui-primary flex size-[54px] shrink-0 items-center justify-center rounded-full bg-brand text-[22px]/[normal] text-white shadow-[0_6px_8px_rgba(232,26,43,0.35)]"
       >
         <span aria-hidden="true">📢</span>
       </Link>

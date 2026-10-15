@@ -1,0 +1,183 @@
+const assetPathPrefix = "[temporary download source omitted; use local assets]";
+const imgFrame = `${assetPathPrefix}/bb14a.png`;
+const imgIosSignal = `${assetPathPrefix}/46311.svg`;
+const imgIosWifiSignal = `${assetPathPrefix}/c12a6.svg`;
+const imgIosBatteryFull = `${assetPathPrefix}/87899.svg`;
+const imgMapPin = `${assetPathPrefix}/94546.svg`;
+const imgList = `${assetPathPrefix}/0b23b.svg`;
+const imgPlusCircle = `${assetPathPrefix}/c1a4a.svg`;
+
+export default function FilterOverlay() {
+  return (
+    <div className="bg-[#0d0e10] content-stretch flex flex-col items-start justify-between relative size-full" data-node-id="11:1261" data-name="filter-overlay">
+      <div className="content-stretch flex flex-col items-start relative shrink-0 w-full" data-node-id="11:1262" data-name="Frame">
+        <div className="content-stretch flex h-[44px] items-center justify-between px-[20px] relative shrink-0 w-full" data-node-id="11:1263" data-name="status-bar">
+          <p className="[word-break:break-word] font-['Inter:Semi_Bold'] font-semibold leading-[normal] not-italic relative shrink-0 text-[14px] text-white whitespace-nowrap" data-node-id="11:1264">
+            9:41
+          </p>
+          <div className="content-stretch flex gap-[6px] items-center relative shrink-0" data-node-id="11:1265" data-name="status-icons">
+            <div className="h-[11px] relative shrink-0 w-[17px]" data-node-id="11:1266" data-name="ios-signal">
+              <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgIosSignal} />
+            </div>
+            <div className="h-[11px] relative shrink-0 w-[15px]" data-node-id="11:1268" data-name="ios-wifi-signal">
+              <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgIosWifiSignal} />
+            </div>
+            <div className="h-[12px] relative shrink-0 w-[25px]" data-node-id="11:1270" data-name="ios-battery-full">
+              <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgIosBatteryFull} />
+            </div>
+          </div>
+        </div>
+        <div className="content-stretch flex flex-col h-[746px] items-start relative shrink-0 w-full" data-node-id="11:1272" data-name="Frame">
+          <div aria-hidden className="absolute inset-0 pointer-events-none">
+            <img alt="" className="absolute max-w-none object-cover size-full" src={imgFrame} />
+            <div className="absolute bg-[rgba(0,0,0,0.6)] inset-0" />
+          </div>
+          <div className="absolute bg-[#141619] border-[#262930] border-solid border-t bottom-0 content-stretch flex flex-col gap-[20px] items-start left-0 p-[20px] right-0 rounded-tl-[24px] rounded-tr-[24px]" data-node-id="11:1273" data-name="Frame">
+            <div className="content-stretch flex items-start justify-center pb-[8px] relative shrink-0 w-full" data-node-id="11:1274" data-name="Frame">
+              <div className="bg-[#5c606c] h-[4px] relative rounded-[2px] shrink-0 w-[36px]" data-node-id="11:1275" data-name="Rectangle" />
+            </div>
+            <div className="[word-break:break-word] content-stretch flex items-center justify-between leading-[normal] not-italic relative shrink-0 w-full whitespace-nowrap" data-node-id="11:1276" data-name="Frame">
+              <p className="font-['Inter:Extra_Bold'] font-extrabold relative shrink-0 text-[18px] text-white" data-node-id="11:1277">
+                조건 필터 상세
+              </p>
+              <p className="font-['Cousine:Bold'] relative shrink-0 text-[#00e5ff] text-[12px]" data-node-id="11:1278">
+                RESET
+              </p>
+            </div>
+            <div className="content-stretch flex flex-col gap-[10px] items-start relative shrink-0 w-full" data-node-id="11:1279" data-name="Frame">
+              <p className="[word-break:break-word] font-['Cousine:Bold'] font-bold leading-[normal] relative shrink-0 text-[#8f95a3] text-[13px] whitespace-nowrap" data-node-id="11:1280">
+                01. 기간 선택 (PERIOD)
+              </p>
+              <div className="content-stretch flex gap-[6px] items-start relative shrink-0 w-full" data-node-id="11:1281" data-name="Frame">
+                <div className="bg-[#0d0e10] border border-[#262930] border-solid content-stretch flex flex-[1_0_0] items-start justify-center min-w-px px-[16px] py-[10px] relative rounded-[8px]" data-node-id="11:1282" data-name="Frame">
+                  <p className="[word-break:break-word] font-['Inter:Bold'] font-bold leading-[normal] not-italic relative shrink-0 text-[13px] text-white whitespace-nowrap" data-node-id="11:1283">
+                    1주
+                  </p>
+                </div>
+                <div className="bg-[#00e5ff] border border-[#00e5ff] border-solid content-stretch flex flex-[1_0_0] items-start justify-center min-w-px px-[16px] py-[10px] relative rounded-[8px]" data-node-id="11:1284" data-name="Frame">
+                  <p className="[word-break:break-word] font-['Inter:Bold'] font-bold leading-[normal] not-italic relative shrink-0 text-[#0d0e10] text-[13px] whitespace-nowrap" data-node-id="11:1285">
+                    1개월
+                  </p>
+                </div>
+                <div className="bg-[#0d0e10] border border-[#262930] border-solid content-stretch flex flex-[1_0_0] items-start justify-center min-w-px px-[16px] py-[10px] relative rounded-[8px]" data-node-id="11:1286" data-name="Frame">
+                  <p className="[word-break:break-word] font-['Inter:Bold'] font-bold leading-[normal] not-italic relative shrink-0 text-[13px] text-white whitespace-nowrap" data-node-id="11:1287">
+                    3개월
+                  </p>
+                </div>
+                <div className="bg-[#0d0e10] border border-[#262930] border-solid content-stretch flex flex-[1_0_0] items-start justify-center min-w-px px-[16px] py-[10px] relative rounded-[8px]" data-node-id="11:1288" data-name="Frame">
+                  <p className="[word-break:break-word] font-['Inter:Bold'] font-bold leading-[normal] not-italic relative shrink-0 text-[13px] text-white whitespace-nowrap" data-node-id="11:1289">
+                    직접입력
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div className="content-stretch flex flex-col gap-[10px] items-start relative shrink-0 w-full" data-node-id="11:1290" data-name="Frame">
+              <p className="[word-break:break-word] font-['Cousine:Bold'] font-bold leading-[normal] relative shrink-0 text-[#8f95a3] text-[13px] whitespace-nowrap" data-node-id="11:1291">
+                02. 카테고리 (CATEGORY)
+              </p>
+              <div className="content-start flex flex-wrap gap-[6px] items-start relative shrink-0 w-full" data-node-id="11:1292" data-name="Frame">
+                <div className="bg-[rgba(0,229,255,0.1)] border border-[#00e5ff] border-solid content-stretch flex items-start px-[14px] py-[8px] relative rounded-[8px] shrink-0" data-node-id="11:1293" data-name="Frame">
+                  <p className="[word-break:break-word] font-['Inter:Bold'] font-bold leading-[normal] not-italic relative shrink-0 text-[#00e5ff] text-[13px] whitespace-nowrap" data-node-id="11:1294">
+                    전체
+                  </p>
+                </div>
+                <div className="bg-[#0d0e10] border border-[#262930] border-solid content-stretch flex items-start px-[14px] py-[8px] relative rounded-[8px] shrink-0" data-node-id="11:1295" data-name="Frame">
+                  <p className="[word-break:break-word] font-['Inter:Medium'] font-medium leading-[normal] not-italic relative shrink-0 text-[13px] text-white whitespace-nowrap" data-node-id="11:1296">
+                    안보
+                  </p>
+                </div>
+                <div className="bg-[#0d0e10] border border-[#262930] border-solid content-stretch flex items-start px-[14px] py-[8px] relative rounded-[8px] shrink-0" data-node-id="11:1297" data-name="Frame">
+                  <p className="[word-break:break-word] font-['Inter:Medium'] font-medium leading-[normal] not-italic relative shrink-0 text-[13px] text-white whitespace-nowrap" data-node-id="11:1298">
+                    정치
+                  </p>
+                </div>
+                <div className="bg-[rgba(0,229,255,0.1)] border border-[#00e5ff] border-solid content-stretch flex items-start px-[14px] py-[8px] relative rounded-[8px] shrink-0" data-node-id="11:1299" data-name="Frame">
+                  <p className="[word-break:break-word] font-['Inter:Bold'] font-bold leading-[normal] not-italic relative shrink-0 text-[#00e5ff] text-[13px] whitespace-nowrap" data-node-id="11:1300">
+                    사회
+                  </p>
+                </div>
+                <div className="bg-[#0d0e10] border border-[#262930] border-solid content-stretch flex items-start px-[14px] py-[8px] relative rounded-[8px] shrink-0" data-node-id="11:1301" data-name="Frame">
+                  <p className="[word-break:break-word] font-['Inter:Medium'] font-medium leading-[normal] not-italic relative shrink-0 text-[13px] text-white whitespace-nowrap" data-node-id="11:1302">
+                    국제
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div className="content-stretch flex flex-col gap-[10px] items-start relative shrink-0 w-full" data-node-id="11:1303" data-name="Frame">
+              <p className="[word-break:break-word] font-['Cousine:Bold'] font-bold leading-[normal] relative shrink-0 text-[#8f95a3] text-[13px] whitespace-nowrap" data-node-id="11:1304">
+                03. 위험 상태 (STATUS)
+              </p>
+              <div className="content-stretch flex gap-[6px] items-start relative shrink-0 w-full" data-node-id="11:1305" data-name="Frame">
+                <div className="bg-[#0d0e10] border border-[#262930] border-solid content-stretch flex flex-[1_0_0] items-start justify-center min-w-px px-[12px] py-[10px] relative rounded-[8px]" data-node-id="11:1306" data-name="Frame">
+                  <p className="[word-break:break-word] font-['Inter:Bold'] font-bold leading-[normal] not-italic relative shrink-0 text-[13px] text-white whitespace-nowrap" data-node-id="11:1307">
+                    전체
+                  </p>
+                </div>
+                <div className="bg-[rgba(255,74,90,0.1)] border border-[#ff4a5a] border-solid content-stretch flex flex-[1_0_0] items-start justify-center min-w-px px-[12px] py-[10px] relative rounded-[8px]" data-node-id="11:1308" data-name="Frame">
+                  <p className="[word-break:break-word] font-['Inter:Bold'] font-bold leading-[normal] not-italic relative shrink-0 text-[#ff4a5a] text-[13px] whitespace-nowrap" data-node-id="11:1309">
+                    진행 중
+                  </p>
+                </div>
+                <div className="bg-[#0d0e10] border border-[#262930] border-solid content-stretch flex flex-[1_0_0] items-start justify-center min-w-px px-[12px] py-[10px] relative rounded-[8px]" data-node-id="11:1310" data-name="Frame">
+                  <p className="[word-break:break-word] font-['Inter:Bold'] font-bold leading-[normal] not-italic relative shrink-0 text-[#ffb020] text-[13px] whitespace-nowrap" data-node-id="11:1311">
+                    미제
+                  </p>
+                </div>
+                <div className="bg-[#0d0e10] border border-[#262930] border-solid content-stretch flex flex-[1_0_0] items-start justify-center min-w-px px-[12px] py-[10px] relative rounded-[8px]" data-node-id="11:1312" data-name="Frame">
+                  <p className="[word-break:break-word] font-['Inter:Bold'] font-bold leading-[normal] not-italic relative shrink-0 text-[#10b981] text-[13px] whitespace-nowrap" data-node-id="11:1313">
+                    종료
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div className="bg-[#00e5ff] content-stretch flex h-[52px] items-center justify-center relative rounded-[12px] shrink-0 w-full" data-node-id="11:1314" data-name="Frame">
+              <p className="[word-break:break-word] font-['Inter:Extra_Bold'] font-extrabold leading-[normal] not-italic relative shrink-0 text-[#0d0e10] text-[16px] whitespace-nowrap" data-node-id="11:1315">
+                필터 적용하기
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="bg-[#0d0e10] border-[#262930] border-solid border-t content-stretch flex flex-col items-start relative shrink-0 w-full" data-node-id="11:1316" data-name="bottom-nav">
+        <div className="content-stretch flex h-[64px] items-center justify-between px-[16px] relative shrink-0 w-full" data-node-id="11:1317" data-name="Frame">
+          <div className="content-stretch flex flex-col gap-[4px] items-center justify-center relative shrink-0 w-[100px]" data-node-id="11:1318" data-name="Frame">
+            <div className="relative shrink-0 size-[22px]" data-node-id="11:1319" data-name="map-pin">
+              <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgMapPin} />
+            </div>
+            <p className="[word-break:break-word] font-['Inter:Bold'] font-bold leading-[normal] not-italic relative shrink-0 text-[#00e5ff] text-[12px] whitespace-nowrap" data-node-id="11:1321">
+              지도
+            </p>
+          </div>
+          <div className="content-stretch flex flex-col gap-[4px] items-center justify-center relative shrink-0 w-[100px]" data-node-id="11:1322" data-name="Frame">
+            <div className="relative shrink-0 size-[22px]" data-node-id="11:1323" data-name="list">
+              <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgList} />
+            </div>
+            <p className="[word-break:break-word] font-['Inter:Medium'] font-medium leading-[normal] not-italic relative shrink-0 text-[#5c606c] text-[12px] whitespace-nowrap" data-node-id="11:1325">
+              리스트
+            </p>
+          </div>
+          <div className="content-stretch flex flex-col gap-[4px] items-center justify-center relative shrink-0 w-[100px]" data-node-id="11:1326" data-name="Frame">
+            <div className="relative shrink-0 size-[22px]" data-node-id="11:1327" data-name="plus-circle">
+              <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgPlusCircle} />
+            </div>
+            <p className="[word-break:break-word] font-['Inter:Medium'] font-medium leading-[normal] not-italic relative shrink-0 text-[#5c606c] text-[12px] whitespace-nowrap" data-node-id="11:1329">
+              제보하기
+            </p>
+          </div>
+        </div>
+        <div className="content-stretch flex h-[20px] items-center justify-center relative shrink-0 w-full" data-node-id="11:1330" data-name="Frame">
+          <div className="bg-[#444852] h-[5px] relative rounded-[10px] shrink-0 w-[134px]" data-node-id="11:1331" data-name="Rectangle" />
+        </div>
+      </div>
+    </div>
+  );
+}
+SUPER CRITICAL: The generated React+Tailwind code MUST be converted to match the target project's technology stack and styling system.
+1. Analyze the target codebase to identify: technology stack, styling approach, component patterns, and design tokens
+2. Convert React syntax to the target framework/library
+3. Transform all Tailwind classes to the target styling system while preserving exact visual design
+4. Follow the project's existing patterns and conventions
+DO NOT install any Tailwind as a dependency unless the user instructs you to do so.
+
+Node ids have been added to the code as data attributes, e.g. `data-node-id="1:2"`.
+The generated code contains image and SVG URL constants, e.g. const image = `${assetPathPrefix}/<asset file name>`, where assetPathPrefix is declared once at the top of the code and every asset URL interpolates it. These URLs are temporary download sources and expire after 7 days. Download each asset into the project with curl -L, then replace its URL in the generated code with a reference to the downloaded asset. Never use the temporary URLs as runtime image sources.

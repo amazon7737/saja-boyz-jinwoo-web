@@ -1,0 +1,876 @@
+{
+  "success": false,
+  "checks": [
+    "default-production-build",
+    "fixture-region-1-5-7-12-and-carousel-real-geometry",
+    "geolocation-control-with-browser-synthetic-location",
+    "unsupported-metadata-disclosure-and-popup-close",
+    "period-filters-cards-and-counts",
+    "all-filter-draft-discard-reset-apply-focus-trap",
+    "region-sheet-detail-navigation-and-return"
+  ],
+  "viewports": [
+    {
+      "width": 320,
+      "height": 700
+    },
+    {
+      "width": 393,
+      "height": 852
+    }
+  ],
+  "metrics": {
+    "393x790-default": {
+      "viewport": {
+        "width": 393,
+        "height": 790
+      },
+      "overflow": false,
+      "header": {
+        "x": 16,
+        "y": 8,
+        "width": 361,
+        "height": 52,
+        "bottom": 60,
+        "right": 377
+      },
+      "nav": {
+        "x": 16,
+        "y": 714,
+        "width": 361,
+        "height": 68,
+        "bottom": 782,
+        "right": 377
+      },
+      "carousel": {
+        "x": 0,
+        "y": 477,
+        "width": 393,
+        "height": 229,
+        "bottom": 706,
+        "right": 393
+      },
+      "locate": {
+        "x": 333,
+        "y": 421,
+        "width": 44,
+        "height": 44,
+        "bottom": 465,
+        "right": 377
+      },
+      "locateUnobstructed": true,
+      "markers": [
+        {
+          "count": "12",
+          "rect": {
+            "x": 117,
+            "y": 309,
+            "width": 72,
+            "height": 72,
+            "bottom": 381,
+            "right": 189
+          },
+          "color": "oklab(0.593308 0.209201 0.098094 / 0.6)"
+        },
+        {
+          "count": "7",
+          "rect": {
+            "x": 216,
+            "y": 373,
+            "width": 48,
+            "height": 48,
+            "bottom": 421,
+            "right": 264
+          },
+          "color": "oklab(0.593308 0.209201 0.098094 / 0.6)"
+        },
+        {
+          "count": "5",
+          "rect": {
+            "x": 172,
+            "y": 444,
+            "width": 38.390625,
+            "height": 38.390625,
+            "bottom": 482.390625,
+            "right": 210.390625
+          },
+          "color": "oklab(0.593308 0.209201 0.098094 / 0.6)"
+        },
+        {
+          "count": "1",
+          "rect": {
+            "x": 96,
+            "y": 352,
+            "width": 38.390625,
+            "height": 38.390625,
+            "bottom": 390.390625,
+            "right": 134.390625
+          },
+          "color": "oklab(0.593308 0.209201 0.098094 / 0.6)"
+        }
+      ],
+      "filters": [
+        {
+          "label": "전체 필터",
+          "rect": {
+            "x": 16,
+            "y": 68,
+            "width": 44,
+            "height": 38,
+            "bottom": 106,
+            "right": 60
+          },
+          "border": "rgba(200, 210, 220, 0.6)",
+          "fontSize": "16px"
+        },
+        {
+          "label": "카테고리",
+          "rect": {
+            "x": 66,
+            "y": 72,
+            "width": 79.765625,
+            "height": 30,
+            "bottom": 102,
+            "right": 145.765625
+          },
+          "border": "rgba(200, 210, 220, 0.6)",
+          "fontSize": "12px"
+        },
+        {
+          "label": "상태",
+          "rect": {
+            "x": 151.765625,
+            "y": 72,
+            "width": 59.03125,
+            "height": 30,
+            "bottom": 102,
+            "right": 210.796875
+          },
+          "border": "rgba(200, 210, 220, 0.6)",
+          "fontSize": "12px"
+        },
+        {
+          "label": "기간",
+          "rect": {
+            "x": 216.796875,
+            "y": 72,
+            "width": 59.03125,
+            "height": 30,
+            "bottom": 102,
+            "right": 275.828125
+          },
+          "border": "rgba(200, 210, 220, 0.6)",
+          "fontSize": "12px"
+        }
+      ],
+      "cards": [
+        {
+          "rect": {
+            "x": 16,
+            "y": 542,
+            "width": 200,
+            "height": 152,
+            "bottom": 694,
+            "right": 216
+          },
+          "radius": "14px"
+        },
+        {
+          "rect": {
+            "x": 226,
+            "y": 542,
+            "width": 200,
+            "height": 152,
+            "bottom": 694,
+            "right": 426
+          },
+          "radius": "14px"
+        }
+      ],
+      "sdk": []
+    },
+    "320x700-active-30days": {
+      "viewport": {
+        "width": 320,
+        "height": 700
+      },
+      "overflow": false,
+      "header": {
+        "x": 16,
+        "y": 8,
+        "width": 288,
+        "height": 52,
+        "bottom": 60,
+        "right": 304
+      },
+      "nav": {
+        "x": 16,
+        "y": 624,
+        "width": 288,
+        "height": 68,
+        "bottom": 692,
+        "right": 304
+      },
+      "carousel": {
+        "x": 0,
+        "y": 387,
+        "width": 320,
+        "height": 229,
+        "bottom": 616,
+        "right": 320
+      },
+      "locate": {
+        "x": 260,
+        "y": 331,
+        "width": 44,
+        "height": 44,
+        "bottom": 375,
+        "right": 304
+      },
+      "locateUnobstructed": true,
+      "markers": [
+        {
+          "count": "12",
+          "rect": {
+            "x": 80,
+            "y": 264,
+            "width": 72,
+            "height": 72,
+            "bottom": 336,
+            "right": 152
+          },
+          "color": "oklab(0.593308 0.209201 0.098094 / 0.6)"
+        },
+        {
+          "count": "7",
+          "rect": {
+            "x": 180,
+            "y": 328,
+            "width": 48,
+            "height": 48,
+            "bottom": 376,
+            "right": 228
+          },
+          "color": "oklab(0.593308 0.209201 0.098094 / 0.6)"
+        },
+        {
+          "count": "5",
+          "rect": {
+            "x": 135,
+            "y": 399,
+            "width": 38.390625,
+            "height": 38.390625,
+            "bottom": 437.390625,
+            "right": 173.390625
+          },
+          "color": "oklab(0.593308 0.209201 0.098094 / 0.6)"
+        },
+        {
+          "count": "1",
+          "rect": {
+            "x": 59,
+            "y": 307,
+            "width": 38.390625,
+            "height": 38.390625,
+            "bottom": 345.390625,
+            "right": 97.390625
+          },
+          "color": "oklab(0.593308 0.209201 0.098094 / 0.6)"
+        }
+      ],
+      "filters": [
+        {
+          "label": "전체 필터",
+          "rect": {
+            "x": 16,
+            "y": 68,
+            "width": 44,
+            "height": 38,
+            "bottom": 106,
+            "right": 60
+          },
+          "border": "rgb(232, 25, 44)",
+          "fontSize": "16px"
+        },
+        {
+          "label": "카테고리",
+          "rect": {
+            "x": 66,
+            "y": 72,
+            "width": 79.765625,
+            "height": 30,
+            "bottom": 102,
+            "right": 145.765625
+          },
+          "border": "rgba(200, 210, 220, 0.6)",
+          "fontSize": "12px"
+        },
+        {
+          "label": "상태",
+          "rect": {
+            "x": 151.765625,
+            "y": 72,
+            "width": 59.03125,
+            "height": 30,
+            "bottom": 102,
+            "right": 210.796875
+          },
+          "border": "rgba(200, 210, 220, 0.6)",
+          "fontSize": "12px"
+        },
+        {
+          "label": "기간: 최근 30일",
+          "rect": {
+            "x": 16,
+            "y": 112,
+            "width": 87.96875,
+            "height": 30,
+            "bottom": 142,
+            "right": 103.96875
+          },
+          "border": "rgb(232, 25, 44)",
+          "fontSize": "12px"
+        }
+      ],
+      "cards": [
+        {
+          "rect": {
+            "x": 16,
+            "y": 452,
+            "width": 200,
+            "height": 152,
+            "bottom": 604,
+            "right": 216
+          },
+          "radius": "14px"
+        },
+        {
+          "rect": {
+            "x": 226,
+            "y": 452,
+            "width": 200,
+            "height": 152,
+            "bottom": 604,
+            "right": 426
+          },
+          "radius": "14px"
+        }
+      ],
+      "sdk": []
+    },
+    "320x700": {
+      "viewport": {
+        "width": 320,
+        "height": 700
+      },
+      "overflow": false,
+      "header": {
+        "x": 16,
+        "y": 8,
+        "width": 288,
+        "height": 52,
+        "bottom": 60,
+        "right": 304
+      },
+      "nav": {
+        "x": 16,
+        "y": 624,
+        "width": 288,
+        "height": 68,
+        "bottom": 692,
+        "right": 304
+      },
+      "carousel": {
+        "x": 0,
+        "y": 387,
+        "width": 320,
+        "height": 229,
+        "bottom": 616,
+        "right": 320
+      },
+      "locate": {
+        "x": 260,
+        "y": 331,
+        "width": 44,
+        "height": 44,
+        "bottom": 375,
+        "right": 304
+      },
+      "locateUnobstructed": true,
+      "markers": [
+        {
+          "count": "12",
+          "rect": {
+            "x": 80,
+            "y": 264,
+            "width": 72,
+            "height": 72,
+            "bottom": 336,
+            "right": 152
+          },
+          "color": "oklab(0.593308 0.209201 0.098094 / 0.6)"
+        },
+        {
+          "count": "7",
+          "rect": {
+            "x": 180,
+            "y": 328,
+            "width": 48,
+            "height": 48,
+            "bottom": 376,
+            "right": 228
+          },
+          "color": "oklab(0.593308 0.209201 0.098094 / 0.6)"
+        },
+        {
+          "count": "5",
+          "rect": {
+            "x": 135,
+            "y": 399,
+            "width": 38.390625,
+            "height": 38.390625,
+            "bottom": 437.390625,
+            "right": 173.390625
+          },
+          "color": "oklab(0.593308 0.209201 0.098094 / 0.6)"
+        },
+        {
+          "count": "1",
+          "rect": {
+            "x": 59,
+            "y": 307,
+            "width": 38.390625,
+            "height": 38.390625,
+            "bottom": 345.390625,
+            "right": 97.390625
+          },
+          "color": "oklab(0.593308 0.209201 0.098094 / 0.6)"
+        }
+      ],
+      "filters": [
+        {
+          "label": "전체 필터",
+          "rect": {
+            "x": 16,
+            "y": 68,
+            "width": 44,
+            "height": 38,
+            "bottom": 106,
+            "right": 60
+          },
+          "border": "rgba(200, 210, 220, 0.6)",
+          "fontSize": "16px"
+        },
+        {
+          "label": "카테고리",
+          "rect": {
+            "x": 66,
+            "y": 72,
+            "width": 79.765625,
+            "height": 30,
+            "bottom": 102,
+            "right": 145.765625
+          },
+          "border": "rgba(200, 210, 220, 0.6)",
+          "fontSize": "12px"
+        },
+        {
+          "label": "상태",
+          "rect": {
+            "x": 151.765625,
+            "y": 72,
+            "width": 59.03125,
+            "height": 30,
+            "bottom": 102,
+            "right": 210.796875
+          },
+          "border": "rgba(200, 210, 220, 0.6)",
+          "fontSize": "12px"
+        },
+        {
+          "label": "기간",
+          "rect": {
+            "x": 16,
+            "y": 112,
+            "width": 59.03125,
+            "height": 30,
+            "bottom": 142,
+            "right": 75.03125
+          },
+          "border": "rgba(200, 210, 220, 0.6)",
+          "fontSize": "12px"
+        }
+      ],
+      "cards": [
+        {
+          "rect": {
+            "x": 16,
+            "y": 452,
+            "width": 200,
+            "height": 152,
+            "bottom": 604,
+            "right": 216
+          },
+          "radius": "14px"
+        },
+        {
+          "rect": {
+            "x": 226,
+            "y": 452,
+            "width": 200,
+            "height": 152,
+            "bottom": 604,
+            "right": 426
+          },
+          "radius": "14px"
+        }
+      ],
+      "sdk": []
+    },
+    "393x852": {
+      "viewport": {
+        "width": 393,
+        "height": 852
+      },
+      "overflow": false,
+      "header": {
+        "x": 16,
+        "y": 8,
+        "width": 361,
+        "height": 52,
+        "bottom": 60,
+        "right": 377
+      },
+      "nav": {
+        "x": 16,
+        "y": 776,
+        "width": 361,
+        "height": 68,
+        "bottom": 844,
+        "right": 377
+      },
+      "carousel": {
+        "x": 0,
+        "y": 539,
+        "width": 393,
+        "height": 229,
+        "bottom": 768,
+        "right": 393
+      },
+      "locate": {
+        "x": 333,
+        "y": 483,
+        "width": 44,
+        "height": 44,
+        "bottom": 527,
+        "right": 377
+      },
+      "locateUnobstructed": true,
+      "markers": [
+        {
+          "count": "12",
+          "rect": {
+            "x": 117,
+            "y": 340,
+            "width": 72,
+            "height": 72,
+            "bottom": 412,
+            "right": 189
+          },
+          "color": "oklab(0.593308 0.209201 0.098094 / 0.6)"
+        },
+        {
+          "count": "7",
+          "rect": {
+            "x": 216,
+            "y": 404,
+            "width": 48,
+            "height": 48,
+            "bottom": 452,
+            "right": 264
+          },
+          "color": "oklab(0.593308 0.209201 0.098094 / 0.6)"
+        },
+        {
+          "count": "5",
+          "rect": {
+            "x": 172,
+            "y": 475,
+            "width": 38.390625,
+            "height": 38.390625,
+            "bottom": 513.390625,
+            "right": 210.390625
+          },
+          "color": "oklab(0.593308 0.209201 0.098094 / 0.6)"
+        },
+        {
+          "count": "1",
+          "rect": {
+            "x": 96,
+            "y": 383,
+            "width": 38.390625,
+            "height": 38.390625,
+            "bottom": 421.390625,
+            "right": 134.390625
+          },
+          "color": "oklab(0.593308 0.209201 0.098094 / 0.6)"
+        }
+      ],
+      "filters": [
+        {
+          "label": "전체 필터",
+          "rect": {
+            "x": 16,
+            "y": 68,
+            "width": 44,
+            "height": 38,
+            "bottom": 106,
+            "right": 60
+          },
+          "border": "rgba(200, 210, 220, 0.6)",
+          "fontSize": "16px"
+        },
+        {
+          "label": "카테고리",
+          "rect": {
+            "x": 66,
+            "y": 72,
+            "width": 79.765625,
+            "height": 30,
+            "bottom": 102,
+            "right": 145.765625
+          },
+          "border": "rgba(200, 210, 220, 0.6)",
+          "fontSize": "12px"
+        },
+        {
+          "label": "상태",
+          "rect": {
+            "x": 151.765625,
+            "y": 72,
+            "width": 59.03125,
+            "height": 30,
+            "bottom": 102,
+            "right": 210.796875
+          },
+          "border": "rgba(200, 210, 220, 0.6)",
+          "fontSize": "12px"
+        },
+        {
+          "label": "기간",
+          "rect": {
+            "x": 216.796875,
+            "y": 72,
+            "width": 59.03125,
+            "height": 30,
+            "bottom": 102,
+            "right": 275.828125
+          },
+          "border": "rgba(200, 210, 220, 0.6)",
+          "fontSize": "12px"
+        }
+      ],
+      "cards": [
+        {
+          "rect": {
+            "x": 16,
+            "y": 604,
+            "width": 200,
+            "height": 152,
+            "bottom": 756,
+            "right": 216
+          },
+          "radius": "14px"
+        },
+        {
+          "rect": {
+            "x": 226,
+            "y": 604,
+            "width": 200,
+            "height": 152,
+            "bottom": 756,
+            "right": 426
+          },
+          "radius": "14px"
+        }
+      ],
+      "sdk": []
+    },
+    "667x375": {
+      "viewport": {
+        "width": 667,
+        "height": 375
+      },
+      "overflow": false,
+      "header": {
+        "x": 29.5,
+        "y": 8,
+        "width": 608,
+        "height": 52,
+        "bottom": 60,
+        "right": 637.5
+      },
+      "nav": {
+        "x": 29.5,
+        "y": 299,
+        "width": 608,
+        "height": 68,
+        "bottom": 367,
+        "right": 637.5
+      },
+      "carousel": {
+        "x": 13.5,
+        "y": 62,
+        "width": 640,
+        "height": 229,
+        "bottom": 291,
+        "right": 653.5
+      },
+      "locate": {
+        "x": 593.5,
+        "y": 6,
+        "width": 44,
+        "height": 44,
+        "bottom": 50,
+        "right": 637.5
+      },
+      "locateUnobstructed": false,
+      "markers": [
+        {
+          "count": "12",
+          "rect": {
+            "x": 253.5,
+            "y": 102,
+            "width": 72,
+            "height": 72,
+            "bottom": 174,
+            "right": 325.5
+          },
+          "color": "oklab(0.593308 0.209201 0.098094 / 0.6)"
+        },
+        {
+          "count": "7",
+          "rect": {
+            "x": 353.5,
+            "y": 165,
+            "width": 48,
+            "height": 48,
+            "bottom": 213,
+            "right": 401.5
+          },
+          "color": "oklab(0.593308 0.209201 0.098094 / 0.6)"
+        },
+        {
+          "count": "5",
+          "rect": {
+            "x": 308.5,
+            "y": 236,
+            "width": 38.390625,
+            "height": 38.390625,
+            "bottom": 274.390625,
+            "right": 346.890625
+          },
+          "color": "oklab(0.593308 0.209201 0.098094 / 0.6)"
+        },
+        {
+          "count": "1",
+          "rect": {
+            "x": 232.5,
+            "y": 145,
+            "width": 38.390625,
+            "height": 38.390625,
+            "bottom": 183.390625,
+            "right": 270.890625
+          },
+          "color": "oklab(0.593308 0.209201 0.098094 / 0.6)"
+        }
+      ],
+      "filters": [
+        {
+          "label": "전체 필터",
+          "rect": {
+            "x": 29.5,
+            "y": 68,
+            "width": 44,
+            "height": 38,
+            "bottom": 106,
+            "right": 73.5
+          },
+          "border": "rgba(200, 210, 220, 0.6)",
+          "fontSize": "16px"
+        },
+        {
+          "label": "카테고리",
+          "rect": {
+            "x": 79.5,
+            "y": 72,
+            "width": 79.765625,
+            "height": 30,
+            "bottom": 102,
+            "right": 159.265625
+          },
+          "border": "rgba(200, 210, 220, 0.6)",
+          "fontSize": "12px"
+        },
+        {
+          "label": "상태",
+          "rect": {
+            "x": 165.265625,
+            "y": 72,
+            "width": 59.03125,
+            "height": 30,
+            "bottom": 102,
+            "right": 224.296875
+          },
+          "border": "rgba(200, 210, 220, 0.6)",
+          "fontSize": "12px"
+        },
+        {
+          "label": "기간",
+          "rect": {
+            "x": 230.296875,
+            "y": 72,
+            "width": 59.03125,
+            "height": 30,
+            "bottom": 102,
+            "right": 289.328125
+          },
+          "border": "rgba(200, 210, 220, 0.6)",
+          "fontSize": "12px"
+        }
+      ],
+      "cards": [
+        {
+          "rect": {
+            "x": 29.5,
+            "y": 127,
+            "width": 200,
+            "height": 152,
+            "bottom": 279,
+            "right": 229.5
+          },
+          "radius": "14px"
+        },
+        {
+          "rect": {
+            "x": 239.5,
+            "y": 127,
+            "width": 200,
+            "height": 152,
+            "bottom": 279,
+            "right": 439.5
+          },
+          "radius": "14px"
+        }
+      ],
+      "sdk": []
+    }
+  },
+  "pageErrors": [],
+  "api": {
+    "liveReads": 0,
+    "writes": 0
+  },
+  "source": "production Next build; real Naver SDK; local synthetic and live read-only API separately",
+  "error": "AssertionError [ERR_ASSERTION]: 667x375: locate obscured by another overlay\n\nfalse !== true\n\n    at geometry (file:///private/tmp/figma-map-home-browser-qa.mjs:105:10)\n    at async file:///private/tmp/figma-map-home-browser-qa.mjs:203:61"
+}

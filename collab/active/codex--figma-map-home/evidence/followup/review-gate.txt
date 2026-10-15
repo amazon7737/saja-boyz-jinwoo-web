@@ -1,0 +1,12 @@
+
+> saja-boyz-jinwoo@0.1.0 format:check /Users/jeong-gyuhwan/규환/projects/saja-boyz-jinwoo-codex--figma-map-home
+> prettier --check src docs/project.md docs/architecture.md docs/figma-analysis.md *.json *.mjs *.ts
+
+Checking formatting...
+All matched files use Prettier code style!
+
+> saja-boyz-jinwoo@0.1.0 lint /Users/jeong-gyuhwan/규환/projects/saja-boyz-jinwoo-codex--figma-map-home
+> eslint .
+
+Worker astra (gpt-6-astra), review, call 5/18
+PASS — exact commit validated and independently reviewed.

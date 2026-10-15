@@ -59,3 +59,110 @@
     outline-offset: 4px;
   }
 }
+
+/* 실제 컨트롤만 반응하며 포커스 윤곽과 레이아웃은 전환하지 않는다. */
+.ui-control:not(:disabled, [aria-disabled='true']):active {
+  background-color: #e2e8f0;
+}
+
+.ui-primary:not(:disabled, [aria-disabled='true']):active {
+  background-color: #c91426;
+}
+
+.ui-link:not([aria-disabled='true']):active {
+  color: #c91426;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .ui-control:not(:disabled, [aria-disabled='true']):hover {
+    box-shadow: inset 0 0 0 1px rgb(100 116 139 / 24%);
+  }
+
+  .ui-link:not([aria-disabled='true']):hover {
+    color: var(--color-brand);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .ui-control:not(:disabled, [aria-disabled='true']),
+  .ui-link:not([aria-disabled='true']) {
+    transition:
+      background-color 120ms ease-out,
+      color 120ms ease-out,
+      border-color 120ms ease-out,
+      box-shadow 120ms ease-out;
+  }
+
+  button.ui-control:not(:disabled, [aria-disabled='true']) {
+    transition:
+      background-color 120ms ease-out,
+      color 120ms ease-out,
+      border-color 120ms ease-out,
+      box-shadow 120ms ease-out,
+      scale 120ms ease-out;
+  }
+
+  button.ui-control:not(:disabled, [aria-disabled='true']):active {
+    scale: 0.98;
+  }
+
+  .ui-dropdown-enter {
+    animation: ui-dropdown-enter 140ms ease-out;
+  }
+
+  .ui-sheet-enter {
+    animation: ui-sheet-enter 190ms ease-out;
+  }
+
+  .ui-overlay-enter {
+    animation: ui-fade-enter 190ms ease-out;
+  }
+
+  .ui-results-enter {
+    animation: ui-fade-enter 140ms ease-out;
+  }
+
+  @keyframes ui-dropdown-enter {
+    from {
+      opacity: 0;
+      transform: translateY(-4px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Tailwind의 독립 translate 속성으로 지정한 가로 중앙 정렬을 유지한다. */
+  @keyframes ui-sheet-enter {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes ui-fade-enter {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-control,
+  .ui-link,
+  .ui-dropdown-enter,
+  .ui-sheet-enter,
+  .ui-overlay-enter,
+  .ui-results-enter {
+    animation: none;
+    transition: none;
+  }
+}

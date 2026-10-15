@@ -1,0 +1,198 @@
+const assetPathPrefix = "FIGMA_TEMPORARY_ASSET";
+const imgHeroImage = `${assetPathPrefix}/02672.png`;
+const imgMiniMap = `${assetPathPrefix}/a58ce.png`;
+const imgIosSignal = `${assetPathPrefix}/29ee8.svg`;
+const imgIosWifiSignal = `${assetPathPrefix}/0baa5.svg`;
+const imgIosBatteryFull = `${assetPathPrefix}/5d9e7.svg`;
+const imgCiCloseMd = `${assetPathPrefix}/91fb1.svg`;
+const imgFrame = `${assetPathPrefix}/935d5.svg`;
+const imgFrame1 = `${assetPathPrefix}/0eee9.svg`;
+const imgFrame2 = `${assetPathPrefix}/6577a.svg`;
+const imgFrame3 = `${assetPathPrefix}/916d6.svg`;
+
+export default function IncidentDetailWhite() {
+  return (
+    <div className="bg-white content-stretch flex flex-col items-start justify-between relative size-full" data-node-id="19:3061" data-name="incident-detail-white">
+      <div className="content-stretch flex flex-col items-start relative shrink-0 w-full" data-node-id="19:3062" data-name="scrollable-content">
+        <div className="content-stretch flex items-center justify-between pb-[8px] pt-[12px] px-[24px] relative shrink-0 w-full" data-node-id="19:3063" data-name="status-bar">
+          <p className="[word-break:break-word] font-['Inter:Semi_Bold'] font-semibold leading-[normal] not-italic relative shrink-0 text-[#0f172a] text-[14px] whitespace-nowrap" data-node-id="19:3064">
+            9:41
+          </p>
+          <div className="content-stretch flex gap-[6px] items-center relative shrink-0" data-node-id="19:3065" data-name="status-icons">
+            <div className="h-[11px] relative shrink-0 w-[17px]" data-node-id="19:3066" data-name="ios-signal">
+              <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgIosSignal} />
+            </div>
+            <div className="h-[11px] relative shrink-0 w-[15px]" data-node-id="19:3068" data-name="ios-wifi-signal">
+              <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgIosWifiSignal} />
+            </div>
+            <div className="h-[12px] relative shrink-0 w-[25px]" data-node-id="19:3070" data-name="ios-battery-full">
+              <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgIosBatteryFull} />
+            </div>
+          </div>
+        </div>
+        <div className="border-[#e2e8f0] border-b border-solid content-stretch flex items-center justify-between px-[16px] py-[12px] relative shrink-0 w-full" data-node-id="19:3072" data-name="detail-header">
+          <div className="[word-break:break-word] content-stretch flex font-['Inter:Bold'] font-bold gap-[8px] items-center leading-[normal] not-italic relative shrink-0 text-[#0f172a] whitespace-nowrap" data-node-id="19:3073" data-name="back-btn">
+            <p className="relative shrink-0 text-[20px]" data-node-id="19:3074">
+              ←
+            </p>
+            <p className="relative shrink-0 text-[16px]" data-node-id="19:3075">
+              사건 상세
+            </p>
+          </div>
+          <div className="relative shrink-0 size-[24px]" data-node-id="19:3076" data-name="ci:close-md">
+            <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgCiCloseMd} />
+          </div>
+        </div>
+        <div className="content-stretch flex flex-col gap-[16px] items-start p-[16px] relative shrink-0 w-full" data-node-id="19:3078" data-name="detail-body">
+          <div className="content-stretch flex gap-[6px] items-center relative shrink-0 w-full" data-node-id="19:3079" data-name="badge-row">
+            <div className="bg-[#e0f2fe] content-stretch flex items-start px-[8px] py-[4px] relative rounded-[6px] shrink-0" data-node-id="19:3080" data-name="Frame">
+              <p className="[word-break:break-word] font-['Inter:Bold'] font-bold leading-[normal] not-italic relative shrink-0 text-[#0369a1] text-[11px] whitespace-nowrap" data-node-id="19:3081">
+                사회
+              </p>
+            </div>
+            <div className="bg-[rgba(255,74,90,0.08)] content-stretch flex items-start px-[8px] py-[4px] relative rounded-[6px] shrink-0" data-node-id="19:3082" data-name="Frame">
+              <p className="[word-break:break-word] font-['Inter:Bold'] font-bold leading-[normal] not-italic relative shrink-0 text-[#ff4a5a] text-[11px] whitespace-nowrap" data-node-id="19:3083">
+                진행 중
+              </p>
+            </div>
+          </div>
+          <div className="[word-break:break-word] content-stretch flex flex-col gap-[8px] items-start leading-[normal] not-italic relative shrink-0 w-full" data-node-id="19:3084" data-name="title-info">
+            <p className="font-['Inter:Extra_Bold'] font-extrabold relative shrink-0 text-[#0f172a] text-[22px] w-full" data-node-id="19:3085">
+              서울 강남구 대형 화재 발생
+            </p>
+            <div className="content-stretch flex flex-col gap-[4px] items-start relative shrink-0 w-full whitespace-nowrap" data-node-id="19:3086" data-name="location-date">
+              <div className="content-stretch flex gap-[4px] items-center relative shrink-0 w-full" data-node-id="19:3087" data-name="Frame">
+                <p className="font-['Inter:Regular'] font-normal relative shrink-0 text-[14px] text-black" data-node-id="19:3088">
+                  📍
+                </p>
+                <p className="font-['Inter:Semi_Bold'] font-semibold relative shrink-0 text-[#64748b] text-[13px]" data-node-id="19:3089">
+                  서울특별시 강남구 역삼동
+                </p>
+              </div>
+              <div className="content-stretch flex font-['Inter:Regular'] font-normal gap-[4px] items-center relative shrink-0 w-full" data-node-id="19:3090" data-name="Frame">
+                <p className="relative shrink-0 text-[14px] text-black" data-node-id="19:3091">
+                  📅
+                </p>
+                <p className="relative shrink-0 text-[#94a3b8] text-[12px]" data-node-id="19:3092">
+                  2024.03.15 14:30
+                </p>
+              </div>
+            </div>
+          </div>
+          <div className="h-[190px] relative rounded-[14px] shrink-0 w-full" data-node-id="19:3093" data-name="hero-image">
+            <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none rounded-[14px] size-full" src={imgHeroImage} />
+          </div>
+          <div className="content-stretch flex items-center justify-between py-[4px] relative shrink-0 w-full" data-node-id="19:3094" data-name="source-row">
+            <div className="[word-break:break-word] content-stretch flex gap-[6px] items-center leading-[normal] not-italic relative shrink-0 whitespace-nowrap" data-node-id="19:3095" data-name="Frame">
+              <p className="font-['Inter:Regular'] font-normal relative shrink-0 text-[#94a3b8] text-[12px]" data-node-id="19:3096">
+                출처:
+              </p>
+              <p className="font-['Inter:Bold'] font-bold relative shrink-0 text-[#0369a1] text-[13px]" data-node-id="19:3097">
+                연합뉴스
+              </p>
+              <p className="font-['Inter:Regular'] font-normal relative shrink-0 text-[11px] text-black" data-node-id="19:3098">
+                🔗
+              </p>
+            </div>
+            <div className="bg-[#f1f5f9] content-stretch flex items-start px-[8px] py-[2px] relative rounded-[4px] shrink-0" data-node-id="19:3099" data-name="Frame">
+              <p className="[word-break:break-word] font-['Inter:Semi_Bold'] font-semibold leading-[normal] not-italic relative shrink-0 text-[#475569] text-[11px] whitespace-nowrap" data-node-id="19:3100">
+                인용 12회
+              </p>
+            </div>
+          </div>
+          <p className="[word-break:break-word] font-['Inter:Regular'] font-normal leading-[22px] not-italic relative shrink-0 text-[#64748b] text-[14px] w-full" data-node-id="19:3101">
+            강남구 역삼동 테헤란로 인근 오피스텔 3층에서 원인 불명의 대형 화재가 발생했습니다. 강한 소방 대응 2단계가 발령되었으며, 역삼역 부근 교통이 심각하게 정체되고 있습니다. 안전지대로 대피하십시오.
+          </p>
+          <div className="content-stretch flex flex-col gap-[12px] items-start relative shrink-0 w-full" data-node-id="19:3102" data-name="timeline-section">
+            <p className="[word-break:break-word] font-['Inter:Extra_Bold'] font-extrabold leading-[normal] not-italic relative shrink-0 text-[#0f172a] text-[14px] whitespace-nowrap" data-node-id="19:3103">
+              실시간 타임라인 (TIMELINE)
+            </p>
+            <div className="content-stretch flex flex-col items-start pl-[8px] relative shrink-0 w-full" data-node-id="19:3104" data-name="timeline-tree">
+              <div className="content-stretch flex gap-[12px] items-start relative shrink-0 w-full" data-node-id="19:3105" data-name="Frame">
+                <div className="h-[44px] relative shrink-0 w-[8px]" data-node-id="19:3106" data-name="Frame">
+                  <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgFrame} />
+                </div>
+                <div className="[word-break:break-word] content-stretch flex flex-[1_0_0] flex-col gap-[2px] items-start leading-[normal] min-w-px not-italic pb-[16px] relative whitespace-nowrap" data-node-id="19:3109" data-name="Frame">
+                  <p className="font-['Inter:Bold'] font-bold relative shrink-0 text-[#e8192c] text-[12px]" data-node-id="19:3110">
+                    14:30
+                  </p>
+                  <p className="font-['Inter:Regular'] font-normal relative shrink-0 text-[#0f172a] text-[13px]" data-node-id="19:3111">
+                    최초 신고 및 소방 상황실 접수
+                  </p>
+                </div>
+              </div>
+              <div className="content-stretch flex gap-[12px] items-start relative shrink-0 w-full" data-node-id="19:3112" data-name="Frame">
+                <div className="h-[44px] relative shrink-0 w-[8px]" data-node-id="19:3113" data-name="Frame">
+                  <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgFrame1} />
+                </div>
+                <div className="[word-break:break-word] content-stretch flex flex-[1_0_0] flex-col gap-[2px] items-start leading-[normal] min-w-px not-italic pb-[16px] relative whitespace-nowrap" data-node-id="19:3116" data-name="Frame">
+                  <p className="font-['Inter:Bold'] font-bold relative shrink-0 text-[#64748b] text-[12px]" data-node-id="19:3117">
+                    14:45
+                  </p>
+                  <p className="font-['Inter:Regular'] font-normal relative shrink-0 text-[#0f172a] text-[13px]" data-node-id="19:3118">
+                    소방대 1차 선발대 대거 출동
+                  </p>
+                </div>
+              </div>
+              <div className="content-stretch flex gap-[12px] items-start relative shrink-0 w-full" data-node-id="19:3119" data-name="Frame">
+                <div className="h-[44px] relative shrink-0 w-[8px]" data-node-id="19:3120" data-name="Frame">
+                  <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgFrame1} />
+                </div>
+                <div className="[word-break:break-word] content-stretch flex flex-[1_0_0] flex-col gap-[2px] items-start leading-[normal] min-w-px not-italic pb-[16px] relative whitespace-nowrap" data-node-id="19:3123" data-name="Frame">
+                  <p className="font-['Inter:Bold'] font-bold relative shrink-0 text-[#64748b] text-[12px]" data-node-id="19:3124">
+                    15:20
+                  </p>
+                  <p className="font-['Inter:Regular'] font-normal relative shrink-0 text-[#0f172a] text-[13px]" data-node-id="19:3125">
+                    화재 규모 확산으로 추가 진압 병력 투입
+                  </p>
+                </div>
+              </div>
+              <div className="content-stretch flex gap-[12px] items-start relative shrink-0 w-full" data-node-id="19:3126" data-name="Frame">
+                <div className="relative shrink-0 size-[8px]" data-node-id="19:3127" data-name="Frame">
+                  <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgFrame2} />
+                </div>
+                <div className="[word-break:break-word] content-stretch flex flex-[1_0_0] flex-col gap-[2px] items-start leading-[normal] min-w-px not-italic pb-[16px] relative whitespace-nowrap" data-node-id="19:3129" data-name="Frame">
+                  <p className="font-['Inter:Bold'] font-bold relative shrink-0 text-[#64748b] text-[12px]" data-node-id="19:3130">
+                    16:00
+                  </p>
+                  <p className="font-['Inter:Regular'] font-normal relative shrink-0 text-[#0f172a] text-[13px]" data-node-id="19:3131">
+                    상가 불길 잡혀 1차 진화 완료
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="content-stretch flex flex-col gap-[8px] items-start relative shrink-0 w-full" data-node-id="19:3132" data-name="map-preview">
+            <p className="[word-break:break-word] font-['Inter:Extra_Bold'] font-extrabold leading-[normal] not-italic relative shrink-0 text-[#0f172a] text-[14px] whitespace-nowrap" data-node-id="19:3133">
+              발생 위치
+            </p>
+            <div className="content-stretch flex h-[100px] items-start relative rounded-[10px] shrink-0 w-full" data-node-id="19:3134" data-name="mini-map">
+              <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none rounded-[10px] size-full" src={imgMiniMap} />
+              <div className="-translate-x-1/2 -translate-y-1/2 absolute left-1/2 size-[24px] top-1/2" data-node-id="19:3135" data-name="Frame">
+                <div className="absolute inset-[-8.33%]">
+                  <img alt="" className="block max-w-none size-full" src={imgFrame3} />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="bg-white content-stretch flex items-start pb-[24px] pt-[16px] px-[16px] relative shrink-0 w-full" data-node-id="19:3138" data-name="bottom-cta">
+        <div className="border-[#e8192c] border-[1.5px] border-solid content-stretch flex flex-[1_0_0] h-[48px] items-center justify-center min-w-px relative rounded-[12px]" data-node-id="19:3139" data-name="share-btn">
+          <p className="[word-break:break-word] font-['Inter:Extra_Bold'] font-extrabold leading-[normal] not-italic relative shrink-0 text-[#e8192c] text-[15px] whitespace-nowrap" data-node-id="19:3140">
+            🔗 사건 공유하기
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+SUPER CRITICAL: The generated React+Tailwind code MUST be converted to match the target project's technology stack and styling system.
+1. Analyze the target codebase to identify: technology stack, styling approach, component patterns, and design tokens
+2. Convert React syntax to the target framework/library
+3. Transform all Tailwind classes to the target styling system while preserving exact visual design
+4. Follow the project's existing patterns and conventions
+DO NOT install any Tailwind as a dependency unless the user instructs you to do so.
+
+Node ids have been added to the code as data attributes, e.g. `data-node-id="1:2"`.
+The generated code contains image and SVG URL constants, e.g. const image = `${assetPathPrefix}/<asset file name>`, where assetPathPrefix is declared once at the top of the code and every asset URL interpolates it. These URLs are temporary download sources and expire after 7 days. Download each asset into the project with curl -L, then replace its URL in the generated code with a reference to the downloaded asset. Never use the temporary URLs as runtime image sources.

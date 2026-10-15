@@ -73,8 +73,9 @@ export function SearchResults({
   }
 
   return (
-    <section aria-label="기사 검색 결과">
-      <p className="m-0 text-xs text-muted">
+    <section aria-label="기사 검색 결과" className="ui-results-enter">
+      <h1 className="m-0 mb-3 text-xs font-bold text-muted">기사 검색 결과</h1>
+      <p className="sr-only">
         더 보기로 기사를 이어서 볼 수 있어요. 중복 기사는 한 번만 표시해요.
       </p>
       {cards.length === 0 ? (
@@ -82,7 +83,7 @@ export function SearchResults({
           검색 결과가 없어요
         </p>
       ) : (
-        <div className="flex flex-col gap-3 py-2">
+        <div className="flex flex-col gap-2 pb-2">
           {cards.map(({ id, content }) => (
             <Fragment key={id}>{content}</Fragment>
           ))}
@@ -99,7 +100,7 @@ export function SearchResults({
           type="button"
           disabled={pending}
           onClick={loadMore}
-          className="rounded-lg border border-solid border-border bg-surface px-3 py-2 text-brand disabled:opacity-50"
+          className="ui-control rounded-lg border border-solid border-border bg-surface px-3 py-2 text-brand disabled:opacity-50"
         >
           {failed ? '다시 시도' : '더 보기'}
         </button>

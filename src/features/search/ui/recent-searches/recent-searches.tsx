@@ -75,15 +75,15 @@ export function RecentSearches({ executedKeyword = '' }) {
       {keywords.length === 0 ? (
         <p className="m-0 text-sm text-muted">최근 검색어가 없어요</p>
       ) : (
-        <ul className="m-0 flex list-none flex-col gap-2 p-0">
+        <ul className="m-0 flex list-none flex-col gap-0 p-0">
           {keywords.map((keyword, index) => (
             <li
               key={`${keyword}-${index}`}
-              className="flex items-center justify-between gap-2 border-0 border-b border-solid border-border py-2 text-sm"
+              className="flex items-center justify-between gap-2 border-0 border-b border-solid border-border py-0 text-[14px]/[17px]"
             >
               <Link
                 href={`/search?q=${encodeURIComponent(keyword)}`}
-                className="flex min-w-0 flex-1 items-center gap-2 font-medium"
+                className="ui-control flex min-h-10 min-w-0 flex-1 items-center gap-2 font-medium"
               >
                 <span aria-hidden="true" className="shrink-0 text-muted">
                   🕒
@@ -95,7 +95,7 @@ export function RecentSearches({ executedKeyword = '' }) {
                 type="button"
                 aria-label={`${keyword} 삭제`}
                 onClick={() => removeKeyword(keyword)}
-                className="shrink-0 cursor-pointer border-0 bg-transparent p-0 text-muted"
+                className="ui-control grid size-10 shrink-0 cursor-pointer place-items-center border-0 bg-transparent p-0 text-muted"
               >
                 <span aria-hidden="true">✕</span>
               </button>

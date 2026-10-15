@@ -1,0 +1,34 @@
+{
+  "success": true,
+  "checks": [
+    "실제 GET 검색·텍스트 카드·키워드 강조·상세/원문 링크",
+    "최근 검색 복원·삭제 및 추천 검색 링크 유지",
+    "실제 목록 카드·이미지 대체·전용 필터 disabled 유지",
+    "실제 이미지 상세·190px 사진·안전한 출처·브라우저 복사 fallback(메모리 clipboard)",
+    "상세→목록·지도 복귀 동선",
+    "320·393·667가로·1440 화면에서 검색/목록/상세 수평 넘침 없음",
+    "실제 검색 결과 없음과 오류 분리"
+  ],
+  "pageErrors": [],
+  "screens": [
+    "search-current",
+    "search-results-current",
+    "search-with-recent-current",
+    "list-current",
+    "detail-ready-current"
+  ],
+  "dimensions": [
+    {
+      "width": 320,
+      "height": 700
+    },
+    {
+      "width": 667,
+      "height": 375
+    },
+    {
+      "width": 1440,
+      "height": 900
+    }
+  ]
+}

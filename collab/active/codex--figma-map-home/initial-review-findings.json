@@ -1,0 +1,10 @@
+{
+  "baseline": "3b155aa950f4c23713f00b370845681ff1a9eaf4",
+  "head": "ad423a0804ae27760656a0e5b857607e69605f30",
+  "entry": null,
+  "worker": "astra",
+  "status": "defect",
+  "summary": "HEAD ad423a0804ae27760656a0e5b857607e69605f30에서 수정할 문제 2건입니다.\n\n1. [P2] 줄바꿈된 필터가 출처·복구 안내와 겹칩니다. src/features/map/ui/map-home/map-home.tsx:569는 top 68px에서 flex-wrap을 허용하지만, 안내와 출처는 :614, :640에서 top 112px로 고정합니다. 320px 화면이나 393px에서 ‘최근 24시간’을 적용하면 기간 필터가 두 번째 줄로 내려와 같은 공간을 차지합니다. 실제 필터 높이에 따라 아래 영역을 배치해야 합니다.\n\n2. [P2] 가로 화면에서 내 위치 버튼이 검색 헤더 뒤로 들어갑니다. src/features/map/ui/map-home/map-home.tsx:588의 하단 여백 84px와 :597의 -top-14가 고정 카드 높이에 더해집니다. 667×375 화면에서는 버튼이 화면 상단 약 7px에 배치되어 SearchHeader의 8~60px 영역과 겹칩니다(src/components/layout/search-header/search-header.tsx:9). 헤더가 상위 쌓임 영역이므로 버튼을 가리고 클릭도 막습니다. 낮은 화면을 위한 카드 높이·버튼 배치 처리가 필요합니다.",
+  "reason": "읽기 전용 소스 검토를 완료했습니다. 기존 테스트 변경은 없으며 신규 테스트는 승인 계획의 TypeScript 블록과 바이트 단위로 일치합니다. 위 문제는 고정 치수와 배치 관계에서 확인한 결함이며, jsdom 테스트는 실제 레이아웃을 검증하지 않습니다. 요청대로 테스트·빌드·수정·커밋은 수행하지 않았고 브라우저 시각 검증 완료를 주장하지 않습니다.",
+  "diff": ""
+}

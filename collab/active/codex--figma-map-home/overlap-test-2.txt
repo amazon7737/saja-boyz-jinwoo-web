@@ -1,0 +1,21 @@
+test('mapRegionDisplayClustersSplitAndRejoinOnZoom', async () => {
+  const fixture = await mount([nearby(1), nearby(2), item(3)]);
+  expect(counts(fixture)).toEqual(['1', '2']);
+  await fixture.changeZoom(15);
+  expect(counts(fixture)).toEqual(['1', '1', '1']);
+  await fixture.changeZoom(10);
+  expect(counts(fixture)).toEqual(['1', '2']);
+  const cluster = [...fixture.active].find(
+    (entry) => entry.content.textContent === '2',
+  );
+  assert(cluster);
+  await fixture.idle();
+  expect(
+    [...fixture.active].find((entry) => entry.content.textContent === '2')
+      ?.content,
+  ).toBe(cluster.content);
+  expect(fixture.created).toHaveBeenCalledTimes(1);
+  expect(fixture.setCenter).not.toHaveBeenCalled();
+  expect(fixture.setZoom).not.toHaveBeenCalled();
+});
+

@@ -1,0 +1,39 @@
+
+ RUN  v5.0.3 /Users/jeong-gyuhwan/규환/projects/saja-boyz-jinwoo-codex--figma-map-home
+
+ ❯ src/features/map/ui/map-home/zz_sobaya_probe_DQFbKL.test.ts (1 test | 1 failed) 29ms
+   × mapRegionCirclesGrowWithCountAndKeepSelection 29ms
+
+ Test Files  1 failed (1)
+      Tests  1 failed (1)
+   Start at  16:01:48
+   Duration  409ms (environment 59%, import 20%, transform 13%, tests 8%, worker 1%)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/features/map/ui/map-home/zz_sobaya_probe_DQFbKL.test.ts > mapRegionCirclesGrowWithCountAndKeepSelection
+AssertionError: expected [ '', '5', '7', '12' ] to deeply equal [ '1', '5', '7', '12' ]
+
+- Expected
++ Received
+
+  [
+-   "1",
++   "",
+    "5",
+    "7",
+    "12",
+  ]
+
+ ❯ src/features/map/ui/map-home/zz_sobaya_probe_DQFbKL.test.ts:211:63
+    209|   const fixture = await mount(items);
+    210|   const markers = [...fixture.active];
+    211|   expect(markers.map((marker) => marker.content.textContent)).toEqual([
+       |                                                               ^
+    212|     '1',
+    213|     '5',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+RED    mapRegionCirclesGrowWithCountAndKeepSelection  (fails: assertion/test failure; diagnostics above)

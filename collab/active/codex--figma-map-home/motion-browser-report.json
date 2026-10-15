@@ -1,0 +1,39 @@
+{
+  "success": true,
+  "effects": [
+    {
+      "target": "기간 눌림",
+      "animation": "none",
+      "duration": "0s",
+      "transition": "0.12s, 0.12s, 0.12s, 0.12s, 0.12s",
+      "scale": "0.98"
+    },
+    {
+      "target": "기간 드롭다운",
+      "animation": "ui-dropdown-enter",
+      "duration": "0.14s",
+      "transition": "0s",
+      "scale": "none"
+    },
+    {
+      "target": "전체 필터 시트",
+      "animation": "ui-sheet-enter",
+      "duration": "0.19s",
+      "transition": "0s",
+      "scale": "none"
+    },
+    {
+      "target": "검색 결과",
+      "animation": "ui-fade-enter",
+      "duration": "0.14s",
+      "transition": "0s",
+      "scale": "none"
+    }
+  ],
+  "checks": [
+    "120ms 눌림·140ms 드롭다운·190ms 시트, 즉시 닫기와 포커스 복귀",
+    "동작 줄이기에서는 등장 애니메이션·눌림 scale·transition 없음",
+    "검색 결과는 section 단위140ms, 항목별 순차 등장 없음"
+  ],
+  "pageErrors": []
+}

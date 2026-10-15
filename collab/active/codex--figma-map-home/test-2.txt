@@ -1,0 +1,39 @@
+test('mapRegionCirclesGrowWithCountAndKeepSelection', async () => {
+  const items = [1, 5, 7, 12].flatMap((count, group) =>
+    Array.from({ length: count }, (_, index) => ({
+      ...item(group * 20 + index + 1),
+      location: {
+        ...item(1).location,
+        label: `지역 ${group}`,
+        latitude: 35 + group,
+      },
+    })),
+  );
+  const fixture = await mount(items);
+  const markers = [...fixture.active];
+  expect(markers.map((marker) => marker.content.textContent)).toEqual([
+    '1',
+    '5',
+    '7',
+    '12',
+  ]);
+  expect(markers.map((marker) => marker.anchor)).toEqual([
+    { x: 19.2, y: 19.2 },
+    { x: 19.2, y: 19.2 },
+    { x: 24, y: 24 },
+    { x: 36, y: 36 },
+  ]);
+  markers[3].content.focus();
+  await act(async () =>
+    markers[3].content.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }),
+    ),
+  );
+  const sheet = document.querySelector('[aria-label="선택한 기사"]');
+  assert(sheet);
+  expect(sheet.querySelectorAll('a[href^="/incidents/"]')).toHaveLength(12);
+  expect(markers[3].content.getAttribute('aria-pressed')).toBe('true');
+  await click('기사 선택 닫기', sheet);
+  expect(markers[3].content.getAttribute('aria-pressed')).toBe('false');
+  expect(document.activeElement).toBe(markers[3].content);
+});

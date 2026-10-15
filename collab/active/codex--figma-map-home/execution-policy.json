@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "mode": "selected",
+  "default_worker": "astra",
+  "review_worker": "astra",
+  "max_calls": 18,
+  "timeout_seconds": 1200,
+  "workers": {
+    "astra": {
+      "adapter": "command",
+      "model": "gpt-6-astra",
+      "guidance": "guided",
+      "command": [
+        "/bin/bash",
+        "collab/active/codex--figma-map-home/execution-adapter.sh"
+      ]
+    }
+  },
+  "escalation": []
+}

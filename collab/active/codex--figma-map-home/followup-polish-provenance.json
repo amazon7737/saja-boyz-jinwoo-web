@@ -1,0 +1,18 @@
+{
+  "worker": "app Sobaya execution-adapter.sh / gpt-6-astra",
+  "role": "source-only finishing of already approved visual and selection requirements after initial independent review; not an additional TDD entry receipt",
+  "result": {
+    "status": "done",
+    "summary": "map-home.tsx만 수정했습니다. 출처·버튼 정렬, 리사이즈 묶음 갱신, 묶음 변경 시 선택 시트 해제와 이전 마커 콜백 무효화를 반영했습니다. 동일 묶음의 DOM·선택과 기존 검색 강조는 유지했습니다. 집중 테스트 30개, 대상 Prettier·ESLint, diff 검사를 통과했습니다.",
+    "reason": "테스트·명세·Git 메타데이터 변경이나 커밋·푸시는 하지 않았습니다. 전체 테스트·타입 검사·빌드·실제 SDK 및 320/393px 정렬 실측·독립 리뷰는 코디네이터 검증으로 남겼습니다.",
+    "usage": {
+      "input_tokens": 170488,
+      "cached_input_tokens": 129280,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 1148,
+      "reasoning_output_tokens": 95
+    }
+  },
+  "source_head": "6a2640113347a3aa244eea28c5ec90a064e7f2ba",
+  "tests_and_plans_unchanged": true
+}

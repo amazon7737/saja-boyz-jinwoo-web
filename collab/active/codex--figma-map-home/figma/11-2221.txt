@@ -1,0 +1,130 @@
+const assetPathPrefix = "[temporary download source omitted; use local assets]";
+const imgIosSignal = `${assetPathPrefix}/29ee8.svg`;
+const imgIosWifiSignal = `${assetPathPrefix}/0baa5.svg`;
+const imgIosBatteryFull = `${assetPathPrefix}/5d9e7.svg`;
+
+export default function ReportPopupWhite() {
+  return (
+    <div className="bg-white content-stretch flex flex-col items-start justify-between relative size-full" data-node-id="11:2221" data-name="report-popup-white">
+      <div className="content-stretch flex flex-col items-start relative shrink-0 w-full" data-node-id="11:2222" data-name="popup-scrollable">
+        <div className="content-stretch flex items-center justify-between pb-[8px] pt-[12px] px-[24px] relative shrink-0 w-full" data-node-id="11:2223" data-name="status-bar">
+          <p className="[word-break:break-word] font-['Inter:Semi_Bold'] font-semibold leading-[normal] not-italic relative shrink-0 text-[#0f172a] text-[14px] whitespace-nowrap" data-node-id="11:2224">
+            9:41
+          </p>
+          <div className="content-stretch flex gap-[6px] items-center relative shrink-0" data-node-id="11:2225" data-name="status-icons">
+            <div className="h-[11px] relative shrink-0 w-[17px]" data-node-id="11:2226" data-name="ios-signal">
+              <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgIosSignal} />
+            </div>
+            <div className="h-[11px] relative shrink-0 w-[15px]" data-node-id="11:2228" data-name="ios-wifi-signal">
+              <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgIosWifiSignal} />
+            </div>
+            <div className="h-[12px] relative shrink-0 w-[25px]" data-node-id="11:2230" data-name="ios-battery-full">
+              <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgIosBatteryFull} />
+            </div>
+          </div>
+        </div>
+        <div className="border-[#e2e8f0] border-b border-solid content-stretch flex items-center justify-between px-[16px] py-[12px] relative shrink-0 w-full" data-node-id="11:2232" data-name="popup-header">
+          <div className="relative shrink-0 size-[32px]" data-node-id="11:2236" data-name="Frame" />
+          <p className="[word-break:break-word] font-['Inter:Extra_Bold'] font-extrabold leading-[normal] not-italic relative shrink-0 text-[#0f172a] text-[16px] whitespace-nowrap" data-node-id="11:2235">
+            제보하기
+          </p>
+          <div className="bg-[#f1f5f9] content-stretch flex items-center justify-center relative rounded-[16px] shrink-0 size-[32px]" data-node-id="11:2233" data-name="close-action-btn">
+            <p className="[word-break:break-word] font-['Inter:Bold'] font-bold leading-[normal] not-italic relative shrink-0 text-[#0f172a] text-[14px] whitespace-nowrap" data-node-id="11:2234">
+              ✕
+            </p>
+          </div>
+        </div>
+        <div className="content-stretch flex flex-col gap-[20px] items-start p-[16px] relative shrink-0 w-full" data-node-id="11:2237" data-name="report-form">
+          <div className="[word-break:break-word] content-stretch flex flex-col gap-[8px] items-start leading-[normal] not-italic relative shrink-0 w-full whitespace-nowrap" data-node-id="11:2238" data-name="form-section-category">
+            <p className="font-['Inter:Bold'] font-bold relative shrink-0 text-[#64748b] text-[13px]" data-node-id="11:2239">
+              카테고리 선택
+            </p>
+            <div className="bg-[#f8fafc] border border-[#e2e8f0] border-solid content-stretch flex font-['Inter:Regular'] font-normal items-center justify-between px-[14px] py-[12px] relative rounded-[10px] shrink-0 w-full" data-node-id="11:2240" data-name="select-dropdown">
+              <p className="relative shrink-0 text-[#94a3b8] text-[14px]" data-node-id="11:2241">
+                카테고리를 선택하세요
+              </p>
+              <p className="relative shrink-0 text-[#64748b] text-[12px]" data-node-id="11:2242">
+                ▼
+              </p>
+            </div>
+          </div>
+          <div className="[word-break:break-word] content-stretch flex flex-col gap-[8px] items-start leading-[normal] not-italic relative shrink-0 w-full whitespace-nowrap" data-node-id="11:2243" data-name="form-section-date">
+            <p className="font-['Inter:Bold'] font-bold relative shrink-0 text-[#64748b] text-[13px]" data-node-id="11:2244">
+              발생 날짜 및 시간
+            </p>
+            <div className="bg-[#f8fafc] border border-[#e2e8f0] border-solid content-stretch flex font-['Inter:Regular'] font-normal items-center justify-between px-[14px] py-[12px] relative rounded-[10px] shrink-0 text-[14px] w-full" data-node-id="11:2245" data-name="date-input">
+              <p className="relative shrink-0 text-[#64748b]" data-node-id="11:2246">
+                2024.03.15 16:30
+              </p>
+              <p className="relative shrink-0 text-black" data-node-id="11:2247">
+                📅
+              </p>
+            </div>
+          </div>
+          <div className="content-stretch flex flex-col gap-[8px] items-start relative shrink-0 w-full" data-node-id="11:2248" data-name="form-section-title">
+            <p className="[word-break:break-word] font-['Inter:Bold'] font-bold leading-[normal] not-italic relative shrink-0 text-[#64748b] text-[13px] whitespace-nowrap" data-node-id="11:2249">
+              제보 제목
+            </p>
+            <div className="bg-[#f8fafc] border border-[#e2e8f0] border-solid content-stretch flex items-center px-[14px] py-[12px] relative rounded-[10px] shrink-0 w-full" data-node-id="11:2250" data-name="title-input-box">
+              <p className="[word-break:break-word] flex-[1_0_0] font-['Inter:Regular'] font-normal leading-[normal] min-w-px not-italic relative text-[#94a3b8] text-[14px]" data-node-id="11:2251">
+                사건 제목을 입력하세요
+              </p>
+            </div>
+          </div>
+          <div className="[word-break:break-word] content-stretch flex flex-col gap-[8px] items-start leading-[normal] not-italic relative shrink-0 w-full" data-node-id="11:2252" data-name="form-section-location">
+            <p className="font-['Inter:Bold'] font-bold relative shrink-0 text-[#64748b] text-[13px] whitespace-nowrap" data-node-id="11:2253">
+              발생 위치
+            </p>
+            <div className="bg-[#f8fafc] border border-[#e2e8f0] border-solid content-stretch flex font-['Inter:Regular'] font-normal gap-[8px] items-center px-[14px] py-[12px] relative rounded-[10px] shrink-0 text-[14px] w-full" data-node-id="11:2254" data-name="location-input-box">
+              <p className="relative shrink-0 text-black whitespace-nowrap" data-node-id="11:2255">
+                📍
+              </p>
+              <p className="flex-[1_0_0] min-w-px relative text-[#94a3b8]" data-node-id="11:2256">
+                위치를 입력하세요
+              </p>
+            </div>
+          </div>
+          <div className="content-stretch flex flex-col gap-[8px] items-start relative shrink-0 w-full" data-node-id="11:2257" data-name="form-section-desc">
+            <p className="[word-break:break-word] font-['Inter:Bold'] font-bold leading-[normal] not-italic relative shrink-0 text-[#64748b] text-[13px] whitespace-nowrap" data-node-id="11:2258">
+              상세내용
+            </p>
+            <div className="bg-[#f8fafc] border border-[#e2e8f0] border-solid content-stretch flex h-[120px] items-start p-[14px] relative rounded-[10px] shrink-0 w-full" data-node-id="11:2259" data-name="desc-textarea">
+              <p className="[word-break:break-word] flex-[1_0_0] font-['Inter:Regular'] font-normal leading-[normal] min-w-px not-italic relative text-[#94a3b8] text-[14px]" data-node-id="11:2260">
+                상세 내용을 입력하세요
+              </p>
+            </div>
+          </div>
+          <div className="[word-break:break-word] content-stretch flex flex-col gap-[8px] items-start leading-[normal] not-italic relative shrink-0 text-[#64748b] w-full whitespace-nowrap" data-node-id="11:2261" data-name="form-section-upload">
+            <p className="font-['Inter:Bold'] font-bold relative shrink-0 text-[13px]" data-node-id="11:2262">
+              사진/동영상 첨부
+            </p>
+            <div className="bg-[#f8fafc] border border-[#94a3b8] border-dashed content-stretch flex flex-col gap-[6px] h-[100px] items-center justify-center p-[20px] relative rounded-[10px] shrink-0 w-full" data-node-id="11:2263" data-name="upload-dashed-box">
+              <p className="font-['Inter:Regular'] font-normal relative shrink-0 text-[18px]" data-node-id="11:2264">
+                ➕
+              </p>
+              <p className="font-['Inter:Bold'] font-bold relative shrink-0 text-[13px]" data-node-id="11:2265">
+                이미지 첨부
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="bg-white content-stretch flex items-start pb-[24px] pt-[16px] px-[16px] relative shrink-0 w-full" data-node-id="11:2266" data-name="popup-bottom-action">
+        <div className="bg-[#e8192c] content-stretch flex flex-[1_0_0] h-[52px] items-center justify-center min-w-px relative rounded-[14px]" data-node-id="11:2267" data-name="submit-btn">
+          <p className="[word-break:break-word] font-['Inter:Extra_Bold'] font-extrabold leading-[normal] not-italic relative shrink-0 text-[16px] text-white whitespace-nowrap" data-node-id="11:2268">
+            제출하기
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+SUPER CRITICAL: The generated React+Tailwind code MUST be converted to match the target project's technology stack and styling system.
+1. Analyze the target codebase to identify: technology stack, styling approach, component patterns, and design tokens
+2. Convert React syntax to the target framework/library
+3. Transform all Tailwind classes to the target styling system while preserving exact visual design
+4. Follow the project's existing patterns and conventions
+DO NOT install any Tailwind as a dependency unless the user instructs you to do so.
+
+Node ids have been added to the code as data attributes, e.g. `data-node-id="1:2"`.
+The generated code contains image and SVG URL constants, e.g. const image = `${assetPathPrefix}/<asset file name>`, where assetPathPrefix is declared once at the top of the code and every asset URL interpolates it. These URLs are temporary download sources and expire after 7 days. Download each asset into the project with curl -L, then replace its URL in the generated code with a reference to the downloaded asset. Never use the temporary URLs as runtime image sources.

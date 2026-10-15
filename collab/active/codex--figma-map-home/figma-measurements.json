@@ -1,0 +1,32 @@
+{
+  "fileKey": "TCSILMzViAVqeHRphoyHCH",
+  "checkedDateKST": "2026-10-15",
+  "account": "easter721@gmail.com",
+  "method": "Figma get_metadata plus fresh get_design_context and render for each target",
+  "normalization": { "frame": [393, 852], "iosTopRemoved": 37, "iosBottomRemoved": 25, "webViewport": [393, 790] },
+  "filters": {
+    "node": "18:2368", "size": [393, 30], "webTop": 68, "gap": 6,
+    "icon": { "x": 16, "size": [42, 30], "assetSize": [18, 18] },
+    "period": { "x": 64, "size": [60, 27] },
+    "category": { "x": 130, "size": [82, 27] },
+    "status": { "x": 218, "size": [60, 27] }
+  },
+  "card": {
+    "node": "18:2405", "size": [200, 152], "padding": 12, "radius": 14,
+    "headerSize": [176, 38], "metaRowHeight": 16, "titleLineHeight": 16,
+    "image": { "localX": 12, "localY": 60, "size": [176, 80] }, "gap": 10
+  },
+  "bottom": {
+    "node": "18:2399", "frameY": 521, "size": [393, 331],
+    "gradientHeight": 221, "titleLocalY": 32, "cardListLocalY": 61,
+    "navLocalY": 231, "navHeight": 68, "gapBeforeNav": 10,
+    "normalizedY": { "gradient": 484, "cards": 545, "nav": 715, "locate": 426 },
+    "webExistingNavBottom8pxException": "Preserving existing menu bottom8 rather than normalized Figma bottom7 produces a 1px vertical offset. Use overlay reserve86 (68+8+10)."
+  },
+  "dataExceptions": [
+    "Actual Naver map tiles and geographic camera/representative points are dynamic.",
+    "Recent publication order replaces unavailable popularity ranking.",
+    "Category/status options disclose missing server metadata and cannot be selected.",
+    "The all-filter sheet uses the explicitly approved bright shared-panel adaptation."
+  ]
+}

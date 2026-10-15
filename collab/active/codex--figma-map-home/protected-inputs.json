@@ -1,0 +1,10 @@
+{
+  "base": "119172afa3eb5b9cbe62ea18a58e4514a58e278f",
+  "approved_baseline": "3b155aa950f4c23713f00b370845681ff1a9eaf4",
+  "head": "ad423a0804ae27760656a0e5b857607e69605f30",
+  "protected_original_files_verified": 27,
+  "exactly_approved_replacements": 3,
+  "new_entries_verbatim": 7,
+  "spec_sha256": "be374e061f4ec940f750c51ed15020bf6c887d0408258b7f0d125a92116eb10f",
+  "scripts_dependencies_and_contract_unchanged": true
+}

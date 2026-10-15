@@ -1,0 +1,19 @@
+test('mapFilteredEmptyAndApiFailureKeepRecoveryAndLocation', async () => {
+  const fixture = await mount([item(1, 8)]);
+  await click('기간');
+  await click('최근 24시간');
+  expect(carousel().textContent).toContain('선택한 기간의 기사가 없습니다');
+  expect(fixture.active.size).toBe(0);
+  expect(button('내 위치').disabled).toBe(false);
+  await click('기간: 최근 24시간');
+  await click('전체 기간');
+  expect(carousel().querySelectorAll('a[href^="/incidents/"]')).toHaveLength(1);
+  await act(async () => root!.unmount());
+  root = undefined;
+  host.remove();
+  const failed = await mount([], true);
+  expect(host.textContent).toContain('기사 위치를 불러오지 못했습니다');
+  expect(failed.active.size).toBe(0);
+  expect(button('내 위치').disabled).toBe(false);
+  expect(button('기사 위치 다시 불러오기')).toBeDefined();
+});

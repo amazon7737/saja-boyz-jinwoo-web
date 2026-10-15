@@ -1,0 +1,8 @@
+{
+  "success": true,
+  "checks": [
+    "빈 /search에서 제출 전 입력을 네이티브 X로 지움",
+    "제출 후 URL 검색어 초기화와 결과 해제 유지"
+  ],
+  "errors": []
+}

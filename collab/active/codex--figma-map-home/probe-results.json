@@ -1,0 +1,44 @@
+[
+  {
+    "name": "mapRegionCirclesCountUniqueArticlesAtFixedPoints",
+    "exit_code": 0,
+    "classification": "RED",
+    "diagnostic": "ts 28ms\n\n Test Files  1 failed (1)\n      Tests  1 failed (1)\n   Start at  16:03:40\n   Duration  549ms (environment 66%, import 18%, transform 10%, tests 6%)\n\n\n⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯\n\n FAIL  src/features/map/ui/map-home/zz_sobaya_probe_tUOHVY.test.ts > mapRegionCirclesCountUniqueArticlesAtFixedPoints\nAssertionError: expected [ { …(3) }, { …(3) } ] to have a length of 3 but got 2\n\n- Expected\n+ Received\n\n- 3\n+ 2\n\n ❯ src/features/map/ui/map-home/zz_sobaya_probe_tUOHVY.test.ts:209:19\n    207|   const fixture = await mount(items);\n    208|   const markers = [...fixture.active];\n    209|   expect(markers).toHaveLength(3);\n       |                   ^\n    210|   expect(markers.map((marker) => marker.content.textContent).sort()).t…\n    211|     '1',\n\n⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯\n\nRED    mapRegionCirclesCountUniqueArticlesAtFixedPoints  (fails: assertion/test failure; diagnostics above)\n"
+  },
+  {
+    "name": "mapRegionCirclesGrowWithCountAndKeepSelection",
+    "exit_code": 0,
+    "classification": "RED",
+    "diagnostic": ":01:48\n   Duration  409ms (environment 59%, import 20%, transform 13%, tests 8%, worker 1%)\n\n\n⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯\n\n FAIL  src/features/map/ui/map-home/zz_sobaya_probe_DQFbKL.test.ts > mapRegionCirclesGrowWithCountAndKeepSelection\nAssertionError: expected [ '', '5', '7', '12' ] to deeply equal [ '1', '5', '7', '12' ]\n\n- Expected\n+ Received\n\n  [\n-   \"1\",\n+   \"\",\n    \"5\",\n    \"7\",\n    \"12\",\n  ]\n\n ❯ src/features/map/ui/map-home/zz_sobaya_probe_DQFbKL.test.ts:211:63\n    209|   const fixture = await mount(items);\n    210|   const markers = [...fixture.active];\n    211|   expect(markers.map((marker) => marker.content.textContent)).toEqual([\n       |                                                               ^\n    212|     '1',\n    213|     '5',\n\n⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯\n\nRED    mapRegionCirclesGrowWithCountAndKeepSelection  (fails: assertion/test failure; diagnostics above)\n"
+  },
+  {
+    "name": "mapCarouselUsesRealArticlesAndSafeImages",
+    "exit_code": 0,
+    "classification": "RED",
+    "diagnostic": "-home/zz_sobaya_probe_0aelu6.test.ts (1 test | 1 failed) 26ms\n   × mapCarouselUsesRealArticlesAndSafeImages 25ms\n\n Test Files  1 failed (1)\n      Tests  1 failed (1)\n   Start at  16:01:48\n   Duration  428ms (environment 60%, import 20%, transform 12%, tests 8%, worker 1%)\n\n\n⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯\n\n FAIL  src/features/map/ui/map-home/zz_sobaya_probe_0aelu6.test.ts > mapCarouselUsesRealArticlesAndSafeImages\nAssertionError: 지도 기사 carousel missing\n ❯ carousel src/features/map/ui/map-home/zz_sobaya_probe_0aelu6.test.ts:180:3\n    178|     'section[aria-label=\"지도 기사\"]',\n    179|   );\n    180|   assert(section, '지도 기사 carousel missing');\n       |   ^\n    181|   return section;\n    182| }\n ❯ src/features/map/ui/map-home/zz_sobaya_probe_0aelu6.test.ts:211:17\n\n⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯\n\nRED    mapCarouselUsesRealArticlesAndSafeImages  (fails: assertion/test failure; diagnostics above)\n"
+  },
+  {
+    "name": "mapPeriodFiltersSynchronizeMarkersAndCardsWithoutResettingMap",
+    "exit_code": 0,
+    "classification": "RED",
+    "diagnostic": "⎯\n\n FAIL  src/features/map/ui/map-home/zz_sobaya_probe_2taEM8.test.ts > mapPeriodFiltersSynchronizeMarkersAndCardsWithoutResettingMap\nAssertionError: button missing: 기간\n ❯ button src/features/map/ui/map-home/zz_sobaya_probe_2taEM8.test.ts:168:3\n    166|       node.textContent?.trim() === label,\n    167|   );\n    168|   assert(found, `button missing: ${label}`);\n       |   ^\n    169|   return found;\n    170| }\n ❯ src/features/map/ui/map-home/zz_sobaya_probe_2taEM8.test.ts:173:25\n ❯ process.env.NODE_ENV.exports.act node_modules/.pnpm/react@19.3.0/node_modules/react/cjs/react.development.js:890:22\n ❯ click src/features/map/ui/map-home/zz_sobaya_probe_2taEM8.test.ts:173:9\n ❯ src/features/map/ui/map-home/zz_sobaya_probe_2taEM8.test.ts:208:9\n\n⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯\n\nRED    mapPeriodFiltersSynchronizeMarkersAndCardsWithoutResettingMap  (fails: assertion/test failure; diagnostics above)\n"
+  },
+  {
+    "name": "mapUnavailableFiltersExplainMissingMetadataAndCloseAccessibly",
+    "exit_code": 0,
+    "classification": "RED",
+    "diagnostic": " × mapUnavailableFiltersExplainMissingMetadataAndCloseAccessibly 25ms\n\n Test Files  1 failed (1)\n      Tests  1 failed (1)\n   Start at  16:01:50\n   Duration  398ms (environment 60%, import 20%, transform 11%, tests 8%, worker 1%)\n\n\n⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯\n\n FAIL  src/features/map/ui/map-home/zz_sobaya_probe_fo5ftM.test.ts > mapUnavailableFiltersExplainMissingMetadataAndCloseAccessibly\nAssertionError: button missing: 카테고리\n ❯ button src/features/map/ui/map-home/zz_sobaya_probe_fo5ftM.test.ts:168:3\n    166|       node.textContent?.trim() === label,\n    167|   );\n    168|   assert(found, `button missing: ${label}`);\n       |   ^\n    169|   return found;\n    170| }\n ❯ src/features/map/ui/map-home/zz_sobaya_probe_fo5ftM.test.ts:204:21\n\n⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯\n\nRED    mapUnavailableFiltersExplainMissingMetadataAndCloseAccessibly  (fails: assertion/test failure; diagnostics above)\n"
+  },
+  {
+    "name": "mapAllFiltersApplyOrDiscardDraftAndReset",
+    "exit_code": 0,
+    "classification": "RED",
+    "diagnostic": "ome/zz_sobaya_probe_fgjKbK.test.ts (1 test | 1 failed) 26ms\n   × mapAllFiltersApplyOrDiscardDraftAndReset 26ms\n\n Test Files  1 failed (1)\n      Tests  1 failed (1)\n   Start at  16:01:51\n   Duration  398ms (environment 61%, import 20%, transform 12%, tests 8%, worker 1%)\n\n\n⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯\n\n FAIL  src/features/map/ui/map-home/zz_sobaya_probe_fgjKbK.test.ts > mapAllFiltersApplyOrDiscardDraftAndReset\nAssertionError: button missing: 전체 필터\n ❯ button src/features/map/ui/map-home/zz_sobaya_probe_fgjKbK.test.ts:168:3\n    166|       node.textContent?.trim() === label,\n    167|   );\n    168|   assert(found, `button missing: ${label}`);\n       |   ^\n    169|   return found;\n    170| }\n ❯ src/features/map/ui/map-home/zz_sobaya_probe_fgjKbK.test.ts:200:19\n\n⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯\n\nRED    mapAllFiltersApplyOrDiscardDraftAndReset  (fails: assertion/test failure; diagnostics above)\n"
+  },
+  {
+    "name": "mapFilteredEmptyAndApiFailureKeepRecoveryAndLocation",
+    "exit_code": 0,
+    "classification": "RED",
+    "diagnostic": "led Tests 1 ⎯⎯⎯⎯⎯⎯⎯\n\n FAIL  src/features/map/ui/map-home/zz_sobaya_probe_UXf3R6.test.ts > mapFilteredEmptyAndApiFailureKeepRecoveryAndLocation\nAssertionError: button missing: 기간\n ❯ button src/features/map/ui/map-home/zz_sobaya_probe_UXf3R6.test.ts:168:3\n    166|       node.textContent?.trim() === label,\n    167|   );\n    168|   assert(found, `button missing: ${label}`);\n       |   ^\n    169|   return found;\n    170| }\n ❯ src/features/map/ui/map-home/zz_sobaya_probe_UXf3R6.test.ts:173:25\n ❯ process.env.NODE_ENV.exports.act node_modules/.pnpm/react@19.3.0/node_modules/react/cjs/react.development.js:890:22\n ❯ click src/features/map/ui/map-home/zz_sobaya_probe_UXf3R6.test.ts:173:9\n ❯ src/features/map/ui/map-home/zz_sobaya_probe_UXf3R6.test.ts:200:9\n\n⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯\n\nRED    mapFilteredEmptyAndApiFailureKeepRecoveryAndLocation  (fails: assertion/test failure; diagnostics above)\n"
+  }
+]

@@ -1,0 +1,47 @@
+{
+  "source_head": "6a2640113347a3aa244eea28c5ec90a064e7f2ba",
+  "baseline": "565c75930c8323a5040c2056b35cfca17bd48d53",
+  "status": "complete",
+  "review": {
+    "head": "6a2640113347a3aa244eea28c5ec90a064e7f2ba",
+    "worker": "astra",
+    "summary": "HEAD 6a26401 독립 읽기 전용 리뷰에서 actionable defect 없음. map-display-groups.ts:30의 고유 집계·연쇄 겹침·반경 증가 처리, map-home.tsx:346의 DOM/선택 유지·변경 시트 해제, :383의 오래된 콜백 차단, :417의 재계산·정리를 확인함. map-home.tsx:684 정렬 및 search-result-card.tsx:16의 리터럴 대소문자 무시·원문 보존도 확인. 기존 108개 테스트는 바이트 동일하며 승인된 1개 교체 외 변경 없음. 신규 4개 본문은 승인안과 동일. report/page.tsx는 origin/dev와 동일.",
+    "at": 1792062928
+  },
+  "receipts": [
+    {
+      "entry": "mapOverlappingRegionMarkersCombineUniqueArticles",
+      "passed": 110,
+      "head": "78a50f65e73759a285d8aba914927d2d184d761f"
+    },
+    {
+      "entry": "mapRegionDisplayClustersSplitAndRejoinOnZoom",
+      "passed": 111,
+      "head": "250a0ab97cef5078cdfa94cf972955e61235021a"
+    },
+    {
+      "entry": "mapDisplayClustersFollowPeriodAndDisposeListeners",
+      "passed": 112,
+      "head": "8febbd8357509a20896d7064597639d044537ae2"
+    },
+    {
+      "entry": "searchHighlightIgnoresCaseAndPreservesOriginalLiteralText",
+      "passed": 113,
+      "head": "82d0b630b1adcbb41ed8eeb0c26561dcf50face9"
+    }
+  ],
+  "full_suite": {
+    "command": "./node_modules/.bin/vitest run",
+    "files": 27,
+    "passed": 113,
+    "failed": 0,
+    "skipped": 0,
+    "evidence": "final review.sh executes the unchanged full gate before the fresh reviewer"
+  },
+  "format": "passed",
+  "lint": "passed",
+  "typecheck": "pnpm run typecheck passed",
+  "build": "pnpm run build passed with unchanged default Turbopack after isolating a generated cache containing prior socket-denied failure",
+  "protected_inputs_verified": true,
+  "browser_report": "evidence/followup/browser-report.json"
+}

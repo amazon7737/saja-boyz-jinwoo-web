@@ -1,0 +1,18 @@
+{
+  "phase": "Sobaya 승인 명세의 시각 인수와 첫 독립리뷰2건 보정",
+  "method": "collab.sh run으로 감싼 앱 Astra 소스 실행; 실제 원본·브라우저 이미지4개 첨부",
+  "runtime_receipt": false,
+  "note": "신규 테스트 항목으로 계산하지 않으며 승인 입력/테스트를 변경하지 않았다. 이후 동일 Sobaya baseline의 전체 gate·별도 독립 리뷰로 최종 HEAD를 검증한다.",
+  "result": {
+    "status": "done",
+    "summary": "지도 UI 소스 수정 완료: 낮은 화면 카드 축소, 필터 순서·치수·접근성 설명, 드롭다운·전체 필터 기본 스타일 제거, 카드·캐러셀 실측 반영, 단일 링크 영역 확장, 컴포넌트 폴더 분리, neighborhood 안내 수정. 기존 MapHome·승인 회귀 테스트 26개와 format/lint/typecheck, diff 검사가 통과했습니다.",
+    "reason": "전체 suite·build·실제 Chrome/Naver SDK 시각·클릭 검증과 최종 독립 리뷰는 미수행입니다. 승인 입력·테스트·helper·fixture·명령·의존성은 변경하지 않았으며 보호 파일 해시도 일치합니다. 기존 Figma 근거와 준비된 SVG를 보존했습니다. Git metadata 편집, 커밋·푸시·PR·코멘트·배포는 수행하지 않았습니다.",
+    "usage": {
+      "input_tokens": 574120,
+      "cached_input_tokens": 503936,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 4778,
+      "reasoning_output_tokens": 667
+    }
+  }
+}
