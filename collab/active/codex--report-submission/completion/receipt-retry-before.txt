@@ -1,0 +1,112 @@
+Both esbuild and oxc options were set. oxc options will be used and esbuild options will be ignored. The following esbuild options were set: `{ jsx: 'automatic' }`
+
+ RUN  v5.0.3 /private/tmp/poem-report-contract-probe
+
+ ❯ contract-probe.test.ts (11 tests | 8 failed) 71ms
+   × rejects non-contract receipt timestamp: October 13, 2026 23ms
+   × rejects non-contract receipt timestamp: 2026-10-13 5ms
+   × rejects non-contract receipt timestamp: 2026-02-30T05:00:00Z 4ms
+   × rejects non-contract receipt timestamp: 2026-10-13T05:00:00 4ms
+   × retains request key after uncertain response: body-stream 8ms
+   × retains request key after uncertain response: html-body 5ms
+   × retains request key after uncertain response: server-error 4ms
+   × retains request key after uncertain response: malformed-receipt 4ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 8 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  contract-probe.test.ts > rejects non-contract receipt timestamp: October 13, 2026
+ FAIL  contract-probe.test.ts > rejects non-contract receipt timestamp: 2026-10-13
+ FAIL  contract-probe.test.ts > rejects non-contract receipt timestamp: 2026-02-30T05:00:00Z
+ FAIL  contract-probe.test.ts > rejects non-contract receipt timestamp: 2026-10-13T05:00:00
+AssertionError: expected <p role="status"></p> to be null
+
+- Expected:
+null
+
++ Received:
+<p
+  role="status"
+>
+  제보가 접수됐어요 · 접수번호:
+  aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+</p>
+
+ ❯ contract-probe.test.ts:154:56
+    152|     fetchMock.mockResolvedValueOnce(new Response(JSON.stringify({...re…
+    153|     await checkInput();
+    154|     expect(container.querySelector('[role="status"]')).toBeNull();
+       |                                                        ^
+    155|     expect(container.querySelector('[role="alert"]')).not.toBeNull();
+    156|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/8]⎯
+
+ FAIL  contract-probe.test.ts > retains request key after uncertain response: body-stream
+AssertionError: expected '7bd2fc18-6696-453a-b2c4-0b95068ed056' to be 'd5a5a7e3-9679-450b-a05b-e2aecbd32a6e' // Object.is equality
+
+Expected: "d5a5a7e3-9679-450b-a05b-e2aecbd32a6e"
+Received: "7bd2fc18-6696-453a-b2c4-0b95068ed056"
+
+ ❯ contract-probe.test.ts:187:20
+    185|     expect(fetchMock).toHaveBeenCalledTimes(2);
+    186|     const key = (index: number) => new Headers(fetchMock.mock.calls[in…
+    187|     expect(key(1)).toBe(key(0));
+       |                    ^
+    188|     expect(container.querySelector('[role="status"]')?.textContent).to…
+    189|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/8]⎯
+
+ FAIL  contract-probe.test.ts > retains request key after uncertain response: html-body
+AssertionError: expected '3658de1c-e364-4e92-89d4-3345907727ff' to be 'fb7c3bd1-f1c7-4fac-8c10-8e2567b45356' // Object.is equality
+
+Expected: "fb7c3bd1-f1c7-4fac-8c10-8e2567b45356"
+Received: "3658de1c-e364-4e92-89d4-3345907727ff"
+
+ ❯ contract-probe.test.ts:187:20
+    185|     expect(fetchMock).toHaveBeenCalledTimes(2);
+    186|     const key = (index: number) => new Headers(fetchMock.mock.calls[in…
+    187|     expect(key(1)).toBe(key(0));
+       |                    ^
+    188|     expect(container.querySelector('[role="status"]')?.textContent).to…
+    189|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/8]⎯
+
+ FAIL  contract-probe.test.ts > retains request key after uncertain response: server-error
+AssertionError: expected 'bec31ec7-e75a-4eb8-a28d-9fea81f51f2f' to be 'f4964293-623c-423a-9de4-dca8a41a64dd' // Object.is equality
+
+Expected: "f4964293-623c-423a-9de4-dca8a41a64dd"
+Received: "bec31ec7-e75a-4eb8-a28d-9fea81f51f2f"
+
+ ❯ contract-probe.test.ts:187:20
+    185|     expect(fetchMock).toHaveBeenCalledTimes(2);
+    186|     const key = (index: number) => new Headers(fetchMock.mock.calls[in…
+    187|     expect(key(1)).toBe(key(0));
+       |                    ^
+    188|     expect(container.querySelector('[role="status"]')?.textContent).to…
+    189|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/8]⎯
+
+ FAIL  contract-probe.test.ts > retains request key after uncertain response: malformed-receipt
+AssertionError: expected '7faa6253-73ab-43af-a34e-466193108462' to be 'ed4f1c79-e418-4116-b28a-03b4283105fc' // Object.is equality
+
+Expected: "ed4f1c79-e418-4116-b28a-03b4283105fc"
+Received: "7faa6253-73ab-43af-a34e-466193108462"
+
+ ❯ contract-probe.test.ts:187:20
+    185|     expect(fetchMock).toHaveBeenCalledTimes(2);
+    186|     const key = (index: number) => new Headers(fetchMock.mock.calls[in…
+    187|     expect(key(1)).toBe(key(0));
+       |                    ^
+    188|     expect(container.querySelector('[role="status"]')?.textContent).to…
+    189|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/8]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  8 failed | 3 passed (11)
+   Start at  16:25:30
+   Duration  350ms (environment 60%, tests 24%, import 8%, transform 7%, worker 1%)

@@ -1,0 +1,10 @@
+
+ RUN  v5.0.3 /Users/kangminkim/lunch/sobaya/apps/saja-boyz-jinwoo-codex--article-list-pagination
+
+협업: components/ui/button.tsx 를 @solp(feat--checkout) 도 바꾸는 중
+
+ Test Files  15 passed (15)
+      Tests  58 passed (58)
+   Start at  19:35:31
+   Duration  107.62s (tests 97%, environment 2%, import 1%)
+

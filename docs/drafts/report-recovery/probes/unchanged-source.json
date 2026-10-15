@@ -1,0 +1,7 @@
+{
+  "head": "03a3857a89557ca3452b4a9c476aa5501d096d60",
+  "tracked_diff_empty": true,
+  "protected_file_count": 555,
+  "protected_manifest_sha256": "e31e52255ad81344d952623c7bd6efdeee187b315bdb2486778d5c5cb46ca500",
+  "scope": "Only untracked docs/drafts/report-recovery was added. No implementation, existing test, approval, dependency, config or harness changed."
+}

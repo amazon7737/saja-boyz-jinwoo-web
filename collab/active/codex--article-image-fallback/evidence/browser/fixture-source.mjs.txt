@@ -1,0 +1,152 @@
+import { createServer } from 'node:http';
+import { createHash } from 'node:crypto';
+import { readFileSync, appendFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import path from 'node:path';
+
+const directory = path.dirname(fileURLToPath(import.meta.url));
+const port = Number(process.env.FIXTURE_PORT || 39072);
+const host = '127.0.0.1';
+const origin = `http://${host}:${port}`;
+const modeFile = path.join(directory, 'mode.txt');
+const logFile = path.join(directory, 'requests.ndjson');
+const imageBytes = readFileSync(path.join(directory, 'sample-image.jpg'));
+const damagedImageBytes = Buffer.from('SYNTHETIC FIXTURE: invalid JPEG bytes for browser decoding failure.\n', 'utf8');
+const modes = new Set(['success', 'duplicate', 'long-title', 'empty', '503', 'delay', 'timeout', 'image404', 'image-damaged']);
+const idA = createHash('sha256').update(`${origin}/source/a`).digest('hex');
+const idB = createHash('sha256').update(`${origin}/source/b`).digest('hex');
+let sequence = 0;
+
+function mode() {
+  const value = readFileSync(modeFile, 'utf8').trim();
+  if (!modes.has(value)) throw new Error(`Unknown fixture mode: ${value}`);
+  return value;
+}
+
+function record(value) {
+  appendFileSync(logFile, `${JSON.stringify({ at: new Date().toISOString(), ...value })}\n`);
+}
+
+function fixtures(selectedMode) {
+  const first = {
+    collection_id: '20261004T030000000000Z_00000000000000000000000000000001',
+    article_id: idA,
+    article: {
+      title: '[합성 샘플 A] <b>교통 안내</b> &amp; 점검',
+      originallink: `${origin}/source/a`,
+      link: `${origin}/portal/a`,
+      description: '브라우저 검증용 가상 기사입니다. 원본 이미지 배치와 &quot;기사 발행&quot; 문구를 확인합니다.',
+      pubDate: 'Sun, 04 Oct 2026 09:00:00 +0900',
+    },
+    image_status: 'ready',
+    image_url: `/images/${idA}.jpg`,
+  };
+  const second = {
+    collection_id: '20261004T030001000000Z_00000000000000000000000000000002',
+    article_id: idB,
+    article: {
+      title: '[합성 샘플 B] 이미지 없는 기사',
+      originallink: `${origin}/source/b`,
+      link: `${origin}/portal/b`,
+      description: '실제 뉴스가 아닌 합성 데이터입니다. 이미지가 비활성화된 카드도 제목과 발행 시각을 보존합니다.',
+      pubDate: 'Sat, 03 Oct 2026 18:30:00 +0900',
+    },
+    image_status: 'disabled',
+    image_url: null,
+  };
+  if (selectedMode === 'empty') return { total: 0, items: [] };
+  if (selectedMode === 'duplicate') {
+    const duplicate = {
+      ...first,
+      collection_id: '20261004T030002000000Z_00000000000000000000000000000003',
+      article: { ...first.article, title: '[중복 샘플 A] 이 제목은 최종 목록에 보이면 안 됩니다' },
+    };
+    return { total: 3, items: [first, duplicate, second] };
+  }
+  if (selectedMode === 'long-title') {
+    first.article.title = '[합성 긴 제목] 도심 교통 통제와 공공시설 점검에 관한 아주 긴 한국어 안내문을 작은 화면에서 읽을 때 제목이 카드 밖으로 넘어가거나 다른 요소와 겹치지 않는지 살펴보는 브라우저 검증용 기사입니다';
+    first.article.description = '이 설명은 실제 뉴스가 아닙니다. '.repeat(18);
+  }
+  return { total: 2, items: [first, second] };
+}
+
+function json(response, status, value) {
+  response.writeHead(status, { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' });
+  response.end(JSON.stringify(value));
+}
+
+const server = createServer((request, response) => {
+  const requestId = ++sequence;
+  const started = Date.now();
+  const url = new URL(request.url || '/', origin);
+  let selectedMode;
+  try { selectedMode = mode(); }
+  catch (error) {
+    json(response, 500, { fixture_error: error.message });
+    return;
+  }
+  record({ event: 'request', requestId, method: request.method, path: url.pathname, query: url.search, mode: selectedMode });
+  let delayTimer;
+  response.on('close', () => {
+    clearTimeout(delayTimer);
+    record({ event: 'close', requestId, path: url.pathname, mode: selectedMode, status: response.statusCode, completed: response.writableFinished, elapsedMs: Date.now() - started });
+  });
+  if (request.method !== 'GET') {
+    response.setHeader('allow', 'GET');
+    json(response, 405, { error: 'Fixture supports read-only GET endpoints only.' });
+    return;
+  }
+  if (url.pathname === '/health' || url.pathname === '/__fixture/status') {
+    json(response, 200, { fixture: 'synthetic browser verification data', origin, mode: selectedMode, modes: [...modes], ids: { a: idA, b: idB }, requestCount: sequence, newsPath: '/news?offset=0&limit=20', imageBytes: imageBytes.length });
+    return;
+  }
+  if (url.pathname === '/news') {
+    if (url.searchParams.get('offset') !== '0' || url.searchParams.get('limit') !== '20') {
+      json(response, 400, { error: 'Fixture expects offset=0 and limit=20.' });
+      return;
+    }
+    if (selectedMode === '503') {
+      json(response, 503, { error: 'FIXTURE_INTERNAL_ERROR_NOT_FOR_UI', fixture: true });
+      return;
+    }
+    const respond = () => {
+      if (!response.destroyed && !response.writableEnded) json(response, 200, fixtures(selectedMode));
+    };
+    if (selectedMode === 'delay' || selectedMode === 'timeout') {
+      delayTimer = setTimeout(respond, selectedMode === 'delay' ? 2000 : 7000);
+    } else respond();
+    return;
+  }
+  if (url.pathname === `/images/${idA}.jpg`) {
+    if (selectedMode === 'image404') {
+      json(response, 404, { error: 'Synthetic missing image.' });
+      return;
+    }
+    if (selectedMode === 'image-damaged') {
+      response.writeHead(200, { 'content-type': 'image/jpeg', 'content-length': damagedImageBytes.length, 'cache-control': 'no-store' });
+      response.end(damagedImageBytes);
+      return;
+    }
+    response.writeHead(200, { 'content-type': 'image/jpeg', 'content-length': imageBytes.length, 'cache-control': 'no-store' });
+    response.end(imageBytes);
+    return;
+  }
+  if (/^\/(source|portal)\/[ab]$/.test(url.pathname)) {
+    const label = url.pathname.endsWith('/a') ? 'A' : 'B';
+    response.writeHead(200, { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' });
+    response.end(`<!doctype html><html lang="ko"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>합성 기사 원문 ${label}</title><main><h1>합성 기사 원문 ${label}</h1><p>로컬 브라우저 검증용 가상 원문입니다. 실제 뉴스가 아닙니다.</p></main></html>`);
+    return;
+  }
+  json(response, 404, { error: 'Unknown fixture endpoint.' });
+});
+
+server.listen(port, host, () => {
+  console.log(JSON.stringify({ fixture: true, origin, mode: mode(), modeFile, logFile, ids: { a: idA, b: idB } }));
+});
+
+for (const signal of ['SIGINT', 'SIGTERM']) {
+  process.once(signal, () => {
+    server.close();
+    server.closeAllConnections();
+  });
+}

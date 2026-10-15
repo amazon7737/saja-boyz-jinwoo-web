@@ -1,0 +1,55 @@
+test('nextRouteErrorBridgesResetSafely', async () => {
+  for (const path of ['../../app/error.tsx', '../../app/global-error.tsx']) {
+    await draw(null);
+    const load = modules[path];
+    expect(load, `${path}가 있어야 한다`).toBeTypeOf('function');
+    const { default: ErrorView } = (await load()) as {
+      default: ComponentType<{
+        error: Error & { digest?: string };
+        reset: () => void;
+      }>;
+    };
+    const reset = vi.fn();
+    const error = Object.assign(new Error('SECRET_SERVER_MESSAGE'), {
+      digest: 'SECRET_DIGEST',
+    });
+    const iframe = path.includes('global-error')
+      ? document.createElement('iframe')
+      : null;
+    if (iframe) document.body.append(iframe);
+    const targetDocument = iframe?.contentDocument;
+    const globalRoot = targetDocument ? createRoot(targetDocument) : null;
+    const target = targetDocument ?? container;
+    try {
+      if (globalRoot) {
+        await act(async () =>
+          globalRoot.render(createElement(ErrorView, { error, reset })),
+        );
+      } else {
+        await draw(createElement(ErrorView, { error, reset }));
+      }
+      expect(target.querySelector('[role="alert"]')?.textContent).toContain(
+        '화면을 표시하지 못했어요',
+      );
+      expect(target.querySelector('[role="alert"]')?.textContent).not.toContain(
+        'SECRET_SERVER_MESSAGE',
+      );
+      expect(target.querySelector('[role="alert"]')?.textContent).not.toContain(
+        'SECRET_DIGEST',
+      );
+      const button = Array.from(target.querySelectorAll('button')).find((el) =>
+        el.textContent?.includes('다시 시도'),
+      );
+      assert(button);
+      await act(async () => button.click());
+      expect(reset).toHaveBeenCalledTimes(1);
+      if (path.includes('global-error')) {
+        expect(target.querySelector('html')?.getAttribute('lang')).toBe('ko');
+        expect(target.querySelector('html > body')).not.toBeNull();
+      }
+    } finally {
+      if (globalRoot) await act(async () => globalRoot.unmount());
+      iframe?.remove();
+    }
+  }
+});

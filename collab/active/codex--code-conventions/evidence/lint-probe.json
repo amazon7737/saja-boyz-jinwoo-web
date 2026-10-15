@@ -1,0 +1,11 @@
+{
+  "invalidFormattingRejected": true,
+  "invalidImportGroupsRejected": true,
+  "validFormattingAccepted": true,
+  "testStyleExcluded": true,
+  "existingNextLintPreserved": true,
+  "invalidRules": [
+    "padding-line-between-statements",
+    "padding-line-between-statements"
+  ]
+}

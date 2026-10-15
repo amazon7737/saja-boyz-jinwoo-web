@@ -9,7 +9,9 @@ pnpm install --frozen-lockfile
 pnpm run dev
 ```
 
-[프로젝트 방향](docs/project.md) · [Figma 분석·노드 인덱스](docs/figma-analysis.md) · [개발 구조와 검증](docs/architecture.md)
+[구현 분담](docs/work-split.md) · [공용 UI 계약](docs/ui-contract.md) · [프로젝트 방향](docs/project.md) · [Figma 분석·노드 인덱스](docs/figma-analysis.md) · [개발 구조와 검증](docs/architecture.md)
+
+배포 준비는 [Vercel 배포 가이드](docs/vercel-deployment.md)를 따릅니다. 프런트는 Vercel, 뉴스 API와 저장소는 기존 OCI 서버를 사용합니다. `dev`에서 Preview를 확인한 뒤 `dev → main` 통합 PR로 운영 배포할 소스를 확정합니다.
 
 ---
 

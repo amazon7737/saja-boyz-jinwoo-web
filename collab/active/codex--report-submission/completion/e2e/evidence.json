@@ -1,0 +1,221 @@
+{
+  "started_at": "2026-10-13T07:56:50.141Z",
+  "frontend": "http://127.0.0.1:13444",
+  "api": "https://127.0.0.1:19444",
+  "frontend_revision": "da20a13fd15d3af539cb49bf07f50fc1e1f3ddca",
+  "backend_revision": "f91d7ff98d6375e5aea7881923189dea6951319a",
+  "backend_binary_sha256": "7479fd72c201712e5eb83442596d9be42c5876489edbd09234a9349094a9a589",
+  "data_dir": "/private/tmp/poem-intake-live.c7H5JS/reports",
+  "fields": {
+    "category": "society",
+    "occurred_at": "2026-10-13T03:34:00Z",
+    "title": "합성 E2E 제보 2026-10-13T07-56-50-141Z",
+    "location": "가상 검증 장소 101",
+    "description": "실제 사건이나 개인정보가 없는 로컬 브라우저 검증 자료입니다."
+  },
+  "fixture": {
+    "name": "one-pixel.png",
+    "bytes": 68,
+    "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460"
+  },
+  "console_errors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)"
+  ],
+  "page_errors": [],
+  "failed_resources": [],
+  "network": [
+    {
+      "method": "POST",
+      "url": "https://127.0.0.1:19444/reports",
+      "status": 201
+    }
+  ],
+  "result": "passed",
+  "receipt": {
+    "report_id": "bb2e752187729b459d82c2ca783b4781",
+    "status": "pending",
+    "received_at": "2026-10-13T07:56:51.642771Z"
+  },
+  "idempotency_key": "e3bf1663-008b-401c-8f42-6e12d87ea3f3",
+  "stored_metadata": {
+    "schema_version": 1,
+    "report_id": "bb2e752187729b459d82c2ca783b4781",
+    "status": "pending",
+    "received_at": "2026-10-13T07:56:51.642771Z",
+    "idempotency_key": "e3bf1663-008b-401c-8f42-6e12d87ea3f3",
+    "fingerprint": "17d12ecc14318ac8ceb8a01057999a358ccf19dbf4de1036e78fbecf5f9cfd98",
+    "category": "society",
+    "occurred_at": "2026-10-13T03:34:00Z",
+    "title": "합성 E2E 제보 2026-10-13T07-56-50-141Z",
+    "location": "가상 검증 장소 101",
+    "description": "실제 사건이나 개인정보가 없는 로컬 브라우저 검증 자료입니다.",
+    "attachments": [
+      {
+        "original_name": "one-pixel.png",
+        "stored_name": "attachment-1",
+        "content_type": "image/png",
+        "size": 68,
+        "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460"
+      }
+    ]
+  },
+  "replay_status": 200,
+  "conflict_status": 409,
+  "committed_report_count": 1,
+  "private_resource_checks": [
+    {
+      "path": "/reports",
+      "status": 405
+    },
+    {
+      "path": "/reports/bb2e752187729b459d82c2ca783b4781",
+      "status": 404
+    },
+    {
+      "path": "/reports/bb2e752187729b459d82c2ca783b4781/report.json",
+      "status": 404
+    },
+    {
+      "path": "/reports/bb2e752187729b459d82c2ca783b4781/attachment-1",
+      "status": 404
+    }
+  ],
+  "news_unchanged": true,
+  "confirmed_form_locked": true,
+  "new_report_reset": true,
+  "preflight": {
+    "started_at": "2026-10-13T07:56:51.636Z",
+    "finished_at": "2026-10-13T07:56:51.637Z",
+    "method": "OPTIONS",
+    "path": "/reports",
+    "origin": "http://127.0.0.1:13444",
+    "idempotency_key": null,
+    "status": 204,
+    "allow_origin": "http://127.0.0.1:13444",
+    "allow_methods": "POST",
+    "allow_headers": "Content-Type, Idempotency-Key"
+  },
+  "proxy_requests": [
+    {
+      "started_at": "2026-10-13T07:56:50.781Z",
+      "finished_at": "2026-10-13T07:56:50.783Z",
+      "method": "GET",
+      "path": "/news?limit=100",
+      "origin": null,
+      "idempotency_key": null,
+      "status": 200,
+      "allow_origin": null,
+      "allow_methods": null,
+      "allow_headers": null
+    },
+    {
+      "started_at": "2026-10-13T07:56:51.636Z",
+      "finished_at": "2026-10-13T07:56:51.637Z",
+      "method": "OPTIONS",
+      "path": "/reports",
+      "origin": "http://127.0.0.1:13444",
+      "idempotency_key": null,
+      "status": 204,
+      "allow_origin": "http://127.0.0.1:13444",
+      "allow_methods": "POST",
+      "allow_headers": "Content-Type, Idempotency-Key"
+    },
+    {
+      "started_at": "2026-10-13T07:56:51.638Z",
+      "finished_at": "2026-10-13T07:56:51.651Z",
+      "method": "POST",
+      "path": "/reports",
+      "origin": "http://127.0.0.1:13444",
+      "idempotency_key": "e3bf1663-008b-401c-8f42-6e12d87ea3f3",
+      "status": 201,
+      "allow_origin": "http://127.0.0.1:13444",
+      "allow_methods": null,
+      "allow_headers": null
+    },
+    {
+      "started_at": "2026-10-13T07:56:51.720Z",
+      "finished_at": "2026-10-13T07:56:51.725Z",
+      "method": "POST",
+      "path": "/reports",
+      "origin": "http://127.0.0.1:13444",
+      "idempotency_key": "e3bf1663-008b-401c-8f42-6e12d87ea3f3",
+      "status": 200,
+      "allow_origin": "http://127.0.0.1:13444",
+      "allow_methods": null,
+      "allow_headers": null
+    },
+    {
+      "started_at": "2026-10-13T07:56:51.728Z",
+      "finished_at": "2026-10-13T07:56:51.734Z",
+      "method": "POST",
+      "path": "/reports",
+      "origin": "http://127.0.0.1:13444",
+      "idempotency_key": "e3bf1663-008b-401c-8f42-6e12d87ea3f3",
+      "status": 409,
+      "allow_origin": "http://127.0.0.1:13444",
+      "allow_methods": null,
+      "allow_headers": null
+    },
+    {
+      "started_at": "2026-10-13T07:56:51.735Z",
+      "finished_at": "2026-10-13T07:56:51.736Z",
+      "method": "GET",
+      "path": "/reports",
+      "origin": null,
+      "idempotency_key": null,
+      "status": 405,
+      "allow_origin": null,
+      "allow_methods": null,
+      "allow_headers": null
+    },
+    {
+      "started_at": "2026-10-13T07:56:51.737Z",
+      "finished_at": "2026-10-13T07:56:51.738Z",
+      "method": "GET",
+      "path": "/reports/bb2e752187729b459d82c2ca783b4781",
+      "origin": null,
+      "idempotency_key": null,
+      "status": 404,
+      "allow_origin": null,
+      "allow_methods": null,
+      "allow_headers": null
+    },
+    {
+      "started_at": "2026-10-13T07:56:51.739Z",
+      "finished_at": "2026-10-13T07:56:51.739Z",
+      "method": "GET",
+      "path": "/reports/bb2e752187729b459d82c2ca783b4781/report.json",
+      "origin": null,
+      "idempotency_key": null,
+      "status": 404,
+      "allow_origin": null,
+      "allow_methods": null,
+      "allow_headers": null
+    },
+    {
+      "started_at": "2026-10-13T07:56:51.740Z",
+      "finished_at": "2026-10-13T07:56:51.740Z",
+      "method": "GET",
+      "path": "/reports/bb2e752187729b459d82c2ca783b4781/attachment-1",
+      "origin": null,
+      "idempotency_key": null,
+      "status": 404,
+      "allow_origin": null,
+      "allow_methods": null,
+      "allow_headers": null
+    },
+    {
+      "started_at": "2026-10-13T07:56:51.741Z",
+      "finished_at": "2026-10-13T07:56:51.742Z",
+      "method": "GET",
+      "path": "/news?limit=100",
+      "origin": null,
+      "idempotency_key": null,
+      "status": 200,
+      "allow_origin": null,
+      "allow_methods": null,
+      "allow_headers": null
+    }
+  ],
+  "finished_at": "2026-10-13T07:56:51.818Z"
+}

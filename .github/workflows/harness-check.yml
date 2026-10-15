@@ -2,7 +2,7 @@ name: harness-check
 on:
   pull_request:
   push:
-    branches: [main]
+    branches: [main, dev]
 jobs:
   hooks:
     name: 훅·루프 검증
@@ -24,7 +24,8 @@ jobs:
         env: { GITHUB_HEAD_REF: "${{ github.head_ref }}" }
   prune:
     name: claim 정리 (main)
-    if: github.event_name == 'push'
+    # 리뷰 없는 직접 push/자동 merge를 막기 위해 자동 정리는 보류한다.
+    if: ${{ false }}
     runs-on: ubuntu-latest
     permissions: { contents: write, pull-requests: write }
     steps:

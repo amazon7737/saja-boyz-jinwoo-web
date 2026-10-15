@@ -1,0 +1,6 @@
+
+> saja-boyz-jinwoo@0.1.0 typecheck /Users/kangminkim/lunch/sobaya/apps/saja-boyz-jinwoo-codex--article-image-fallback
+> next typegen && tsc --noEmit
+
+Generating route types...
+✓ Types generated successfully

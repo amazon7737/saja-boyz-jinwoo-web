@@ -1,0 +1,43 @@
+// file: src/components/layout/app-shell/search-layout.test.ts
+// @vitest-environment jsdom
+import { afterEach, assert, expect, test, vi } from 'vitest';
+import { act, createElement } from 'react';
+import { createRoot } from 'react-dom/client';
+import { AppShell } from './app-shell';
+let pathname = '/search';
+vi.mock('next/navigation', () => ({ usePathname: () => pathname }));
+afterEach(() => {
+  pathname = '/search';
+  vi.unstubAllGlobals();
+});
+
+test('searchShellAvoidsDuplicateHeaderAndPreservesOtherRoutes', async () => {
+  vi.stubGlobal('IS_REACT_ACT_ENVIRONMENT', true);
+  const container = document.createElement('div');
+  document.body.append(container);
+  const root = createRoot(container);
+  try {
+    await act(async () =>
+      root.render(
+        createElement(AppShell, null, createElement('p', null, '검색 내용')),
+      ),
+    );
+    expect(container.querySelector('header')).toBeNull();
+    expect(container.querySelector('main')?.textContent).toContain('검색 내용');
+    const nav = container.querySelector('nav[aria-label="주 메뉴"]');
+    assert(nav);
+    expect(nav.querySelector('a[href="/"]')).not.toBeNull();
+    expect(nav.querySelector('a[href="/incidents"]')).not.toBeNull();
+    pathname = '/incidents';
+    await act(async () =>
+      root.render(
+        createElement(AppShell, null, createElement('p', null, '목록 내용')),
+      ),
+    );
+    expect(container.querySelector('header a[href="/search"]')).not.toBeNull();
+    expect(container.querySelector('main')?.textContent).toContain('목록 내용');
+  } finally {
+    await act(async () => root.unmount());
+    container.remove();
+  }
+});

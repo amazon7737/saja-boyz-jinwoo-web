@@ -1,0 +1,42 @@
+{
+  "status": "PASS",
+  "protected_inputs_changed": false,
+  "only_executable_change": "renderReport(): await advance(1); before submission",
+  "blocks": [
+    {
+      "block": 0,
+      "sha256": "5879a93953dcb7bc1e3e8b986c34986171508a8e78f10ece74fc7aebe719d61a",
+      "review_exact": true
+    },
+    {
+      "block": 1,
+      "sha256": "4a723f14cfa8cedace8caf2ba34193969bc5ae5119675a90a08028a1d4d3b5e0",
+      "review_exact": true
+    },
+    {
+      "block": 2,
+      "sha256": "045d38f0a29ce71f8d8d821c0285465ac0bbde1e1dbfb151d7fb741645e7215b",
+      "review_exact": true
+    },
+    {
+      "block": 3,
+      "sha256": "49f2faa5137418277e02741fa98f5f58db03af3ea226e9dfc796d4aba53b65ff",
+      "review_exact": true
+    },
+    {
+      "block": 4,
+      "sha256": "3205b5fe1395572f17e78b81306cfde9621e6e79a8e2e4a5839c67ed900b8b31",
+      "review_exact": true
+    },
+    {
+      "block": 5,
+      "sha256": "57028f08bf790696bcf22730d40a007369aa41cde7577da0eaebde343d51a26f",
+      "review_exact": true
+    },
+    {
+      "block": 6,
+      "sha256": "20499468267674f982775aa00459819e81aad6cb399ecb653fb581aa8dc3fcca",
+      "review_exact": true
+    }
+  ]
+}

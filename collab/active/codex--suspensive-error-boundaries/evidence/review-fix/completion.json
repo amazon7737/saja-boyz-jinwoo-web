@@ -1,0 +1,100 @@
+{
+  "version": 1,
+  "baseline": "bb39124dce13b1b3e6d61ca2f2c53b2e085a5c69",
+  "approved_at": 1791265786,
+  "calls": 3,
+  "active": null,
+  "receipts": [
+    {
+      "entry": "nextBoundaryPreservesFeatureClassification",
+      "red": {
+        "status": "red",
+        "failed": [
+          "nextBoundaryPreservesFeatureClassification"
+        ],
+        "output": "JSON report written to /var/folders/nl/x25_3f7s5xq6pkv5m9l1jnr00000gn/T/tmp.rBDq9IZP4q/vitest.json\n협업: components/ui/button.tsx 를 @solp(feat--checkout) 도 바꾸는 중\n"
+      },
+      "green": [
+        "articleApiRequest",
+        "articleCardsIdentityAndPublication",
+        "articleEmpty",
+        "articleErrors",
+        "articleImageErrorPreservesCards",
+        "articleImageRecoversForNewSource",
+        "articleImageStates",
+        "articleLoading",
+        "articleRequestTimeout",
+        "articleTextAndSourceSafety",
+        "featureBoundaryRetriesAndResetsOnNavigation",
+        "featureErrorClassifiesAndPropagates",
+        "harness_hooks",
+        "harness_loop",
+        "harness_sobaya",
+        "incidentCards",
+        "incidentEmpty",
+        "incidentImages",
+        "incidentLoading",
+        "incidentTimeBoundaries",
+        "incidentUnsafeIds",
+        "nextBoundaryPreservesFeatureClassification",
+        "nextRouteErrorBridgesResetSafely",
+        "빈 검색은 전체를 반환하고 원본 순서를 유지한다",
+        "시작 시각을 포함하고 이전 사건은 제외한다",
+        "잘못된 날짜를 조용히 무시하지 않는다",
+        "주소 검색과 카테고리·상태를 함께 적용한다"
+      ],
+      "summary": "RouteError에서 실제 FeatureError의 분류별 안내와 안전한 로그를 연결했습니다. 재시도·경로 복구를 포함한 승인 테스트와 전체 27개 테스트, 포맷·린트·타입 검사·빌드가 통과했습니다.",
+      "head": "7bb810c97af22362f0c19328a8d4f42d08c07bbf",
+      "before": "bb39124dce13b1b3e6d61ca2f2c53b2e085a5c69"
+    },
+    {
+      "entry": "routeErrorKeepsServerFallbackAndRetry",
+      "red": {
+        "status": "green",
+        "failed": [],
+        "output": "JSON report written to /var/folders/nl/x25_3f7s5xq6pkv5m9l1jnr00000gn/T/tmp.x4hF3SEv8X/vitest.json\n협업: components/ui/button.tsx 를 @solp(feat--checkout) 도 바꾸는 중\n"
+      },
+      "green": [
+        "articleApiRequest",
+        "articleCardsIdentityAndPublication",
+        "articleEmpty",
+        "articleErrors",
+        "articleImageErrorPreservesCards",
+        "articleImageRecoversForNewSource",
+        "articleImageStates",
+        "articleLoading",
+        "articleRequestTimeout",
+        "articleTextAndSourceSafety",
+        "featureBoundaryRetriesAndResetsOnNavigation",
+        "featureErrorClassifiesAndPropagates",
+        "harness_hooks",
+        "harness_loop",
+        "harness_sobaya",
+        "incidentCards",
+        "incidentEmpty",
+        "incidentImages",
+        "incidentLoading",
+        "incidentTimeBoundaries",
+        "incidentUnsafeIds",
+        "nextBoundaryPreservesFeatureClassification",
+        "nextRouteErrorBridgesResetSafely",
+        "routeErrorKeepsServerFallbackAndRetry",
+        "빈 검색은 전체를 반환하고 원본 순서를 유지한다",
+        "시작 시각을 포함하고 이전 사건은 제외한다",
+        "잘못된 날짜를 조용히 무시하지 않는다",
+        "주소 검색과 카테고리·상태를 함께 적용한다"
+      ],
+      "summary": "Already green; no implementation change required.",
+      "head": "65db84f8d23d9e97ce25d09fe03e70c3f4c2e323",
+      "before": "7bb810c97af22362f0c19328a8d4f42d08c07bbf"
+    }
+  ],
+  "review": {
+    "head": "350899a6e804106facc5b4a0ca2cc5d4dbbf59af",
+    "worker": "astra",
+    "summary": "bb39124..350899a 독립 리뷰에서 조치 가능한 결함을 발견하지 못했습니다. src/app/error.tsx:18–29의 분류·로그·재시도와 src/components/errors/next-error-boundary.test.ts:33–106의 회귀 검증이 요구사항에 부합합니다. collab/active/codex--suspensive-error-boundaries/evidence/review-fix/browser-observations.md:5–14에 프로덕션 통합 증거가 있으며, 기록된 제품 파일 7개의 해시도 현재 소스와 일치합니다.",
+    "at": 1791267185
+  },
+  "status": "complete",
+  "allow_go_undefined_red": false
+}

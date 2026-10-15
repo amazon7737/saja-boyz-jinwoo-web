@@ -1,0 +1,33 @@
+test('reportSubmissionTextLimits: trimmed field limits reject overflow and allow boundaries', async () => {
+  await renderReport();
+  await fillValid();
+  let completed = 0;
+  for (const [name, limit] of [
+    ['title', 100],
+    ['location', 200],
+    ['description', 5000],
+  ] as const) {
+    await changeField(name, '가'.repeat(limit + 1));
+    await checkInput();
+    expectFieldError(name, `${limit}자를 초과했어요`);
+    expect(fetchMock).toHaveBeenCalledTimes(completed);
+    expect(container.textContent).not.toContain('제보가 접수됐어요');
+    expect(container.textContent).not.toContain(receipt.report_id);
+    await changeField(name, `  ${'가'.repeat(limit)}  `);
+    await checkInput();
+    completed += 1;
+    expect(fetchMock).toHaveBeenCalledTimes(completed);
+    expect(field(name).getAttribute('aria-invalid')).not.toBe('true');
+    expect(container.querySelector('[role="status"]')?.textContent).toContain(
+      '제보가 접수됐어요',
+    );
+    expect(field(name).value.trim()).toBe('가'.repeat(limit));
+    const restart = Array.from(container.querySelectorAll('button')).find(
+      (button) => button.textContent?.includes('새 제보 작성'),
+    );
+    assert(restart);
+    await act(async () => restart.click());
+    await fillValid();
+  }
+  expect(fetchMock).toHaveBeenCalledTimes(3);
+});

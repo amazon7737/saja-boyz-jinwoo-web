@@ -1,0 +1,35 @@
+test('featureErrorClassifiesAndPropagates', async () => {
+  const { FeatureError, FeatureErrorBoundary } = await boundaries();
+  for (const [reason, message] of [
+    ['network', '연결을 확인'],
+    ['configuration', '서비스 설정'],
+    ['invalid-response', '응답을 확인'],
+  ] as const) {
+    await draw(null);
+    const error = new FeatureError(reason);
+    error.message = 'SECRET_INTERNAL_MESSAGE';
+    await draw(
+      createElement(
+        FeatureErrorBoundary,
+        null,
+        createElement(Throw, { error }),
+      ),
+    );
+    expect(container.querySelector('[role="alert"]')?.textContent).toContain(
+      message,
+    );
+    expect(container.textContent).not.toContain('SECRET_INTERNAL_MESSAGE');
+  }
+  await draw(null);
+  await draw(
+    createElement(
+      FeatureErrorBoundary,
+      null,
+      createElement(Throw, { error: new Error('SECRET_UNKNOWN') }),
+    ),
+  );
+  expect(container.querySelector('[role="alert"]')?.textContent).toContain(
+    '화면을 표시하지 못했어요',
+  );
+  expect(container.textContent).not.toContain('SECRET_UNKNOWN');
+});

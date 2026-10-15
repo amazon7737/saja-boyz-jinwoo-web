@@ -1,0 +1,44 @@
+[
+  {
+    "path": "src/app/error.tsx",
+    "product": "1407bc2b89473ace56af3ffa016b02fcccc679e9969edb8dbd2aa7dd4b54b7c2",
+    "qa": "1407bc2b89473ace56af3ffa016b02fcccc679e9969edb8dbd2aa7dd4b54b7c2",
+    "identical": true
+  },
+  {
+    "path": "src/app/global-error.tsx",
+    "product": "a05321f53f37d2a05d25bbdc60ccf522e1aa0b6870a7f932cfe1accc1be4acae",
+    "qa": "a05321f53f37d2a05d25bbdc60ccf522e1aa0b6870a7f932cfe1accc1be4acae",
+    "identical": true
+  },
+  {
+    "path": "src/components/errors/feature-error-boundary.tsx",
+    "product": "2d5a5845cb52a0e9463d32d7b62d39e37e2d316efb361b07736c1a5d4fd5c3ce",
+    "qa": "2d5a5845cb52a0e9463d32d7b62d39e37e2d316efb361b07736c1a5d4fd5c3ce",
+    "identical": true
+  },
+  {
+    "path": "src/components/layout/app-shell.tsx",
+    "product": "0525b17345c5bd754a1b415818e0357c31ca8f1ef7afc7f551c2da8d7a675d26",
+    "qa": "0525b17345c5bd754a1b415818e0357c31ca8f1ef7afc7f551c2da8d7a675d26",
+    "identical": true
+  },
+  {
+    "path": "src/app/incidents/page.tsx",
+    "product": "cba41b5d022a425bc4f8eb41a2c6bf1d1d77cf61c457faef8f8d0beae65befce",
+    "qa": "cba41b5d022a425bc4f8eb41a2c6bf1d1d77cf61c457faef8f8d0beae65befce",
+    "identical": true
+  },
+  {
+    "path": "src/features/article-list/article-list.tsx",
+    "product": "b41792d59fcb181905bc829be51c34090898875451c7a68611a5a2d302da5157",
+    "qa": "b41792d59fcb181905bc829be51c34090898875451c7a68611a5a2d302da5157",
+    "identical": true
+  },
+  {
+    "path": "src/features/article-list/article-image.tsx",
+    "product": "23843d131fed4754ce183fbfe379d85271703ac3d8d172d026e2faeffe674987",
+    "qa": "23843d131fed4754ce183fbfe379d85271703ac3d8d172d026e2faeffe674987",
+    "identical": true
+  }
+]

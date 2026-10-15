@@ -1,0 +1,118 @@
+{
+  "scope": "Additional bounded mobile Chrome actionability check using the existing exact-source webpack build and local HTTPS 503/200 mock. No product changes, real backend, production, timing or performance claims.",
+  "source_revision": "20498c3c2c1966a5288b9468337b91648dde883c",
+  "source_checkout": "/Users/kangminkim/lunch/sobaya/apps/saja-boyz-jinwoo-codex--report-recovery",
+  "started_at": "2026-10-13T13:18:35.404Z",
+  "checks": {
+    "direct_retry_without_closing_error": true,
+    "same_key_retry_success": true
+  },
+  "browser_errors": [],
+  "console_errors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+    "Error: 접수 여부를 확인하지 못했어요. 다시 시도해 주세요\n    at http://127.0.0.1:55215/_next/static/chunks/app/report/page-8c9d485d075c4dd2.js:1:5197\n    at iE (http://127.0.0.1:55215/_next/static/chunks/87e1c968-8af1d620ad966e06.js:1:93231)\n    at ub (http://127.0.0.1:55215/_next/static/chunks/87e1c968-8af1d620ad966e06.js:1:117373)\n    at uy (http://127.0.0.1:55215/_next/static/chunks/87e1c968-8af1d620ad966e06.js:1:117035)\n    at ub (http://127.0.0.1:55215/_next/static/chunks/87e1c968-8af1d620ad966e06.js:1:117418)\n    at uy (http://127.0.0.1:55215/_next/static/chunks/87e1c968-8af1d620ad966e06.js:1:117035)\n    at ub (http://127.0.0.1:55215/_next/static/chunks/87e1c968-8af1d620ad966e06.js:1:117418)\n    at uy (http://127.0.0.1:55215/_next/static/chunks/87e1c968-8af1d620ad966e06.js:1:117035)\n    at ub (http://127.0.0.1:55215/_next/static/chunks/87e1c968-8af1d620ad966e06.js:1:117353)\n    at uy (http://127.0.0.1:55215/_next/static/chunks/87e1c968-8af1d620ad966e06.js:1:117035)"
+  ],
+  "failed_requests": [
+    {
+      "url": "http://127.0.0.1:55215/search?_rsc=GlxhFyFIiz2FI1_f",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://127.0.0.1:55215/incidents?_rsc=GlxhFyFIiz2FI1_f",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://127.0.0.1:55215/search?_rsc=0i2dvkfKaOCe07uf",
+      "error": "net::ERR_ABORTED"
+    }
+  ],
+  "external_requests_observed": [],
+  "options": [
+    {
+      "method": "POST",
+      "headers": "idempotency-key",
+      "origin": "http://127.0.0.1:55215"
+    }
+  ],
+  "posts": [
+    {
+      "number": 1,
+      "received_at": "2026-10-13T13:18:37.145Z",
+      "arrived_monotonic_ms": 1883.758,
+      "idempotency_key": "32458360-b92b-4c2c-9692-9d80cf592731",
+      "origin": "http://127.0.0.1:55215",
+      "content_type": "multipart/form-data; boundary=----WebKitFormBoundary9Hj0o2BXTFdz0v7A",
+      "has_cookie": false,
+      "fields": {
+        "category": "society",
+        "occurred_at": "2026-10-13T03:34:00.000Z",
+        "title": "합성 오류 복구 브라우저 제보",
+        "location": "가상 검증 장소 101",
+        "description": "개인정보나 실제 사건이 없는 로컬 오류 복구 검증입니다."
+      },
+      "files": [
+        {
+          "field": "attachments",
+          "name": "one-pixel.png",
+          "type": "image/png",
+          "bytes": 68,
+          "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460"
+        }
+      ],
+      "parsed": true,
+      "connection_closed_after_ms": 1.661875000000009,
+      "response_finished": true
+    },
+    {
+      "number": 2,
+      "received_at": "2026-10-13T13:18:37.347Z",
+      "arrived_monotonic_ms": 2086.021084,
+      "idempotency_key": "32458360-b92b-4c2c-9692-9d80cf592731",
+      "origin": "http://127.0.0.1:55215",
+      "content_type": "multipart/form-data; boundary=----WebKitFormBoundaryOK0GNVUbzz5Vt33w",
+      "has_cookie": false,
+      "fields": {
+        "category": "society",
+        "occurred_at": "2026-10-13T03:34:00.000Z",
+        "title": "합성 오류 복구 브라우저 제보",
+        "location": "가상 검증 장소 101",
+        "description": "개인정보나 실제 사건이 없는 로컬 오류 복구 검증입니다."
+      },
+      "files": [
+        {
+          "field": "attachments",
+          "name": "one-pixel.png",
+          "type": "image/png",
+          "bytes": 68,
+          "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460"
+        }
+      ],
+      "parsed": true,
+      "connection_closed_after_ms": 0.8743749999998727,
+      "response_finished": true
+    }
+  ],
+  "frontend": "http://127.0.0.1:55215",
+  "mock_api": "https://127.0.0.1:55058",
+  "last_browser_response": {
+    "status": 200,
+    "received_monotonic_ms": 2098.445875
+  },
+  "before_retry_geometry": {
+    "x": 32,
+    "y": 776,
+    "width": 329,
+    "height": 52,
+    "viewport": {
+      "width": 393,
+      "height": 852
+    },
+    "center_target": "<a class=\"rounded-3xl bg-brand px-4 py-3 text-[14px]/[normal] font-bold text-white\" href=\"/report\">제보하기</a>",
+    "center_hits_button": false,
+    "scroll_y": 235
+  },
+  "direct_retry_click_elapsed_ms": 115.52720799999997,
+  "result": "passed",
+  "finished_at": "2026-10-13T13:18:37.586Z"
+}

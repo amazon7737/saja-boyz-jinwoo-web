@@ -1,0 +1,43 @@
+RED articleImageErrorPreservesCards
+Worker astra (gpt-6-astra), implement, call 1/20
+
+> saja-boyz-jinwoo@0.1.0 format:check /Users/kangminkim/lunch/sobaya/apps/saja-boyz-jinwoo-codex--article-image-fallback
+> prettier --check src docs/project.md docs/architecture.md docs/figma-analysis.md *.json *.mjs *.ts
+
+Checking formatting...
+All matched files use Prettier code style!
+
+> saja-boyz-jinwoo@0.1.0 lint /Users/kangminkim/lunch/sobaya/apps/saja-boyz-jinwoo-codex--article-image-fallback
+> eslint .
+
+GREEN articleImageErrorPreservesCards
+workspace checks passed
+
+> saja-boyz-jinwoo@0.1.0 format:check /Users/kangminkim/lunch/sobaya/apps/saja-boyz-jinwoo-codex--article-image-fallback
+> prettier --check src docs/project.md docs/architecture.md docs/figma-analysis.md *.json *.mjs *.ts
+
+Checking formatting...
+All matched files use Prettier code style!
+
+> saja-boyz-jinwoo@0.1.0 lint /Users/kangminkim/lunch/sobaya/apps/saja-boyz-jinwoo-codex--article-image-fallback
+> eslint .
+
+[codex/article-image-fallback afab0dd] feat: satisfy articleImageErrorPreservesCards
+ 4 files changed, 135 insertions(+), 17 deletions(-)
+ create mode 100644 src/features/article-list/article-image-error.test.ts
+ create mode 100644 src/features/article-list/article-image.tsx
+Checkpoint articleImageErrorPreservesCards: afab0ddf3616826398eb287f4460b5ae093b7484
+{
+  "run_id": "1791199281-77450-13584",
+  "calls": 1,
+  "duration_seconds": 180,
+  "usage": [
+    {
+      "input_tokens": 829465,
+      "cached_input_tokens": 779776,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 3967,
+      "reasoning_output_tokens": 1038
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+{
+  "fixture-image404": true,
+  "fixture-image-damaged-settled": true,
+  "fixture-success-restored-after-reload": true,
+  "realDesktopMobileContentIdentical": true,
+  "modeRestoredSuccess": true
+}

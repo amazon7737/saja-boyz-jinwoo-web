@@ -1,0 +1,42 @@
+
+ RUN  v5.0.3 /Users/jeong-gyuhwan/규환/projects/saja-boyz-jinwoo-codex--map-viewport-persistence
+
+ ❯ src/features/map/ui/map-home/zz_sobaya_probe_EOUJwM.test.ts (1 test | 1 failed) 54ms
+   × mapReturnRestoresViewportWithoutBrowserStorage 54ms
+
+ Test Files  1 failed (1)
+      Tests  1 failed (1)
+   Start at  17:21:37
+   Duration  480ms (environment 67%, tests 15%, import 14%, transform 4%, worker 1%)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/features/map/ui/map-home/zz_sobaya_probe_EOUJwM.test.ts > mapReturnRestoresViewportWithoutBrowserStorage
+AssertionError: expected last "vi.fn()" call to have been called with [ { latitude: 35.1796, …(2) } ]
+
+- Expected
++ Received
+
+  [
+    {
+-     "latitude": 35.1796,
+-     "longitude": 129.0756,
+-     "zoom": 15,
++     "latitude": 37.5665,
++     "longitude": 126.978,
++     "zoom": 12,
+    },
+  ]
+
+ ❯ src/features/map/ui/map-home/zz_sobaya_probe_EOUJwM.test.ts:77:19
+     75|   expect(destroy).toHaveBeenCalledTimes(1);
+     76|   await visit();
+     77|   expect(created).toHaveBeenLastCalledWith({ latitude: 35.1796, longit…
+       |                   ^
+     78|   expect(storage).not.toHaveBeenCalled();
+     79| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+RED    mapReturnRestoresViewportWithoutBrowserStorage  (fails: assertion/test failure; diagnostics above)

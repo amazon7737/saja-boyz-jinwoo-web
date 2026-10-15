@@ -1,0 +1,18 @@
+"use client";
+import { useEffect, useState } from "react";
+export default function QAControls() {
+  const [logs, setLogs] = useState<string[]>([]);
+  useEffect(() => {
+    const previous = console.error;
+    console.error = (...args: unknown[]) => {
+      if (args[0] === "기능 오류:") setLogs((old) => [...old, String(args[1])]);
+      previous(...args);
+    };
+    return () => { console.error = previous; };
+  }, []);
+  return <aside aria-label="검증 도구">
+    <button onClick={() => localStorage.removeItem("pr5-fixed")}>오류 활성화</button>
+    <button onClick={() => localStorage.setItem("pr5-fixed", "yes")}>원인 해소</button>
+    <p>유형별 로그: {logs.join(", ") || "없음"}</p>
+  </aside>;
+}

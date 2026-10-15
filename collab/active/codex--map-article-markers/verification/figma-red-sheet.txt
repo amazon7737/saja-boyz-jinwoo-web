@@ -1,0 +1,33 @@
+
+ RUN  v5.0.3 /Users/kangminkim/lunch/sobaya/apps/saja-boyz-jinwoo-codex--map-article-markers
+
+ ❯ src/features/map/ui/map-home/map-articles.test.ts (9 tests | 1 failed) 50ms
+   × shows the selected article in the Figma sheet with its real image and publication time 5ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/features/map/ui/map-home/map-articles.test.ts > shows the selected article in the Figma sheet with its real image and publication time
+AssertionError: expected undefined to be '/map/sheet-close.svg' // Object.is equality
+
+- Expected:
+"/map/sheet-close.svg"
+
++ Received:
+undefined
+
+ ❯ src/features/map/ui/map-home/map-articles.test.ts:315:60
+    313|   const sheet = document.querySelector('[aria-label="선택한 기사"]');
+    314|   const close = sheet?.querySelector('button[aria-label="기사 선택 닫기"]');
+    315|   expect(close?.querySelector('img')?.getAttribute('src')).toBe(
+       |                                                            ^
+    316|     '/map/sheet-close.svg',
+    317|   );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 8 passed (9)
+   Start at  14:58:21
+   Duration  324ms (environment 57%, tests 18%, import 13%, transform 12%, worker 1%)
+

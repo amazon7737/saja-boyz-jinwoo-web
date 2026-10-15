@@ -1,0 +1,42 @@
+test('reportSubmissionPending: double submit is locked until a real receipt arrives', async () => {
+  let release!: (response: Response) => void;
+  fetchMock.mockImplementationOnce(
+    () =>
+      new Promise<Response>((resolve) => {
+        release = resolve;
+      }),
+  );
+  await renderReport();
+  await fillValid();
+  await selectFiles([testFile('road.png', 'image/png')]);
+  await checkInput();
+  expect(fetchMock).toHaveBeenCalledTimes(1);
+  expect(container.textContent).toContain('접수 중');
+  expect(container.textContent).not.toContain(receipt.report_id);
+  for (const element of container.querySelectorAll(
+    'input, textarea, select, button[type="submit"], button[aria-label$=" 삭제"]',
+  )) {
+    expect(element.matches(':disabled')).toBe(true);
+  }
+  await checkInput();
+  expect(fetchMock).toHaveBeenCalledTimes(1);
+  await act(async () => release(receiptResponse()));
+  expect(container.querySelector('[role="status"]')?.textContent).toContain(
+    '제보가 접수됐어요',
+  );
+  expect(container.querySelector('[role="status"]')?.textContent).toContain(
+    receipt.report_id,
+  );
+  await checkInput();
+  expect(fetchMock).toHaveBeenCalledTimes(1);
+  const restart = Array.from(container.querySelectorAll('button')).find(
+    (button) => button.textContent?.includes('새 제보 작성'),
+  );
+  assert(restart);
+  await act(async () => restart.click());
+  expect(field('title').value).toBe('');
+  expect(
+    container.querySelectorAll('button[aria-label$=" 삭제"]'),
+  ).toHaveLength(0);
+  expect(container.textContent).not.toContain(receipt.report_id);
+});

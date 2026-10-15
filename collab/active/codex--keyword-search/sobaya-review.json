@@ -1,0 +1,60 @@
+{
+  "baseline": "05895e0e0d8c4316215983b2c02e101ffedb3ec4",
+  "status": "complete",
+  "review": {
+    "head": "1fef16e3a95aafdd69f4dc34fb8b1893b20b13c6",
+    "worker": "astra",
+    "summary": "HEAD 1fef16e의 origin/dev 대비 전체 기능과 05895e0 대비 최신 변경을 독립 검토했으며 actionable 결함을 발견하지 못했습니다. 근거: src/app/search/page.tsx:19 검색어 정규화·빈 입력 요청 생략, :24 승인된 헤더 간격·높이, :54 ✕ 기호, :69 자연스러운 결과 안내, :80 실패·재시도, :103 추천 칩; src/features/article-list/api/fetch-articles.ts:39 기존 요청·보안 계약 유지; src/components/layout/app-shell/app-shell.tsx:12 검색에서만 공용 헤더 제외. 승인 테스트 5개와 기존 테스트 수정 승인도 대조했습니다.",
+    "at": 1791373462
+  },
+  "receipts": [
+    {
+      "entry": "searchShellAvoidsDuplicateHeaderAndPreservesOtherRoutes",
+      "red": {
+        "status": "red",
+        "failed": [
+          "searchShellAvoidsDuplicateHeaderAndPreservesOtherRoutes"
+        ],
+        "output": "JSON report written to /var/folders/nl/x25_3f7s5xq6pkv5m9l1jnr00000gn/T/tmp.blwovHj0IU/vitest.json\n협업: components/ui/button.tsx 를 @solp(feat--checkout) 도 바꾸는 중\n"
+      },
+      "green": [
+        "articleApiRequest",
+        "articleCardsIdentityAndPublication",
+        "articleEmpty",
+        "articleErrors",
+        "articleImageErrorPreservesCards",
+        "articleImageRecoversForNewSource",
+        "articleImageStates",
+        "articleLoading",
+        "articleRequestTimeout",
+        "articleTextAndSourceSafety",
+        "featureBoundaryRetriesAndResetsOnNavigation",
+        "featureErrorClassifiesAndPropagates",
+        "harness_hooks",
+        "harness_loop",
+        "harness_sobaya",
+        "incidentCards",
+        "incidentEmpty",
+        "incidentImages",
+        "incidentLoading",
+        "incidentTimeBoundaries",
+        "incidentUnsafeIds",
+        "nextBoundaryPreservesFeatureClassification",
+        "nextRouteErrorBridgesResetSafely",
+        "routeErrorKeepsServerFallbackAndRetry",
+        "searchDistinguishesEmptyFailureAndLoading",
+        "searchInitialStateUsesRealGetFormWithoutFetching",
+        "searchKeywordRequestPreservesListContract",
+        "searchShellAvoidsDuplicateHeaderAndPreservesOtherRoutes",
+        "searchUrlRendersApiResultsAndKeepsInputInSync",
+        "빈 검색은 전체를 반환하고 원본 순서를 유지한다",
+        "시작 시각을 포함하고 이전 사건은 제외한다",
+        "잘못된 날짜를 조용히 무시하지 않는다",
+        "주소 검색과 카테고리·상태를 함께 적용한다"
+      ],
+      "summary": "기존 작업 트리에 승인된 헤더 분리와 검색 화면 간격·높이·✕ 기호·안내 문구가 모두 반영되어 있음을 확인했습니다. 추가 수정은 없었습니다.",
+      "head": "1fef16e3a95aafdd69f4dc34fb8b1893b20b13c6",
+      "before": "05895e0e0d8c4316215983b2c02e101ffedb3ec4"
+    }
+  ]
+}

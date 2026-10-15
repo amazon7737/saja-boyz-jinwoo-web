@@ -1,0 +1,104 @@
+Vercel CLI 59.5.0 (Node.js 26.5.1)
+Fetching deployment "saja-boyz-jinwoo-j7wxspevy-amazon7737s-projects.vercel.app" in amazon7737s-projects
+2026-10-14T04:17:27.377Z  Running build in Washington, D.C., USA (East) – iad1
+2026-10-14T04:17:27.378Z  Build machine configuration: 2 cores, 8 GB
+2026-10-14T04:17:27.401Z  Retrieving list of deployment files...
+2026-10-14T04:17:27.537Z  Previous build caches not available.
+2026-10-14T04:17:27.846Z  Downloading 583 deployment files...
+2026-10-14T04:17:29.556Z  Running "vercel build"
+2026-10-14T04:17:29.572Z  Vercel CLI 62.7.0
+2026-10-14T04:17:29.968Z  > Detected ENABLE_EXPERIMENTAL_COREPACK=1 and "pnpm@10.34.6" in package.json
+2026-10-14T04:17:30.160Z  Running "install" command: `pnpm install --frozen-lockfile`...
+2026-10-14T04:17:30.439Z  ! Corepack is about to download https://registry.npmjs.org/pnpm/-/pnpm-10.34.6.tgz
+2026-10-14T04:17:32.017Z  Lockfile is up to date, resolution step is skipped
+2026-10-14T04:17:32.109Z  Progress: resolved 1, reused 0, downloaded 0, added 0
+2026-10-14T04:17:32.212Z  Packages: +421
+2026-10-14T04:17:32.215Z  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+2026-10-14T04:17:33.108Z  Progress: resolved 421, reused 0, downloaded 11, added 0
+2026-10-14T04:17:34.110Z  Progress: resolved 421, reused 0, downloaded 15, added 0
+2026-10-14T04:17:36.285Z  Progress: resolved 421, reused 0, downloaded 16, added 0
+2026-10-14T04:17:37.283Z  Progress: resolved 421, reused 0, downloaded 56, added 15
+2026-10-14T04:17:38.286Z  Progress: resolved 421, reused 0, downloaded 57, added 15
+2026-10-14T04:17:39.390Z  Progress: resolved 421, reused 0, downloaded 57, added 16
+2026-10-14T04:17:40.401Z  Progress: resolved 421, reused 0, downloaded 170, added 52
+2026-10-14T04:17:41.394Z  Progress: resolved 421, reused 0, downloaded 281, added 87
+2026-10-14T04:17:42.394Z  Progress: resolved 421, reused 0, downloaded 333, added 103
+2026-10-14T04:17:43.397Z  Progress: resolved 421, reused 0, downloaded 390, added 123
+2026-10-14T04:17:44.395Z  Progress: resolved 421, reused 0, downloaded 421, added 289
+2026-10-14T04:17:45.396Z  Progress: resolved 421, reused 0, downloaded 421, added 403
+2026-10-14T04:17:45.660Z  Progress: resolved 421, reused 0, downloaded 421, added 421, done
+2026-10-14T04:17:46.083Z  
+2026-10-14T04:17:46.083Z  dependencies:
+2026-10-14T04:17:46.083Z  + @suspensive/react 3.21.4
+2026-10-14T04:17:46.083Z  + next 16.3.8
+2026-10-14T04:17:46.083Z  + react 19.3.0
+2026-10-14T04:17:46.083Z  + react-dom 19.3.0
+2026-10-14T04:17:46.083Z  
+2026-10-14T04:17:46.083Z  devDependencies:
+2026-10-14T04:17:46.083Z  + @tailwindcss/postcss 4.3.3
+2026-10-14T04:17:46.083Z  + @types/node 24.19.0
+2026-10-14T04:17:46.083Z  + @types/react 19.3.0
+2026-10-14T04:17:46.083Z  + @types/react-dom 19.3.0
+2026-10-14T04:17:46.083Z  + eslint 9.39.5
+2026-10-14T04:17:46.083Z  + eslint-config-next 16.3.8
+2026-10-14T04:17:46.084Z  + jsdom 27.4.0
+2026-10-14T04:17:46.084Z  + playwright-core 1.62.1
+2026-10-14T04:17:46.084Z  + postcss 8.5.29
+2026-10-14T04:17:46.085Z  + prettier 3.9.9
+2026-10-14T04:17:46.085Z  + tailwindcss 4.3.3
+2026-10-14T04:17:46.085Z  + typescript 5.9.3
+2026-10-14T04:17:46.085Z  + vitest 5.0.3
+2026-10-14T04:17:46.085Z  
+2026-10-14T04:17:46.101Z  ╭ Warning ─────────────────────────────────────────────────────────────────────╮
+2026-10-14T04:17:46.102Z  │                                                                              │
+2026-10-14T04:17:46.102Z  │   Ignored build scripts: unrs-resolver@1.12.2.                               │
+2026-10-14T04:17:46.102Z  │   Run "pnpm approve-builds" to pick which dependencies should be allowed     │
+2026-10-14T04:17:46.102Z  │   to run scripts.                                                            │
+2026-10-14T04:17:46.102Z  │                                                                              │
+2026-10-14T04:17:46.102Z  ╰──────────────────────────────────────────────────────────────────────────────╯
+2026-10-14T04:17:46.111Z  Done in 14.8s using pnpm v10.34.6
+2026-10-14T04:17:46.177Z  Detected Next.js version: 16.3.8
+2026-10-14T04:17:46.180Z  Running "pnpm run build"
+2026-10-14T04:17:46.642Z  
+2026-10-14T04:17:46.642Z  > saja-boyz-jinwoo@0.1.0 build /vercel/path0
+2026-10-14T04:17:46.642Z  > next build
+2026-10-14T04:17:46.642Z  
+2026-10-14T04:17:47.320Z  ▲ Next.js 16.3.8 (Turbopack)
+2026-10-14T04:17:47.460Z  Applying modifyConfig from Vercel
+2026-10-14T04:17:47.463Z  ✓ Running next.config.ts took 142ms
+2026-10-14T04:17:47.473Z  Attention: Next.js now collects completely anonymous telemetry regarding usage.
+2026-10-14T04:17:47.475Z  This information is used to shape Next.js' roadmap and prioritize features.
+2026-10-14T04:17:47.476Z  You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+2026-10-14T04:17:47.476Z  https://nextjs.org/telemetry
+2026-10-14T04:17:47.476Z  
+2026-10-14T04:17:47.496Z  
+2026-10-14T04:17:47.547Z  Creating an optimized production build ...
+2026-10-14T04:17:54.361Z  ✓ Compiled successfully in 5.9s
+2026-10-14T04:17:54.362Z  Running TypeScript ...
+2026-10-14T04:17:59.837Z  Finished TypeScript in 5.5s ...
+2026-10-14T04:17:59.843Z  Collecting page data using 1 worker ...
+2026-10-14T04:18:00.444Z  Generating static pages using 1 worker (0/5) ...
+2026-10-14T04:18:00.640Z  Generating static pages using 1 worker (1/5)
+2026-10-14T04:18:00.644Z  Generating static pages using 1 worker (2/5)
+2026-10-14T04:18:00.647Z  Generating static pages using 1 worker (3/5)
+2026-10-14T04:18:00.647Z  ✓ Generating static pages using 1 worker (5/5) in 202ms
+2026-10-14T04:18:00.654Z  Finalizing page optimization ...
+2026-10-14T04:18:00.703Z  Running onBuildComplete from Vercel
+2026-10-14T04:18:00.824Z  
+2026-10-14T04:18:00.826Z  Route (app)
+2026-10-14T04:18:00.826Z  ┌ ○ /
+2026-10-14T04:18:00.826Z  ├ ○ /_not-found
+2026-10-14T04:18:00.827Z  ├ ƒ /incidents
+2026-10-14T04:18:00.827Z  ├ ƒ /incidents/[id]
+2026-10-14T04:18:00.827Z  ├ ○ /report
+2026-10-14T04:18:00.827Z  └ ƒ /search
+2026-10-14T04:18:00.827Z  
+2026-10-14T04:18:00.827Z  
+2026-10-14T04:18:00.827Z  ○  (Static)   prerendered as static content
+2026-10-14T04:18:00.827Z  ƒ  (Dynamic)  server-rendered on demand
+2026-10-14T04:18:00.827Z  
+2026-10-14T04:18:01.331Z  Build Completed in /vercel/output [31s]
+2026-10-14T04:18:01.362Z  Deploying outputs...
+2026-10-14T04:18:06.824Z  Deployment completed
+2026-10-14T04:18:06.828Z  Creating build cache...
+status	● Ready

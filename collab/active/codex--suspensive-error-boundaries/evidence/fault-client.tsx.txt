@@ -1,0 +1,18 @@
+"use client";
+import { useEffect, useState } from "react";
+import { FeatureError, FeatureErrorBoundary } from "@/components/errors/feature-error-boundary";
+let active = true;
+function Fault({ kind }: { kind: "network" | "configuration" | "invalid-response" | "unknown" }) {
+ const [mounted, setMounted] = useState(false);
+ useEffect(() => setMounted(true), []);
+ if (mounted && active) {
+  if (kind === "unknown") throw new Error("QA_SECRET_UNKNOWN");
+  const error = new FeatureError(kind);
+  error.message = "QA_SECRET_TYPED";
+  throw error;
+ }
+ return <p>정상 내용 복구</p>;
+}
+export default function QAFault({kind}: {kind: "network" | "configuration" | "invalid-response" | "unknown"}) {
+ return <section><h1>임시 오류 주입 검증</h1><button onClick={() => { active = false; }}>오류 원인 해소</button><FeatureErrorBoundary><Fault kind={kind}/></FeatureErrorBoundary></section>;
+}

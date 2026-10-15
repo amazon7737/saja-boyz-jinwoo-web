@@ -1,0 +1,12 @@
+
+> saja-boyz-jinwoo@0.1.0 format:check /Users/kangminkim/lunch/sobaya/apps/saja-boyz-jinwoo-codex--article-list-api
+> prettier --check src docs/project.md docs/architecture.md docs/figma-analysis.md *.json *.mjs *.ts
+
+Checking formatting...
+All matched files use Prettier code style!
+
+> saja-boyz-jinwoo@0.1.0 lint /Users/kangminkim/lunch/sobaya/apps/saja-boyz-jinwoo-codex--article-list-api
+> eslint .
+
+Worker astra (gpt-6-astra), review, call 12/20
+PASS — exact commit validated and independently reviewed.

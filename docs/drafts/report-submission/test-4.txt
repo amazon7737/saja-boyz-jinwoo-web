@@ -1,0 +1,28 @@
+test('reportAttachments: valid files can be selected removed and selected again', async () => {
+  await renderReport();
+  const image = testFile('road.jpg', 'image/jpeg', 10 * 1024 * 1024);
+  const video = testFile('road.mp4', 'video/mp4');
+  await selectFiles([image, video]);
+  expect(container.textContent).toContain('road.jpg');
+  expect(container.textContent).toContain('road.mp4');
+  const remove = container.querySelector('button[aria-label="road.jpg 삭제"]');
+  assert(remove instanceof HTMLButtonElement);
+  await act(async () => remove.click());
+  expect(container.textContent).not.toContain('road.jpg');
+  expect(container.textContent).toContain('road.mp4');
+  await selectFiles([image]);
+  expect(
+    container.querySelectorAll('button[aria-label="road.jpg 삭제"]'),
+  ).toHaveLength(1);
+  expect(
+    container
+      .querySelector('input[type="file"]')
+      ?.getAttribute('accept')
+      ?.split(/,/)
+      .map((value) => value.trim())
+      .sort(),
+  ).toEqual(
+    ['image/jpeg', 'image/png', 'image/webp', 'video/mp4', 'video/webm'].sort(),
+  );
+  expect(fetchMock).not.toHaveBeenCalled();
+});

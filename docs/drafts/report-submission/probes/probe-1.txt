@@ -1,0 +1,33 @@
+
+ RUN  v5.0.3 /Users/kangminkim/lunch/sobaya/apps/saja-boyz-jinwoo-codex--report-submission
+
+ ❯ src/app/report/zz_sobaya_probe_D3YzL3.test.ts (1 test | 1 failed) 26ms
+   × reportSubmissionFields: labels and shared categories are available 25ms
+
+ Test Files  1 failed (1)
+      Tests  1 failed (1)
+   Start at  14:58:46
+   Duration  485ms (environment 75%, import 9%, transform 9%, tests 6%, worker 1%)
+
+npm notice run saja-boyz-jinwoo@0.1.0 npx
+npm notice run 'vitest' run src/app/report/zz_sobaya_probe_D3YzL3.test.ts -t ^reportSubmissionFields: labels and shared categories are available$
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/app/report/zz_sobaya_probe_D3YzL3.test.ts > reportSubmissionFields: labels and shared categories are available
+AssertionError: expected '입력 확인' to contain '제보 접수'
+
+Expected: "제보 접수"
+Received: "입력 확인"
+
+ ❯ src/app/report/zz_sobaya_probe_D3YzL3.test.ts:176:5
+    174|   expect(
+    175|     container.querySelector('button[type="submit"]')?.textContent,
+    176|   ).toContain('제보 접수');
+       |     ^
+    177|   expect(container.textContent).toContain('한국시간');
+    178|   expect(container.textContent).toContain('비공개');
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+RED    reportSubmissionFields: labels and shared categories are available  (fails: assertion/test failure; diagnostics above)

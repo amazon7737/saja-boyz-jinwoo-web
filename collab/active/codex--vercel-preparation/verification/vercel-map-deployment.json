@@ -1,0 +1,33 @@
+{
+  "checkedAt": "2026-10-14",
+  "id": "dpl_7Sj4jtRngvm2qZzuXHdsDhrAXrV6",
+  "url": "saja-boyz-jinwoo-p4f563y09-amazon7737s-projects.vercel.app",
+  "readyState": "READY",
+  "target": "production",
+  "source": "cli",
+  "gitSource": {
+    "type": "github",
+    "repoId": 1418346545,
+    "ref": "dev",
+    "sha": "20b9471d839fa2b96ca6c1c255890faf27d8367c"
+  },
+  "projectId": "prj_kxZjBPwFMza7jiVdFuP9nBrT43Pt",
+  "meta": {
+    "githubCommitSha": "20b9471d839fa2b96ca6c1c255890faf27d8367c",
+    "githubCommitRef": "dev",
+    "githubRepo": "saja-boyz-jinwoo-web",
+    "githubOrg": "amazon7737"
+  },
+  "currentProjectDomains": [
+    {
+      "name": "hyunghyung.vercel.app",
+      "verified": true,
+      "gitBranch": null,
+      "redirect": null
+    }
+  ],
+  "environmentKeysRegistered": ["NEXT_PUBLIC_NAVER_MAP_CLIENT_ID"],
+  "environmentTargets": ["production", "preview"],
+  "productionBranch": "dev",
+  "nodeVersion": "24.x"
+}

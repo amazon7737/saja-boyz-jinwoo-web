@@ -1,0 +1,18 @@
+{
+  "baseline": "7bff203c623129b98d06b84d65ff4b194e4818ee",
+  "status": "complete",
+  "review": {
+    "head": "13d125a7e156f6168d04c03acc4cf9f164d5c5d6",
+    "worker": "astra",
+    "summary": "HEAD 13d125a의 지정 기준 및 origin/dev 대비 변경을 독립 검토했으며 actionable finding은 없습니다. recent-searches.tsx:7–17의 Unicode·중복·개수 검증, :20–54의 저장소 예외 처리와 SSR/hydration 일관성, :78–95의 URL 인코딩·긴 검색어 처리·독립 삭제 버튼을 확인했습니다. src/app/search/page.tsx:93에서 추천 위 배치와 기존 검색 흐름을 유지하며, recent-searches.test.ts:162의 승인된 Unicode 회귀 테스트도 보존됐습니다.",
+    "at": 1791706658
+  },
+  "receipts": [
+    {
+      "entry": "recentSearchesIgnoreMalformedUnicodeWithoutBreakingSearch",
+      "red_status": "red",
+      "green_count": 46,
+      "head": "13d125a7e156f6168d04c03acc4cf9f164d5c5d6"
+    }
+  ]
+}

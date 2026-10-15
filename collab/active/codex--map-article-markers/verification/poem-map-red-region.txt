@@ -1,0 +1,33 @@
+
+ RUN  v5.0.3 /Users/kangminkim/lunch/sobaya/apps/saja-boyz-jinwoo-codex--map-article-markers
+
+ ❯ src/features/map/api/fetch-map-articles.test.ts (4 tests | 1 failed) 13ms
+   × accepts catalog region precision without reclassifying it as a neighborhood or an exact address 2ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/features/map/api/fetch-map-articles.test.ts > accepts catalog region precision without reclassifying it as a neighborhood or an exact address
+AssertionError: expected undefined to be 'region' // Object.is equality
+
+- Expected:
+"region"
+
++ Received:
+undefined
+
+ ❯ src/features/map/api/fetch-map-articles.test.ts:135:67
+    133|   regionArticle.location!.precision = 'region';
+    134|   vi.stubGlobal('fetch', vi.fn().mockResolvedValue(Response.json({tota…
+    135|   expect((await fetchMapArticles())?.items[0].location.precision).toBe…
+       |                                                                   ^
+    136| });
+    137|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 3 passed (4)
+   Start at  14:15:38
+   Duration  78ms (tests 43%, transform 39%, import 14%, worker 4%)
+

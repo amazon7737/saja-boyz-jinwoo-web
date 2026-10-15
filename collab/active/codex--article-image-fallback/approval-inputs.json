@@ -1,0 +1,47 @@
+{
+  "status": "draft-awaiting-human-approval",
+  "source_base": "7a2672a6941343b5d96546b9ced3546f97393fa5",
+  "runtime": "83af28d",
+  "test_target": "src/features/article-list/article-image-error.test.ts",
+  "entries": [
+    "articleImageErrorPreservesCards",
+    "articleImageRecoversForNewSource"
+  ],
+  "input_sha256": {
+    "spec.proposal.md": "cf9955ec664f78369a11a85860becb97f333d5e55c5cb9037a47d3b530332d34",
+    "failed-test.draft.md": "e2202edcdd73baedbd98024b4641ed327d976a79c768b874c020ad527603ce34",
+    "review.md": "6c6af6c4a8a3e3667abdd6db848453296ea66f225477442c539e152de3fb826c",
+    "support.proposal.md": "b819a079b85b9ff330e1b0739838c32bd4458c65a8039027bb8aee0064dcd6bc",
+    "support.patch": "77d954b8fde8cdefdd67428ca2935f193bcd032efc6dcdb808789f7263962f30",
+    "support/package.json.proposed": "1da4f9476fc59c0729c6657772c2c0d440f1069aced3630b792ecf6a744dfc14",
+    "support/pnpm-lock.yaml.proposed": "e216634332cc3771cd30cf4337b4b3fbb4436ecd5de0ccadb9ffdbf8344b89ea"
+  },
+  "evidence_sha256": {
+    "browser-fixture-mode.txt": "20be922138ae6a770877cdc3dcd239514049bab31f3051dfc9230876da4b1e10",
+    "browser-fixture-requests.ndjson": "46652d68698959ff2fc9ec865ba5ea502bcc26c5be9db1eccafde64ee4966252",
+    "browser-fixture-sample-image.jpg": "4e544394451902426bb70b8b9b38093ed6652d70bd1e33d629f0e0f57f999201",
+    "browser-fixture.mjs.txt": "ed877dea34625b58e7fc0a8ca102a3b861b00749425113166a96a3ff110e13f7",
+    "browser-image404-red-393.jpg": "a7b3229648fc5fa5e7ecef4a0ce375156e881331afb18c9805efefe306f26e76",
+    "browser-observation.json": "5f444468dcd0e4bffbd02ee9bed41c4a8f80ac6a957b77437e497d46902246f1",
+    "browser-red.md": "bc90929af9f0c37b1e85ba270a8641441ef1ca602830983dfb14fc75694f57c4",
+    "browser-source-sha256.txt": "fef14342da234cf9269cd0673acffcf3995565bcffb9d660b7e49df61f1ec2ba",
+    "candidate-format.txt": "447457e720b48cd9b3ab0adad91de7885b68c5217e40d7436fb1910edb5399c1",
+    "candidate-lint.txt": "a30f09755b03caa5ff84f64aec65429f478a55a857380afc3d33a676148c62a1",
+    "candidate-suite.json": "1fcd2a2dad8bd591d650c2b9863531d883fce67146edecc624c126ab0b6410ba",
+    "candidate-suite.txt": "014c57bdf5f28eb44cad8731dd593eb7c54476b10de81a2449699b75664ba06a",
+    "candidate-typecheck.txt": "500958a335f6879b8034a3c919b71bcef7abcbe68aee2468810749a1bc97e880",
+    "draft-review.json": "3ae037dbe115324620cc87c1d89cd01ae99073f91ba75cfe42aca06007020f7c",
+    "probe-error-preserves-cards.txt": "0d8d6561c2d1a14c1b16b83eb45c4a5cb83d9b006c23fe8fe3aa75cc990f8594",
+    "probe-new-source.txt": "25699a8e155a675b2a49adb22e5842f1031e99147e688c676f4e0d3deb2e1e66"
+  },
+  "candidate_suite": {
+    "total": 23,
+    "existing_passed": 21,
+    "new_expected_failures": 2,
+    "failure_names": [
+      "articleImageErrorPreservesCards",
+      "articleImageRecoversForNewSource"
+    ]
+  },
+  "approved": false
+}

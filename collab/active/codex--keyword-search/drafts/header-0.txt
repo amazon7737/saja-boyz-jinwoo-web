@@ -1,0 +1,7 @@
+// file: src/features/article-list/api/search-request.test.ts
+import { afterEach, expect, test, vi } from 'vitest';
+import { fetchArticleList } from './fetch-articles';
+afterEach(() => {
+  vi.unstubAllEnvs();
+  vi.unstubAllGlobals();
+});

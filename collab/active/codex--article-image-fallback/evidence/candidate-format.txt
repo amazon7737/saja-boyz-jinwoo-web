@@ -1,0 +1,6 @@
+
+> saja-boyz-jinwoo@0.1.0 format:check /private/tmp/jinwoo-image-probe-fdw7j3xm/app
+> prettier --check src docs/project.md docs/architecture.md docs/figma-analysis.md *.json *.mjs *.ts
+
+Checking formatting...
+All matched files use Prettier code style!

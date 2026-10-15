@@ -1,0 +1,25 @@
+
+ RUN  v5.0.3 /Users/kangminkim/lunch/sobaya/apps/saja-boyz-jinwoo-codex--map-article-markers
+
+ ❯ src/features/map/api/fetch-map-articles.test.ts (0 test)
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/features/map/api/fetch-map-articles.test.ts [ src/features/map/api/fetch-map-articles.test.ts ]
+Error: Cannot find module './fetch-map-articles' imported from /Users/kangminkim/lunch/sobaya/apps/saja-boyz-jinwoo-codex--map-article-markers/src/features/map/api/fetch-map-articles.test.ts
+ ❯ src/features/map/api/fetch-map-articles.test.ts:3:1
+      1| import { afterEach, expect, test, vi } from 'vitest';
+      2|
+      3| import { fetchMapArticles } from './fetch-map-articles';
+       | ^
+      4|
+      5| const article = {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  no tests
+   Start at  14:07:38
+   Duration  583ms (worker 97%, environment 3%)
+

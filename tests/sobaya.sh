@@ -18,6 +18,8 @@ cp -R "$SRC/.claude" "$SRC/.codex" "$SRC/.githooks" "$SRC/harness" "$SRC/collab"
 # 픽스처는 템플릿 자신의 협업 데이터를 물려받지 않는다 (오늘 날짜의 실제 저널이 검사에 섞인다)
 find collab/journal -maxdepth 1 -name '*.md' ! -name README.md -delete 2>/dev/null || true
 rm -rf collab/journal/plans; find collab/active -mindepth 1 -maxdepth 1 -type d -exec rm -rf {} + 2>/dev/null || true
+# 가짜 sobaya의 미결합 상태를 검사하므로 실제 앱의 버전 lock을 상속하지 않는다.
+rm -f harness/sobaya.lock
 
 mkdir -p src && echo a > src/a.ts && echo '{}' > package.json && git add -A && git commit -qm init && git push -q origin main
 git switch -qc feat/x && mkdir -p collab/active/feat--x && printf -- '---\nbranch: feat/x\nowner: solp\nstarted: %s\nstatus: active\ngoal: x\n---\n' "$today" > collab/active/feat--x/claim.md && git add -A && git commit -qm claim && git push -q -u origin HEAD

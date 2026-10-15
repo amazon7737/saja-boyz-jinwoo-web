@@ -1,0 +1,145 @@
+{
+  "checks": [
+    "duplicate-only and short pages advance raw offsets 0/20/40/42; within-page first-seen dedup; latest total ends pagination; 320/393/1280 no overflow",
+    "same-batch double click creates one request; visible busy and disabled button; 503 preserves cards; retry uses same offset and recovers",
+    "newly appended article navigates to correct detail/source and browser back restores a usable list",
+    "frontend server-action network failure preserves list and same-offset retry recovers",
+    "empty next page stops without clearing articles; empty and complete first pages have no more button",
+    "existing initial-error UI and retry link retained without private upstream details",
+    "browser uses frontend only; fixture receives GET news requests only; no collection/image-generation calls or browser page errors"
+  ],
+  "requests": [
+    {
+      "scenario": "happy",
+      "method": "GET",
+      "path": "/news",
+      "offset": 0,
+      "limit": "20",
+      "keyword": null
+    },
+    {
+      "scenario": "happy",
+      "method": "GET",
+      "path": "/news",
+      "offset": 20,
+      "limit": "20",
+      "keyword": null
+    },
+    {
+      "scenario": "happy",
+      "method": "GET",
+      "path": "/news",
+      "offset": 40,
+      "limit": "20",
+      "keyword": null
+    },
+    {
+      "scenario": "happy",
+      "method": "GET",
+      "path": "/news",
+      "offset": 42,
+      "limit": "20",
+      "keyword": null
+    },
+    {
+      "scenario": "retry",
+      "method": "GET",
+      "path": "/news",
+      "offset": 0,
+      "limit": "20",
+      "keyword": null
+    },
+    {
+      "scenario": "retry",
+      "method": "GET",
+      "path": "/news",
+      "offset": 20,
+      "limit": "20",
+      "keyword": null
+    },
+    {
+      "scenario": "retry",
+      "method": "GET",
+      "path": "/news",
+      "offset": 20,
+      "limit": "20",
+      "keyword": null
+    },
+    {
+      "scenario": "retry",
+      "method": "GET",
+      "path": "/news/0000000000000000000000000000000000000000000000000000000000000014",
+      "offset": 0,
+      "limit": null,
+      "keyword": null
+    },
+    {
+      "scenario": "transport",
+      "method": "GET",
+      "path": "/news",
+      "offset": 0,
+      "limit": "20",
+      "keyword": null
+    },
+    {
+      "scenario": "transport",
+      "method": "GET",
+      "path": "/news",
+      "offset": 20,
+      "limit": "20",
+      "keyword": null
+    },
+    {
+      "scenario": "empty-next",
+      "method": "GET",
+      "path": "/news",
+      "offset": 0,
+      "limit": "20",
+      "keyword": null
+    },
+    {
+      "scenario": "empty-next",
+      "method": "GET",
+      "path": "/news",
+      "offset": 20,
+      "limit": "20",
+      "keyword": null
+    },
+    {
+      "scenario": "empty-first",
+      "method": "GET",
+      "path": "/news",
+      "offset": 0,
+      "limit": "20",
+      "keyword": null
+    },
+    {
+      "scenario": "finished",
+      "method": "GET",
+      "path": "/news",
+      "offset": 0,
+      "limit": "20",
+      "keyword": null
+    },
+    {
+      "scenario": "initial-error",
+      "method": "GET",
+      "path": "/news",
+      "offset": 0,
+      "limit": "20",
+      "keyword": null
+    }
+  ],
+  "browserApiRequests": [],
+  "pageErrors": [],
+  "screenshots": [
+    "list-more-320.png",
+    "list-more-393.png",
+    "list-more-1280.png",
+    "list-retry-393.png",
+    "added-article-detail.png"
+  ],
+  "origin": "http://127.0.0.1:64230",
+  "apiOrigin": "http://127.0.0.1:64229",
+  "success": true
+}

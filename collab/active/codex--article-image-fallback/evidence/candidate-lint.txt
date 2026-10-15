@@ -1,0 +1,4 @@
+
+> saja-boyz-jinwoo@0.1.0 lint /private/tmp/jinwoo-image-probe-fdw7j3xm/app
+> eslint .
+

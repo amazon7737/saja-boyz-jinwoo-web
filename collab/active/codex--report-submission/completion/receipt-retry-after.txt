@@ -1,0 +1,9 @@
+Both esbuild and oxc options were set. oxc options will be used and esbuild options will be ignored. The following esbuild options were set: `{ jsx: 'automatic' }`
+
+ RUN  v5.0.3 /private/tmp/poem-report-contract-probe
+
+
+ Test Files  1 passed (1)
+      Tests  11 passed (11)
+   Start at  16:34:18
+   Duration  494ms (environment 67%, tests 19%, import 7%, transform 6%, worker 1%)

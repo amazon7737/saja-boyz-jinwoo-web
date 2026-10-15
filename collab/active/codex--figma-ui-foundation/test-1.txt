@@ -1,0 +1,15 @@
+test('foundationDedicatedScreensPreserveTheirContent', async () => {
+  for (const route of ['/report', `/incidents/${'a'.repeat(64)}`]) {
+    await withShell(route, async (host) => {
+      expect(host.querySelector('header')).toBeNull();
+      expect(host.querySelector('nav[aria-label="주 메뉴"]')).toBeNull();
+      const main = host.querySelector('main#main-content');
+      assert(main);
+      expect(main.textContent).toContain('기능 내용');
+      const button = main.querySelector<HTMLButtonElement>('button');
+      assert(button);
+      await act(async () => button.click());
+      expect(childAction).toHaveBeenCalledTimes(1);
+    });
+  }
+});

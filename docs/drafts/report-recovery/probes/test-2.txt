@@ -1,0 +1,38 @@
+
+ RUN  v5.0.3 /private/tmp/poem-report-recovery-probe
+
+ ❯ src/app/report/zz_sobaya_probe_4PGUxc.test.ts (1 test | 1 failed) 21ms
+   × reportBodyDeadline: headers at 45000ms do not restart the deadline for the response body 21ms
+
+ Test Files  1 failed (1)
+      Tests  1 failed (1)
+   Start at  18:29:49
+   Duration  295ms (environment 68%, transform 11%, import 10%, tests 10%, worker 1%)
+
+npm notice run saja-boyz-jinwoo@0.1.0 npx
+npm notice run 'vitest' run src/app/report/zz_sobaya_probe_4PGUxc.test.ts -t ^reportBodyDeadline: headers at 45000ms do not restart the deadline for the response body$
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/app/report/zz_sobaya_probe_4PGUxc.test.ts > reportBodyDeadline: headers at 45000ms do not restart the deadline for the response body
+AssertionError: expected undefined to be false // Object.is equality
+
+- Expected:
+false
+
++ Received:
+undefined
+
+ ❯ src/app/report/zz_sobaya_probe_4PGUxc.test.ts:266:35
+    264|   await advance(14999);
+    265|   expect(submitButton().disabled).toBe(true);
+    266|   expect(request.signal?.aborted).toBe(false);
+       |                                   ^
+    267|   expect(container.textContent).not.toContain(uncertainMessage);
+    268|   await advance(1);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+RED    reportBodyDeadline: headers at 45000ms do not restart the deadline for the response body  (fails: assertion/test failure; diagnostics above)
+
+PROBE_EXIT: 0

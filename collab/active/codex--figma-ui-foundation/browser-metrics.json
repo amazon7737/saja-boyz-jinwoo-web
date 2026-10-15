@@ -1,0 +1,424 @@
+{
+  "screens": [
+    {
+      "name": "map",
+      "route": "/",
+      "status": 200,
+      "metrics": {
+        "viewport": {
+          "width": 393,
+          "height": 852
+        },
+        "documentWidth": 393,
+        "header": {
+          "x": 16,
+          "y": 8,
+          "width": 361,
+          "height": 52,
+          "radius": "16px",
+          "font": "Inter, Pretendard, system-ui, sans-serif"
+        },
+        "nav": {
+          "x": 16,
+          "y": 776,
+          "width": 361,
+          "height": 68,
+          "radius": "28px",
+          "font": "Inter, Pretendard, system-ui, sans-serif"
+        },
+        "reportAction": {
+          "x": 169.5,
+          "y": 783,
+          "width": 54,
+          "height": 54,
+          "radius": "3.35544e+07px",
+          "font": "Inter, Pretendard, system-ui, sans-serif"
+        },
+        "logo": {
+          "x": 33,
+          "y": 22,
+          "width": 64,
+          "height": 24,
+          "radius": "0px",
+          "font": "Inter, Pretendard, system-ui, sans-serif"
+        },
+        "filterCount": 4,
+        "disabledFilters": true,
+        "fonts": [
+          {
+            "family": "Inter",
+            "status": "loaded",
+            "weight": "100 900"
+          },
+          {
+            "family": "Pretendard",
+            "status": "loaded",
+            "weight": "100 900"
+          }
+        ],
+        "localFontRequests": [
+          {
+            "url": "/fonts/InterVariable.woff2",
+            "origin": "http://localhost:3000"
+          },
+          {
+            "url": "/fonts/PretendardVariable.woff2",
+            "origin": "http://localhost:3000"
+          }
+        ]
+      }
+    },
+    {
+      "name": "search",
+      "route": "/search",
+      "status": 200,
+      "metrics": {
+        "viewport": {
+          "width": 393,
+          "height": 852
+        },
+        "documentWidth": 393,
+        "header": null,
+        "nav": {
+          "x": 16,
+          "y": 776,
+          "width": 361,
+          "height": 68,
+          "radius": "28px",
+          "font": "Inter, Pretendard, system-ui, sans-serif"
+        },
+        "reportAction": {
+          "x": 169.5,
+          "y": 783,
+          "width": 54,
+          "height": 54,
+          "radius": "3.35544e+07px",
+          "font": "Inter, Pretendard, system-ui, sans-serif"
+        },
+        "logo": null,
+        "filterCount": 0,
+        "disabledFilters": true,
+        "fonts": [
+          {
+            "family": "Inter",
+            "status": "loaded",
+            "weight": "100 900"
+          },
+          {
+            "family": "Pretendard",
+            "status": "loaded",
+            "weight": "100 900"
+          }
+        ],
+        "localFontRequests": [
+          {
+            "url": "/fonts/InterVariable.woff2",
+            "origin": "http://localhost:3000"
+          },
+          {
+            "url": "/fonts/PretendardVariable.woff2",
+            "origin": "http://localhost:3000"
+          }
+        ]
+      }
+    },
+    {
+      "name": "list",
+      "route": "/incidents",
+      "status": 200,
+      "metrics": {
+        "viewport": {
+          "width": 393,
+          "height": 852
+        },
+        "documentWidth": 393,
+        "header": {
+          "x": 16,
+          "y": 12,
+          "width": 361,
+          "height": 52,
+          "radius": "16px",
+          "font": "Inter, Pretendard, system-ui, sans-serif"
+        },
+        "nav": {
+          "x": 16,
+          "y": 776,
+          "width": 361,
+          "height": 68,
+          "radius": "28px",
+          "font": "Inter, Pretendard, system-ui, sans-serif"
+        },
+        "reportAction": {
+          "x": 169.5,
+          "y": 783,
+          "width": 54,
+          "height": 54,
+          "radius": "3.35544e+07px",
+          "font": "Inter, Pretendard, system-ui, sans-serif"
+        },
+        "logo": {
+          "x": 33,
+          "y": 26,
+          "width": 64,
+          "height": 24,
+          "radius": "0px",
+          "font": "Inter, Pretendard, system-ui, sans-serif"
+        },
+        "filterCount": 3,
+        "disabledFilters": true,
+        "fonts": [
+          {
+            "family": "Inter",
+            "status": "loaded",
+            "weight": "100 900"
+          },
+          {
+            "family": "Pretendard",
+            "status": "loaded",
+            "weight": "100 900"
+          }
+        ],
+        "localFontRequests": [
+          {
+            "url": "/fonts/InterVariable.woff2",
+            "origin": "http://localhost:3000"
+          },
+          {
+            "url": "/fonts/PretendardVariable.woff2",
+            "origin": "http://localhost:3000"
+          }
+        ]
+      }
+    },
+    {
+      "name": "detail",
+      "route": "/incidents/e4ca985cd79519d646c82ba76f7dfdba5e084307a3a7b5a650b206c2e1895e9f",
+      "status": 200,
+      "metrics": {
+        "viewport": {
+          "width": 393,
+          "height": 852
+        },
+        "documentWidth": 393,
+        "header": null,
+        "nav": null,
+        "reportAction": null,
+        "logo": null,
+        "filterCount": 0,
+        "disabledFilters": true,
+        "fonts": [
+          {
+            "family": "Inter",
+            "status": "loaded",
+            "weight": "100 900"
+          },
+          {
+            "family": "Pretendard",
+            "status": "loaded",
+            "weight": "100 900"
+          }
+        ],
+        "localFontRequests": [
+          {
+            "url": "/fonts/InterVariable.woff2",
+            "origin": "http://localhost:3000"
+          },
+          {
+            "url": "/fonts/PretendardVariable.woff2",
+            "origin": "http://localhost:3000"
+          }
+        ]
+      }
+    },
+    {
+      "name": "report",
+      "route": "/report",
+      "status": 200,
+      "metrics": {
+        "viewport": {
+          "width": 393,
+          "height": 852
+        },
+        "documentWidth": 393,
+        "header": {
+          "x": 0,
+          "y": 0,
+          "width": 393,
+          "height": 57,
+          "radius": "0px",
+          "font": "Inter, Pretendard, system-ui, sans-serif"
+        },
+        "nav": null,
+        "reportAction": null,
+        "logo": null,
+        "filterCount": 0,
+        "disabledFilters": true,
+        "fonts": [
+          {
+            "family": "Inter",
+            "status": "loaded",
+            "weight": "100 900"
+          },
+          {
+            "family": "Pretendard",
+            "status": "loaded",
+            "weight": "100 900"
+          }
+        ],
+        "localFontRequests": [
+          {
+            "url": "/fonts/InterVariable.woff2",
+            "origin": "http://localhost:3000"
+          },
+          {
+            "url": "/fonts/PretendardVariable.woff2",
+            "origin": "http://localhost:3000"
+          }
+        ]
+      }
+    },
+    {
+      "name": "results",
+      "route": "/search?q=%ED%99%94%EC%9E%AC",
+      "status": 200,
+      "metrics": {
+        "viewport": {
+          "width": 393,
+          "height": 852
+        },
+        "documentWidth": 393,
+        "header": null,
+        "nav": {
+          "x": 16,
+          "y": 776,
+          "width": 361,
+          "height": 68,
+          "radius": "28px",
+          "font": "Inter, Pretendard, system-ui, sans-serif"
+        },
+        "reportAction": {
+          "x": 169.5,
+          "y": 783,
+          "width": 54,
+          "height": 54,
+          "radius": "3.35544e+07px",
+          "font": "Inter, Pretendard, system-ui, sans-serif"
+        },
+        "logo": null,
+        "filterCount": 0,
+        "disabledFilters": true,
+        "fonts": [
+          {
+            "family": "Inter",
+            "status": "loaded",
+            "weight": "100 900"
+          },
+          {
+            "family": "Pretendard",
+            "status": "loaded",
+            "weight": "100 900"
+          }
+        ],
+        "localFontRequests": [
+          {
+            "url": "/fonts/InterVariable.woff2",
+            "origin": "http://localhost:3000"
+          },
+          {
+            "url": "/fonts/PretendardVariable.woff2",
+            "origin": "http://localhost:3000"
+          }
+        ]
+      }
+    },
+    {
+      "name": "empty-results",
+      "route": "/search?q=%EC%97%86%EB%8A%94%EA%B2%B0%EA%B3%BC",
+      "status": 200,
+      "metrics": {
+        "viewport": {
+          "width": 393,
+          "height": 852
+        },
+        "documentWidth": 393,
+        "header": null,
+        "nav": {
+          "x": 16,
+          "y": 776,
+          "width": 361,
+          "height": 68,
+          "radius": "28px",
+          "font": "Inter, Pretendard, system-ui, sans-serif"
+        },
+        "reportAction": {
+          "x": 169.5,
+          "y": 783,
+          "width": 54,
+          "height": 54,
+          "radius": "3.35544e+07px",
+          "font": "Inter, Pretendard, system-ui, sans-serif"
+        },
+        "logo": null,
+        "filterCount": 0,
+        "disabledFilters": true,
+        "fonts": [
+          {
+            "family": "Inter",
+            "status": "loaded",
+            "weight": "100 900"
+          },
+          {
+            "family": "Pretendard",
+            "status": "loaded",
+            "weight": "100 900"
+          }
+        ],
+        "localFontRequests": [
+          {
+            "url": "/fonts/InterVariable.woff2",
+            "origin": "http://localhost:3000"
+          },
+          {
+            "url": "/fonts/PretendardVariable.woff2",
+            "origin": "http://localhost:3000"
+          }
+        ]
+      }
+    }
+  ],
+  "checks": [
+    "default-production-build",
+    "real-naver-sdk-ready",
+    "native-provider-copyright-clear-of-navigation",
+    "real-api-search-and-navigation",
+    "detail-direct-load-and-reload",
+    "share-clipboard-fallback",
+    "320-667x375-1440-layouts",
+    "native-provider-copyright-clear-of-selected-sheet",
+    "fixture-selected-sheet-all-six-articles-landscape-close",
+    "not-found-and-empty",
+    "no-image-detail",
+    "api-error-distinct-from-not-found"
+  ],
+  "pageErrors": [],
+  "success": true,
+  "providerCopyright": {
+    "rectangles": [
+      {
+        "x": 10,
+        "y": 749,
+        "width": 78.203125,
+        "height": 19,
+        "bottom": 768
+      },
+      {
+        "x": 10,
+        "y": 752,
+        "width": 78.203125,
+        "height": 13,
+        "bottom": 765
+      }
+    ],
+    "navTop": 776
+  }
+}

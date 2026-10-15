@@ -1,0 +1,19 @@
+{
+  "candidate": "src/features/article-list/article-list.tsx",
+  "validCases": 13,
+  "invalidCases": 22,
+  "failures": [],
+  "compatibility": [
+    {
+      "name": "ISO exact end-of-day midnight",
+      "input": "2026-09-17T24:00:00Z",
+      "expected": "2026-09-18T00:00:00.000Z",
+      "actual": {
+        "iso": "2026-09-18T00:00:00.000Z",
+        "fallback": false,
+        "card": true
+      }
+    }
+  ],
+  "officialTestsRun": false
+}

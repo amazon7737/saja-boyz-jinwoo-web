@@ -12,7 +12,7 @@
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "next typegen && tsc --noEmit",
-    "test": "vitest run && pnpm run test:harness",
+    "test": "vitest run",
     "test:unit": "vitest run",
     "test:harness": "sh tests/hooks.sh && sh tests/loop.sh && sh tests/sobaya.sh",
     "format": "prettier --write src docs/project.md docs/architecture.md docs/figma-analysis.md *.json *.mjs *.ts",
@@ -20,17 +20,23 @@
     "check": "pnpm run lint && pnpm run typecheck && pnpm test && pnpm run build"
   },
   "dependencies": {
+    "@suspensive/react": "3.21.4",
     "next": "16.3.8",
     "react": "19.3.0",
     "react-dom": "19.3.0"
   },
   "devDependencies": {
+    "@tailwindcss/postcss": "4.3.3",
     "@types/node": "^24.0.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "eslint": "^9.39.5",
     "eslint-config-next": "16.3.8",
+    "jsdom": "27.4.0",
+    "playwright-core": "1.62.1",
+    "postcss": "8.5.29",
     "prettier": "^3.0.0",
+    "tailwindcss": "4.3.3",
     "typescript": "^5.0.0",
     "vitest": "5.0.3"
   },

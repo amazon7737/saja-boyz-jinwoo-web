@@ -1,0 +1,244 @@
+import { createRequire } from 'node:module';
+import { mkdir, writeFile } from 'node:fs/promises';
+import { createServer } from 'node:http';
+import { spawn } from 'node:child_process';
+import { once } from 'node:events';
+import assert from 'node:assert/strict';
+
+const appDir = '/Users/kangminkim/lunch/sobaya/apps/saja-boyz-jinwoo-codex--article-list-pagination';
+const require = createRequire(appDir + '/package.json');
+const { chromium } = require('playwright-core');
+const out = '/tmp/article-list-pagination-browser-evidence';
+await mkdir(out, { recursive: true });
+const evidence = { checks: [], requests: [], browserApiRequests: [], pageErrors: [], screenshots: [] };
+const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+const article = (n) => ({
+  collection_id: 'local-browser-fixture', article_id: n.toString(16).padStart(64, '0'),
+  image_status: 'disabled', image_url: null,
+  article: { title: '기사 ' + n, description: '목록 더 보기 검증용 가상 기사 요약 ' + n,
+    pubDate: '2026-10-11T00:00:00Z', originallink: 'https://publisher.example.invalid/' + n, link: '' },
+});
+const batch = () => Array.from({ length: 20 }, (_, i) => article(i));
+let scenario = 'happy';
+let attempts = 0;
+const api = createServer(async (req, res) => {
+  const url = new URL(req.url, 'http://fixture.invalid');
+  res.setHeader('Content-Type', 'application/json');
+  const offset = Number(url.searchParams.get('offset'));
+  evidence.requests.push({ scenario, method: req.method, path: url.pathname, offset, limit: url.searchParams.get('limit'), keyword: url.searchParams.get('keyword') });
+  if (req.method !== 'GET') { res.writeHead(405); res.end('{}'); return; }
+  if (/^\/news\/[0-9a-f]{64}$/.test(url.pathname)) {
+    res.end(JSON.stringify(article(Number.parseInt(url.pathname.split('/').at(-1), 16)))); return;
+  }
+  if (url.pathname !== '/news') { res.writeHead(404); res.end('{}'); return; }
+  const capturedScenario = scenario;
+  let total = 100;
+  let items = batch();
+  if (capturedScenario === 'happy') {
+    if (offset === 0) items = [...batch().slice(0, 19), article(0)];
+    else if (offset === 20) items = Array.from({ length: 20 }, () => article(0));
+    else if (offset === 40) {
+      const repeated = article(19); repeated.article.title = '중복으로 덮어쓴 잘못된 제목';
+      items = [article(19), repeated];
+    } else if (offset === 42) { total = 43; items = [article(0)]; }
+    else { res.writeHead(400); res.end('{"error":"UNEXPECTED_OFFSET"}'); return; }
+  } else if (capturedScenario === 'transport') {
+    total = 21;
+    if (offset === 20) items = [article(20)];
+  } else if (capturedScenario === 'retry') {
+    total = 21;
+    if (offset === 20) {
+      const attempt = attempts++;
+      await delay(700);
+      if (attempt === 0) { res.writeHead(503); res.end('{"error":"PRIVATE_FIXTURE_FAILURE"}'); return; }
+      items = [article(20)];
+    }
+  } else if (capturedScenario === 'empty-next') {
+    if (offset > 0) items = [];
+  } else if (capturedScenario === 'empty-first') {
+    items = []; total = 99;
+  } else if (capturedScenario === 'finished') {
+    total = 20;
+  } else if (capturedScenario === 'initial-error') {
+    res.writeHead(503); res.end('{"error":"PRIVATE_INITIAL_FAILURE"}'); return;
+  }
+  res.end(JSON.stringify({ total, items }));
+});
+const listen = server => new Promise((resolve, reject) => {
+  server.once('error', reject);
+  server.listen(0, '127.0.0.1', () => resolve(server.address().port));
+});
+let app;
+let browser;
+let page;
+let serverOutput = '';
+try {
+  const apiPort = await listen(api);
+  const reservation = createServer();
+  const appPort = await listen(reservation);
+  await new Promise(resolve => reservation.close(resolve));
+  const origin = 'http://127.0.0.1:' + appPort;
+  const apiOrigin = 'http://127.0.0.1:' + apiPort;
+  evidence.origin = origin;
+  evidence.apiOrigin = apiOrigin;
+  app = spawn(process.execPath, [require.resolve('next/dist/bin/next'), 'start', '--hostname', '127.0.0.1', '--port', String(appPort)], {
+    cwd: appDir,
+    env: { ...process.env, NEWS_API_BASE_URL: apiOrigin, NEXT_TELEMETRY_DISABLED: '1', NEXT_PUBLIC_NAVER_MAP_CLIENT_ID: '' },
+    stdio: ['ignore', 'pipe', 'pipe'],
+  });
+  app.stdout.on('data', chunk => { serverOutput += String(chunk); });
+  app.stderr.on('data', chunk => { serverOutput += String(chunk); });
+  let ready = false;
+  for (let i = 0; i < 100; i++) {
+    if (app.exitCode !== null) throw new Error(serverOutput);
+    try {
+      const response = await fetch(origin + '/incidents', { signal: AbortSignal.timeout(1000) });
+      await response.body?.cancel();
+      if (response.ok) { ready = true; break; }
+    } catch {}
+    await delay(100);
+  }
+  assert(ready, 'Production Next server must start');
+  browser = await chromium.launch({ channel: 'chrome', headless: true });
+  page = await browser.newPage({ viewport: { width: 393, height: 852 } });
+  page.setDefaultTimeout(10000);
+  page.on('pageerror', error => evidence.pageErrors.push(error.message));
+  page.on('request', request => { if (request.url().startsWith(apiOrigin)) evidence.browserApiRequests.push({ url: request.url(), method: request.method() }); });
+  const region = () => page.getByRole('region', { name: '사건 목록', exact: true });
+  const cards = () => region().locator('article');
+  const more = () => region().getByRole('button', { name: '더 보기', exact: true });
+  const titles = () => region().locator('article h2').allTextContents();
+  const expectedTitles = count => Array.from({ length: count }, (_, i) => '기사 ' + i);
+  const calls = label => evidence.requests.filter(r => r.scenario === label && r.path === '/news');
+  let visit = 0;
+  async function enter(label) {
+    scenario = label; attempts = 0;
+    await page.goto(origin + '/incidents?qa=' + ++visit);
+    await region().waitFor();
+  }
+  async function screenshot(name) {
+    await page.screenshot({ path: out + '/' + name });
+    evidence.screenshots.push(name);
+  }
+  async function settledMore() {
+    await more().click();
+    await page.waitForFunction(() => !document.querySelector('main [role="status"][aria-busy="true"]') && Array.from(document.querySelectorAll('main button')).filter(b => b.textContent.trim() === '더 보기').every(b => !b.disabled));
+  }
+  evidence.requests = [];
+  await enter('happy');
+  assert.deepEqual(await titles(), expectedTitles(19));
+  await settledMore();
+  assert.deepEqual(await titles(), expectedTitles(19));
+  await settledMore();
+  assert.deepEqual(await titles(), expectedTitles(20));
+  for (const width of [320, 393, 1280]) {
+    await page.setViewportSize({ width, height: 852 });
+    await more().scrollIntoViewIfNeeded();
+    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
+    await screenshot('list-more-' + width + '.png');
+  }
+  await settledMore();
+  assert.deepEqual(await titles(), expectedTitles(20));
+  assert.equal(await more().count(), 0);
+  assert.deepEqual(calls('happy').map(r => r.offset), [0, 20, 40, 42]);
+  assert(calls('happy').every(r => r.keyword === null && r.limit === '20'));
+  evidence.checks.push('duplicate-only and short pages advance raw offsets 0/20/40/42; within-page first-seen dedup; latest total ends pagination; 320/393/1280 no overflow');
+
+  await page.setViewportSize({ width: 393, height: 852 });
+  await enter('retry');
+  await more().scrollIntoViewIfNeeded();
+  await more().evaluate(button => { button.click(); button.click(); });
+  const busy = region().locator('[role="status"][aria-busy="true"]');
+  await busy.waitFor();
+  assert.equal(await more().isDisabled(), true);
+  assert.deepEqual(await titles(), expectedTitles(20));
+  await region().getByRole('alert').filter({ hasText: '추가 기사를 불러오지 못했어요' }).waitFor();
+  assert.deepEqual(calls('retry').map(r => r.offset), [0, 20]);
+  assert.deepEqual(await titles(), expectedTitles(20));
+  assert.doesNotMatch(await region().innerText(), /PRIVATE_FIXTURE_FAILURE/);
+  await screenshot('list-retry-393.png');
+  await region().getByRole('button', { name: '다시 시도', exact: true }).click();
+  await cards().filter({ hasText: '기사 요약 20' }).waitFor();
+  assert.deepEqual(await titles(), expectedTitles(21));
+  assert.equal(await more().count(), 0);
+  assert.equal(await region().getByRole('alert').count(), 0);
+  assert.deepEqual(calls('retry').map(r => r.offset), [0, 20, 20]);
+  evidence.checks.push('same-batch double click creates one request; visible busy and disabled button; 503 preserves cards; retry uses same offset and recovers');
+
+  const detailHref = '/incidents/' + article(20).article_id;
+  await region().locator('a[href="' + detailHref + '"]').click();
+  await page.waitForURL(origin + detailHref);
+  await page.getByRole('heading', { level: 1, name: '기사 20', exact: true }).waitFor();
+  assert.match(await page.locator('main').innerText(), /기사 요약/);
+  assert.equal(await page.locator('a[href="https://publisher.example.invalid/20"]').count(), 1);
+  await screenshot('added-article-detail.png');
+  await page.goBack();
+  await region().waitFor();
+  assert((await titles()).includes('기사 0'));
+  evidence.checks.push('newly appended article navigates to correct detail/source and browser back restores a usable list');
+
+  await enter('transport');
+  let abortNextAction = true;
+  const interruptAction = async route => {
+    if (abortNextAction && route.request().method() === 'POST') {
+      abortNextAction = false;
+      await route.abort('failed');
+    } else await route.continue();
+  };
+  await page.route(origin + '/**', interruptAction);
+  await more().click();
+  await region().getByRole('alert').filter({ hasText: '추가 기사를 불러오지 못했어요' }).waitFor();
+  assert.deepEqual(await titles(), expectedTitles(20));
+  assert.deepEqual(calls('transport').map(r => r.offset), [0]);
+  await page.unroute(origin + '/**', interruptAction);
+  await region().getByRole('button', { name: '다시 시도', exact: true }).click();
+  await cards().filter({ hasText: '기사 요약 20' }).waitFor();
+  assert.deepEqual(await titles(), expectedTitles(21));
+  assert.deepEqual(calls('transport').map(r => r.offset), [0, 20]);
+  evidence.checks.push('frontend server-action network failure preserves list and same-offset retry recovers');
+
+  await enter('empty-next');
+  await settledMore();
+  assert.deepEqual(await titles(), expectedTitles(20));
+  assert.equal(await more().count(), 0);
+  assert.equal(await region().getByRole('alert').count(), 0);
+  assert.deepEqual(calls('empty-next').map(r => r.offset), [0, 20]);
+  await enter('empty-first');
+  await region().getByRole('status').filter({ hasText: '아직 수집된 기사가 없어요' }).waitFor();
+  assert.equal(await cards().count(), 0);
+  assert.equal(await more().count(), 0);
+  await enter('finished');
+  assert.deepEqual(await titles(), expectedTitles(20));
+  assert.equal(await more().count(), 0);
+  evidence.checks.push('empty next page stops without clearing articles; empty and complete first pages have no more button');
+
+  await enter('initial-error');
+  await region().getByRole('alert').filter({ hasText: '기사를 불러오지 못했어요' }).waitFor();
+  assert.equal(await region().locator('a[href="/incidents"]').count(), 1);
+  assert.doesNotMatch(await region().innerText(), /PRIVATE_INITIAL_FAILURE/);
+  assert.equal(await cards().count(), 0);
+  evidence.checks.push('existing initial-error UI and retry link retained without private upstream details');
+  assert.deepEqual(evidence.browserApiRequests, []);
+  assert.deepEqual(evidence.pageErrors, []);
+  assert(evidence.requests.every(r => r.method === 'GET' && r.path.startsWith('/news')));
+  evidence.checks.push('browser uses frontend only; fixture receives GET news requests only; no collection/image-generation calls or browser page errors');
+  evidence.success = true;
+} catch (error) {
+  evidence.success = false;
+  evidence.error = String(error.stack ?? error);
+  process.exitCode = 1;
+  await page?.screenshot({ path: out + '/failure.png', fullPage: true }).catch(() => {});
+} finally {
+  await browser?.close();
+  if (app && app.exitCode === null && app.signalCode === null) {
+    const exited = once(app, 'exit');
+    app.kill('SIGTERM');
+    await Promise.race([exited, delay(2000)]);
+    if (app.exitCode === null && app.signalCode === null) { app.kill('SIGKILL'); await exited; }
+  }
+  api.closeAllConnections();
+  await new Promise(resolve => api.close(resolve));
+  await writeFile(out + '/result.json', JSON.stringify(evidence, null, 2) + '\n');
+  await writeFile(out + '/server.log', serverOutput);
+  console.log(JSON.stringify({ success: evidence.success, checks: evidence.checks, error: evidence.error, pageErrors: evidence.pageErrors }, null, 2));
+}

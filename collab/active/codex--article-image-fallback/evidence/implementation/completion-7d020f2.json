@@ -1,0 +1,95 @@
+{
+  "version": 1,
+  "baseline": "bac5e625fc7fc8e1b73e3f73dcdac03ebfd70a6e",
+  "approved_at": 1791198820,
+  "calls": 3,
+  "active": null,
+  "receipts": [
+    {
+      "entry": "articleImageErrorPreservesCards",
+      "red": {
+        "status": "red",
+        "failed": [
+          "articleImageErrorPreservesCards"
+        ],
+        "output": "JSON report written to /var/folders/wv/lv2qb3z92074bwd0pncsq3100000gn/T/tmp.9I1wiqFrvc/vitest.json\n협업: components/ui/button.tsx 를 @solp(feat--checkout) 도 바꾸는 중\n"
+      },
+      "green": [
+        "articleApiRequest",
+        "articleCardsIdentityAndPublication",
+        "articleEmpty",
+        "articleErrors",
+        "articleImageErrorPreservesCards",
+        "articleImageStates",
+        "articleLoading",
+        "articleRequestTimeout",
+        "articleTextAndSourceSafety",
+        "harness_hooks",
+        "harness_loop",
+        "harness_sobaya",
+        "incidentCards",
+        "incidentEmpty",
+        "incidentImages",
+        "incidentLoading",
+        "incidentTimeBoundaries",
+        "incidentUnsafeIds",
+        "빈 검색은 전체를 반환하고 원본 순서를 유지한다",
+        "시작 시각을 포함하고 이전 사건은 제외한다",
+        "잘못된 날짜를 조용히 무시하지 않는다",
+        "주소 검색과 카테고리·상태를 함께 적용한다"
+      ],
+      "summary": "articleImageErrorPreservesCards만 구현했습니다. 이미지 오류 시 해당 이미지와 캡션을 ‘이미지 없음’으로 바꾸며 기사 정보와 다른 카드를 유지합니다.",
+      "head": "afab0ddf3616826398eb287f4460b5ae093b7484",
+      "before": "bac5e625fc7fc8e1b73e3f73dcdac03ebfd70a6e"
+    },
+    {
+      "entry": "articleImageRecoversForNewSource",
+      "red": {
+        "status": "red",
+        "failed": [
+          "articleImageRecoversForNewSource"
+        ],
+        "output": "JSON report written to /var/folders/wv/lv2qb3z92074bwd0pncsq3100000gn/T/tmp.8Xdp8ODY7o/vitest.json\n협업: components/ui/button.tsx 를 @solp(feat--checkout) 도 바꾸는 중\n"
+      },
+      "green": [
+        "articleApiRequest",
+        "articleCardsIdentityAndPublication",
+        "articleEmpty",
+        "articleErrors",
+        "articleImageErrorPreservesCards",
+        "articleImageRecoversForNewSource",
+        "articleImageStates",
+        "articleLoading",
+        "articleRequestTimeout",
+        "articleTextAndSourceSafety",
+        "harness_hooks",
+        "harness_loop",
+        "harness_sobaya",
+        "incidentCards",
+        "incidentEmpty",
+        "incidentImages",
+        "incidentLoading",
+        "incidentTimeBoundaries",
+        "incidentUnsafeIds",
+        "빈 검색은 전체를 반환하고 원본 순서를 유지한다",
+        "시작 시각을 포함하고 이전 사건은 제외한다",
+        "잘못된 날짜를 조용히 무시하지 않는다",
+        "주소 검색과 카테고리·상태를 함께 적용한다"
+      ],
+      "summary": "이미지 URL을 컴포넌트 key로 지정해 새 URL에서 재시도하고, 재실패하면 대체 표시하도록 구현했습니다.",
+      "head": "1b8805391c12bc342e8e57419cd9fc8e141cf705",
+      "before": "afab0ddf3616826398eb287f4460b5ae093b7484"
+    }
+  ],
+  "review": {
+    "head": "7d020f288ed353462d720f2f6be597d23736487c",
+    "worker": "astra",
+    "summary": "bac5e625..7d020f2를 독립 검토했으며 actionable finding이 없습니다. article-image.tsx:10,23의 오류 대체 표시, article-list.tsx:167의 새 URL 상태 초기화가 명세에 부합합니다. article-image-error.test.ts:56,106은 카드 보존·실패 격리·복구·재실패를 검증합니다. 승인 테스트·helper·timeout·명령·훅·정책은 보존됐습니다. evidence/browser/browser-observations.json:71,202과 스크린샷에서 404·손상 이미지의 80×80 대체 표시를 확인했습니다.",
+    "at": 1791201060
+  },
+  "status": "complete",
+  "allow_go_undefined_red": false,
+  "head": "7d020f288ed353462d720f2f6be597d23736487c",
+  "pending": [],
+  "dirty": false
+}

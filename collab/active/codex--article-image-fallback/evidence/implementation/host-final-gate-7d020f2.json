@@ -1,0 +1,31 @@
+{
+  "runner": "vitest",
+  "passed": [
+    "articleApiRequest",
+    "articleCardsIdentityAndPublication",
+    "articleEmpty",
+    "articleErrors",
+    "articleImageErrorPreservesCards",
+    "articleImageRecoversForNewSource",
+    "articleImageStates",
+    "articleLoading",
+    "articleRequestTimeout",
+    "articleTextAndSourceSafety",
+    "harness_hooks",
+    "harness_loop",
+    "harness_sobaya",
+    "incidentCards",
+    "incidentEmpty",
+    "incidentImages",
+    "incidentLoading",
+    "incidentTimeBoundaries",
+    "incidentUnsafeIds",
+    "빈 검색은 전체를 반환하고 원본 순서를 유지한다",
+    "시작 시각을 포함하고 이전 사건은 제외한다",
+    "잘못된 날짜를 조용히 무시하지 않는다",
+    "주소 검색과 카테고리·상태를 함께 적용한다"
+  ],
+  "failed": [],
+  "skipped": [],
+  "output": "JSON report written to /var/folders/wv/lv2qb3z92074bwd0pncsq3100000gn/T/tmp.eyaMc7gTKs/vitest.json\n협업: components/ui/button.tsx 를 @solp(feat--checkout) 도 바꾸는 중\n"
+}

@@ -1,0 +1,49 @@
+{
+  "baseline": "7f05d14cf62812a69bcd8318983f5f07e49847e6",
+  "status": "complete",
+  "active": null,
+  "pending": [],
+  "dirty": false,
+  "head": "6c17ea0a79807b3d5bb1b15eb4707631faca5328",
+  "review": {
+    "head": "6c17ea0a79807b3d5bb1b15eb4707631faca5328",
+    "worker": "astra",
+    "summary": "7f05d14..6c17ea0을 독립 검토했고 조치할 결함을 찾지 못했습니다. 요청·오류 처리(page.tsx:32), 카드 표시(article-list.tsx:146), 호스트 gate PASS(evidence/gate-fec4823.txt:14), 실제 화면(browser-verification.md:118)을 확인했습니다.",
+    "at": 1791121483
+  },
+  "source_head": "fec482341f83561706b1cf176bb6d1d66aa81463",
+  "accepted_entries": [
+    "articleApiRequest",
+    "articleCardsIdentityAndPublication",
+    "articleTextAndSourceSafety",
+    "articleImageStates",
+    "articleEmpty",
+    "articleErrors",
+    "articleRequestTimeout",
+    "articleLoading"
+  ],
+  "declared_suite_passed_names": [
+    "articleApiRequest",
+    "articleCardsIdentityAndPublication",
+    "articleEmpty",
+    "articleErrors",
+    "articleImageStates",
+    "articleLoading",
+    "articleRequestTimeout",
+    "articleTextAndSourceSafety",
+    "harness_hooks",
+    "harness_loop",
+    "harness_sobaya",
+    "incidentCards",
+    "incidentEmpty",
+    "incidentImages",
+    "incidentLoading",
+    "incidentTimeBoundaries",
+    "incidentUnsafeIds",
+    "빈 검색은 전체를 반환하고 원본 순서를 유지한다",
+    "시작 시각을 포함하고 이전 사건은 제외한다",
+    "잘못된 날짜를 조용히 무시하지 않는다",
+    "주소 검색과 카테고리·상태를 함께 적용한다"
+  ],
+  "captured_before_plan_archive": true
+}

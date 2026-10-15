@@ -1,0 +1,22 @@
+test('routeErrorKeepsServerFallbackAndRetry', async () => {
+  const error = Object.assign(new Error('SECRET_SERVER_DETAIL'), {
+    name: 'FeatureError',
+    reason: 'network',
+    digest: 'SECRET_DIGEST',
+  });
+  const reset = vi.fn();
+  const retry = vi.fn();
+  await draw(createElement(RouteError, { error, reset, retry }));
+  expect(container.querySelector('[role="alert"]')?.textContent).toContain(
+    '화면을 표시하지 못했어요',
+  );
+  expect(container.textContent).not.toContain('SECRET_SERVER_DETAIL');
+  expect(container.textContent).not.toContain('SECRET_DIGEST');
+  expect(console.error).not.toHaveBeenCalledWith('기능 오류:', 'network');
+  await act(async () => container.querySelector('button')!.click());
+  expect(retry).toHaveBeenCalledTimes(1);
+  expect(reset).not.toHaveBeenCalled();
+  await draw(createElement(RouteError, { error, reset }));
+  await act(async () => container.querySelector('button')!.click());
+  expect(reset).toHaveBeenCalledTimes(1);
+});

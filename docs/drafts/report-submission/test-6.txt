@@ -1,0 +1,52 @@
+test('reportSubmissionPayload: trimmed fields Korean time and retained attachments are sent', async () => {
+  vi.stubEnv('TZ', 'UTC');
+  await renderReport();
+  await fillValid();
+  await changeField('title', '  도로 점검 제보  ');
+  await changeField('location', '  부산 남구 용호동  ');
+  await changeField(
+    'description',
+    '  <img src=x onerror=alert(1)> 보행로 확인  ',
+  );
+  await selectFiles([
+    testFile('kept.png', 'image/png'),
+    testFile('removed.mp4', 'video/mp4'),
+  ]);
+  const remove = container.querySelector(
+    'button[aria-label="removed.mp4 삭제"]',
+  );
+  assert(remove instanceof HTMLButtonElement);
+  await act(async () => remove.click());
+  await checkInput();
+  expect(fetchMock).toHaveBeenCalledTimes(1);
+  const [url, init] = fetchMock.mock.calls[0];
+  expect(String(url)).toBe('https://reports.example.test/reports');
+  expect(init?.method).toBe('POST');
+  expect(init?.credentials).toBe('omit');
+  const headers = new Headers(init?.headers);
+  expect(headers.get('Idempotency-Key')).toMatch(
+    /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
+  );
+  expect(headers.has('Content-Type')).toBe(false);
+  expect(headers.has('Authorization')).toBe(false);
+  assert(init?.body instanceof FormData);
+  expect(init.body.get('category')).toBe('society');
+  expect(init.body.get('occurred_at')).toBe('2026-10-12T00:30:00.000Z');
+  expect(init.body.get('title')).toBe('도로 점검 제보');
+  expect(init.body.get('location')).toBe('부산 남구 용호동');
+  expect(init.body.get('description')).toBe(
+    '<img src=x onerror=alert(1)> 보행로 확인',
+  );
+  const files = init.body.getAll('attachments');
+  expect(files).toHaveLength(1);
+  assert(files[0] instanceof File);
+  expect([files[0].name, files[0].type, files[0].size]).toEqual([
+    'kept.png',
+    'image/png',
+    1,
+  ]);
+  expect(container.querySelector('[role="status"]')?.textContent).toContain(
+    receipt.report_id,
+  );
+  expect(container.querySelector('img[src="x"], [onerror]')).toBeNull();
+});

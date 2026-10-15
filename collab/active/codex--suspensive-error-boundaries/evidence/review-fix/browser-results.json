@@ -1,0 +1,23 @@
+[
+  {
+    "reason": "network",
+    "classification": true,
+    "recovered": true,
+    "navigation": true,
+    "shell": true
+  },
+  {
+    "reason": "configuration",
+    "classification": true,
+    "recovered": true,
+    "navigation": true,
+    "shell": true
+  },
+  {
+    "reason": "invalid-response",
+    "classification": true,
+    "recovered": true,
+    "navigation": true,
+    "shell": true
+  }
+]

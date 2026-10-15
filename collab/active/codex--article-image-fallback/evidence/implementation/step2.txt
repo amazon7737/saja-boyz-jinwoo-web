@@ -1,0 +1,41 @@
+RED articleImageRecoversForNewSource
+Worker astra (gpt-6-astra), implement, call 2/20
+
+> saja-boyz-jinwoo@0.1.0 format:check /Users/kangminkim/lunch/sobaya/apps/saja-boyz-jinwoo-codex--article-image-fallback
+> prettier --check src docs/project.md docs/architecture.md docs/figma-analysis.md *.json *.mjs *.ts
+
+Checking formatting...
+All matched files use Prettier code style!
+
+> saja-boyz-jinwoo@0.1.0 lint /Users/kangminkim/lunch/sobaya/apps/saja-boyz-jinwoo-codex--article-image-fallback
+> eslint .
+
+GREEN articleImageRecoversForNewSource
+workspace checks passed
+
+> saja-boyz-jinwoo@0.1.0 format:check /Users/kangminkim/lunch/sobaya/apps/saja-boyz-jinwoo-codex--article-image-fallback
+> prettier --check src docs/project.md docs/architecture.md docs/figma-analysis.md *.json *.mjs *.ts
+
+Checking formatting...
+All matched files use Prettier code style!
+
+> saja-boyz-jinwoo@0.1.0 lint /Users/kangminkim/lunch/sobaya/apps/saja-boyz-jinwoo-codex--article-image-fallback
+> eslint .
+
+[codex/article-image-fallback 1b88053] feat: satisfy articleImageRecoversForNewSource
+ 3 files changed, 34 insertions(+), 2 deletions(-)
+Checkpoint articleImageRecoversForNewSource: 1b8805391c12bc342e8e57419cd9fc8e141cf705
+{
+  "run_id": "1791199757-35904-215",
+  "calls": 1,
+  "duration_seconds": 130,
+  "usage": [
+    {
+      "input_tokens": 540458,
+      "cached_input_tokens": 499712,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 2392,
+      "reasoning_output_tokens": 659
+    }
+  ]
+}

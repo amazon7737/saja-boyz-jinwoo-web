@@ -1,0 +1,29 @@
+
+ RUN  v5.0.3 /Users/kangminkim/lunch/sobaya/apps/saja-boyz-jinwoo-codex--map-article-markers
+
+ ❯ src/features/map/ui/map-home/map-articles.test.ts (7 tests | 1 failed) 41ms
+   × centers a single unique article position instead of sending a degenerate array to fitBounds 4ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/features/map/ui/map-home/map-articles.test.ts > centers a single unique article position instead of sending a degenerate array to fitBounds
+AssertionError: expected "vi.fn()" to be called with arguments: [ { latitude: 35.083, …(1) } ]
+
+Number of calls: 0
+
+ ❯ src/features/map/ui/map-home/map-articles.test.ts:255:31
+    253|     expect(fixture.setCenter).not.toHaveBeenCalled();
+    254|     await act(async () => button!.click());
+    255|     expect(fixture.setCenter).toHaveBeenCalledWith({latitude: 35.083, …
+       |                               ^
+    256|     expect(fixture.setZoom).toHaveBeenCalledWith(15, false);
+    257|     expect(fixture.fitBounds).not.toHaveBeenCalled();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 6 passed (7)
+   Start at  14:49:42
+   Duration  605ms (environment 72%, import 13%, tests 7%, transform 7%, worker 1%)
+

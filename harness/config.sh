@@ -1,7 +1,7 @@
 # 하네스 설정. 훅과 scripts/collab.sh 가 읽는다. 키 이름은 바꾸지 않는다.
 
-# 직접 커밋을 막는 보호 브랜치 (공백 구분). 첫 항목이 기준(main).
-PROTECTED_BRANCHES="main master develop"
+# 직접 커밋을 막는 보호 브랜치 (공백 구분). 첫 항목이 기준(dev).
+PROTECTED_BRANCHES="dev main master develop"
 
 # 협업 메모리
 CLAIM_DIR="collab/active"        # collab/active/<branch-slug>/claim.md + 브랜치 산출물
@@ -14,7 +14,7 @@ PROTECTED_BRANCH_ALLOW="collab/ harness/ docs/ .claude/ .codex/ .agents/ .githoo
 CLAIM_EXEMPT=".claude/settings.local.json"
 
 # 허브 파일: 동료가 지금 만지고 있으면 차단한다 (그 외 파일의 겹침은 알림만). 디렉토리는 / 로 끝낸다.
-HOTSPOTS="package.json pnpm-lock.yaml src/app/layout.tsx src/app/globals.css src/features/incidents/types.ts"
+HOTSPOTS="package.json pnpm-lock.yaml src/app/layout.tsx src/app/globals.css src/features/incidents/model/types.ts"
 
 # pulse(원격 당겨오기 + 내 작업 트리 스냅샷 올리기) 주기: 수정 N회마다, 또는 마지막 pulse 후 S초
 PULSE_EVERY_EDITS=15
@@ -31,7 +31,11 @@ AUTO_REBASE=true
 SYNC_MODE=merge
 
 # 개발 하네스 sobaya 의 워크스페이스 루트. 비우면 이 리포의 두 단계 위(sobaya/apps/<이 리포>)를 본다.
-SOBAYA_ROOT=""
+SOBAYA_ROOT="${SOBAYA_ROOT:-}"
+# sobaya/apps 아래의 자동 감지를 우선하고, 외부 앱은 설치된 형제 클론을 찾는다.
+if [ -z "$SOBAYA_ROOT" ] && [ ! -x "$ROOT/../../tdd-set/bin/step.sh" ] && [ -x "$ROOT/../sobaya/tdd-set/bin/step.sh" ]; then
+  SOBAYA_ROOT="$ROOT/../sobaya"
+fi
 
 # 동료 저널을 며칠 전까지 읽을지 (미머지 브랜치 저널은 기간 무관하게 읽는다)
 JOURNAL_LOOKBACK_DAYS=14

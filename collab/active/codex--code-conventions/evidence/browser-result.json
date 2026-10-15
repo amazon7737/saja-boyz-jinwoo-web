@@ -1,0 +1,115 @@
+{
+  "screens": [
+    {
+      "route": "map",
+      "width": 320,
+      "domEqual": true,
+      "screenshotEqual": true
+    },
+    {
+      "route": "search",
+      "width": 320,
+      "domEqual": true,
+      "screenshotEqual": true
+    },
+    {
+      "route": "results",
+      "width": 320,
+      "domEqual": true,
+      "screenshotEqual": true
+    },
+    {
+      "route": "list",
+      "width": 320,
+      "domEqual": true,
+      "screenshotEqual": true
+    },
+    {
+      "route": "detail",
+      "width": 320,
+      "domEqual": true,
+      "screenshotEqual": true
+    },
+    {
+      "route": "report",
+      "width": 320,
+      "domEqual": true,
+      "screenshotEqual": true
+    },
+    {
+      "route": "map",
+      "width": 393,
+      "domEqual": true,
+      "screenshotEqual": true
+    },
+    {
+      "route": "search",
+      "width": 393,
+      "domEqual": true,
+      "screenshotEqual": true
+    },
+    {
+      "route": "results",
+      "width": 393,
+      "domEqual": true,
+      "screenshotEqual": true
+    },
+    {
+      "route": "list",
+      "width": 393,
+      "domEqual": true,
+      "screenshotEqual": true
+    },
+    {
+      "route": "detail",
+      "width": 393,
+      "domEqual": true,
+      "screenshotEqual": true
+    },
+    {
+      "route": "report",
+      "width": 393,
+      "domEqual": true,
+      "screenshotEqual": true
+    },
+    {
+      "route": "map",
+      "width": 1280,
+      "domEqual": true,
+      "screenshotEqual": true
+    },
+    {
+      "route": "search",
+      "width": 1280,
+      "domEqual": true,
+      "screenshotEqual": true
+    },
+    {
+      "route": "results",
+      "width": 1280,
+      "domEqual": true,
+      "screenshotEqual": true
+    },
+    {
+      "route": "list",
+      "width": 1280,
+      "domEqual": true,
+      "screenshotEqual": true
+    },
+    {
+      "route": "detail",
+      "width": 1280,
+      "domEqual": true,
+      "screenshotEqual": true
+    },
+    {
+      "route": "report",
+      "width": 1280,
+      "domEqual": true,
+      "screenshotEqual": true
+    }
+  ],
+  "pageErrors": [],
+  "success": true,
+  "rendering": "Chrome --disable-gpu; exact DOM and PNG comparison"
+}
