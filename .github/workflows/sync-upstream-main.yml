@@ -1,0 +1,49 @@
+name: sync-upstream-main
+
+on:
+  schedule:
+    - cron: '7,22,37,52 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: upstream-main-production
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    if: github.repository == 'amazon7737/saja-boyz-jinwoo-web' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: production-sync
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: main
+          fetch-depth: 0
+          persist-credentials: false
+      - name: 조직 main 변경과 CI 확인
+        id: upstream
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash scripts/sync-upstream-main.sh
+      - name: 검증된 main 병합을 fork에 반영
+        if: steps.upstream.outputs.changed == 'true'
+        env:
+          SYNC_DEPLOY_KEY: ${{ secrets.UPSTREAM_SYNC_DEPLOY_KEY }}
+        run: |
+          set -euo pipefail
+          test -n "$SYNC_DEPLOY_KEY"
+          key_dir="$(mktemp -d)"
+          trap 'rm -rf "$key_dir"' EXIT
+          printf '%s\n' "$SYNC_DEPLOY_KEY" > "$key_dir/key"
+          chmod 600 "$key_dir/key"
+          # 신뢰할 호스트 키는 HTTPS GitHub Meta API에서 읽는다.
+          curl --fail --silent --show-error https://api.github.com/meta |
+            jq -r '.ssh_keys[] | "github.com " + .' > "$key_dir/known_hosts"
+          export GIT_SSH_COMMAND="ssh -i $key_dir/key -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile=$key_dir/known_hosts"
+          git push git@github.com:amazon7737/saja-boyz-jinwoo-web.git HEAD:refs/heads/main
+          echo 'fork main 업데이트 완료. Vercel Git 연동의 운영 배포 결과를 확인하세요.' >> "$GITHUB_STEP_SUMMARY"
