@@ -1,0 +1,26 @@
+Both esbuild and oxc options were set. oxc options will be used and esbuild options will be ignored. The following esbuild options were set: `{ jsx: 'automatic' }`
+
+ RUN  v5.0.3 /private/tmp/poem-report-contract-probe
+
+ ❯ contract-probe.test.ts (12 tests | 1 failed) 69ms
+   × retains successful receipt and lock after invalid attachment event until explicit reset 5ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  contract-probe.test.ts > retains successful receipt and lock after invalid attachment event until explicit reset
+AssertionError: the given combination of arguments (undefined and string) is invalid for this assertion. You can use an array, a map, an object, a set, a string, or a weakset instead of a string
+ ❯ contract-probe.test.ts:198:67
+    196|   expect(container.querySelector('[role="status"]')?.textContent).toCo…
+    197|   await selectFiles([testFile('blocked.svg', 'image/svg+xml')]);
+    198|   expect(container.querySelector('[role="status"]')?.textContent).toCo…
+       |                                                                   ^
+    199|   await checkInput();
+    200|   expect(fetchMock).toHaveBeenCalledTimes(1);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 11 passed (12)
+   Start at  16:44:44
+   Duration  327ms (environment 58%, tests 25%, import 8%, transform 8%, worker 1%)

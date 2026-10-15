@@ -1,0 +1,39 @@
+test('featureBoundaryRetriesAndResetsOnNavigation', async () => {
+  const { FeatureError, FeatureErrorBoundary } = await boundaries();
+  let error: Error | null = new FeatureError('network');
+  function Content() {
+    return createElement(Throw, { error });
+  }
+  const node = createElement(
+    FeatureErrorBoundary,
+    null,
+    createElement(Content),
+  );
+  await draw(node);
+  expect(container.querySelector('[role="alert"]')).not.toBeNull();
+  error = null;
+  await clickRetry();
+  expect(container.textContent).toContain('정상 내용');
+  expect(container.querySelector('[role="alert"]')).toBeNull();
+  error = new Error('SECRET_UNKNOWN');
+  await draw(createElement(FeatureErrorBoundary, null, createElement(Content)));
+  expect(container.querySelector('[role="alert"]')).not.toBeNull();
+  error = null;
+  pathname = '/search';
+  await draw(createElement(FeatureErrorBoundary, null, createElement(Content)));
+  expect(container.textContent).toContain('정상 내용');
+  expect(container.querySelector('[role="alert"]')).toBeNull();
+  await draw(null);
+  const { AppShell } = await import('../layout/app-shell');
+  await draw(
+    createElement(
+      AppShell,
+      null,
+      createElement(Throw, { error: new Error('SECRET_SHELL') }),
+    ),
+  );
+  expect(container.querySelector('header')?.textContent).toContain('흉흉');
+  expect(container.querySelector('nav')?.textContent).toContain('목록');
+  expect(container.querySelector('main [role="alert"]')).not.toBeNull();
+  expect(container.textContent).not.toContain('SECRET_SHELL');
+});

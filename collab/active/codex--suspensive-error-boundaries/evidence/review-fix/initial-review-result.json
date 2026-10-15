@@ -1,0 +1,5 @@
+{
+  "status": "defect",
+  "summary": "[P2] 필수 Next 프로덕션 통합 검증 증거가 없습니다. spec.md:29는 추가 경계 없이 세 FeatureError의 안내·로그·재시도·경로 복구를 검증하도록 요구하지만, 보관된 evidence/fault-client.tsx.txt:17은 FeatureErrorBoundary로 오류를 먼저 잡으며 evidence/browser-observations.md:3–14는 dev 관찰입니다(두 파일 모두 collab/active/codex--suspensive-error-boundaries/ 아래). 요구된 fixture와 프로덕션 검증 결과를 추가해야 합니다. 변경 코드 자체에서는 구체적인 기능 결함이나 범위 이탈을 발견하지 못했습니다.",
+  "reason": "요구사항의 통합 검증 누락이 남아 있습니다. 테스트 실행은 읽기 전용 환경의 임시 파일 생성 EPERM으로 차단되어 통과 여부를 확인하지 못했습니다. 파일 수정이나 커밋은 하지 않았습니다."
+}

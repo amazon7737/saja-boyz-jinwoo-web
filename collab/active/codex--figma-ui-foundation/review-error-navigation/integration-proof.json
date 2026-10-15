@@ -1,0 +1,18 @@
+{
+  "reviewed_source_head": "d974e9b34909e9f806fb9d39a5b76ecfdf185ccd",
+  "sobaya_baseline": "3568b013b45f4ac53512c72fe98491c24ca01f9c",
+  "integrated_from_base": "2c93daaaa107c72e62b08fcf4ebb2f8de1a30fb6",
+  "code_projection_identical": {
+    "src": true,
+    "public": true,
+    "docs": true,
+    "package.json": true,
+    "pnpm-lock.yaml": true,
+    "AGENTS.md": true
+  },
+  "src_tree": "64a7d7ecc47505488c8b2974875ba84554deece1",
+  "approved_new_test_count": 1,
+  "full_test_count": 102,
+  "original_next_env_unstaged_change_preserved": true,
+  "method": "Sobaya 검증 src의 정확한 Git diff 반영. 원 PR의 보관 계획과 기존 승인 상태는 변경하지 않음."
+}

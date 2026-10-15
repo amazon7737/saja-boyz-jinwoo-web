@@ -1,0 +1,21 @@
+#!/bin/bash
+set -eu
+prompt=$(mktemp)
+last=$(mktemp)
+trap 'rm -f "$prompt" "$last"' EXIT
+cat > "$prompt"
+cat >> "$prompt" <<'NOTE'
+
+Coordinator environment diagnosis: full Vitest suite includes shell harness integration and normally takes 117-125 seconds. Allow it to finish; RUN with no progress before that is expected. The initial implementation previously passed 30 tests, format, lint, typecheck. Default pnpm run build uses Turbopack and fails in this host sandbox with port binding EPERM on an existing CSS module; coordinator has verified the identical working tree using pnpm exec next build --webpack successfully. This is an environmental limitation, not grounds to stop implementing a passing approved entry. Do not change package scripts or tests. Build is supplemental and coordinator will verify final production build and browser behavior. Use required App Test, Format and Lint commands for checks. Review must still inspect all approved spec requirements including Figma header/chip details and scope. Do not return done if actual implementation has defects.
+Final scoped visual follow-through authorized by the user: on the search screen, the current 24px AppShell top padding plus page py-5 doubles the top spacing compared with Figma after excluding its 37px iOS mock status bar. Keep other routes unchanged; use search page bottom-only padding and 36px form height so the visible header is near the Figma content top (~21px; current AppShell 24px is acceptable). Preserve 16px side inset, 36px back button, radius14px form, 1.5px border, gap12px, sectiongap20px. Use Figma text close glyph ✕. Rephrase the result note about first 20 rows into natural user wording such as 최대 20개의 기사를 보여드려요; avoid implementation terms like 행. These are within the approved search header/display scope, not general refactoring. Keep all approved tests unchanged. Inspect relevant Figma high fidelity context in collab/active/codex--keyword-search/figma-11-1797.txt and figma-11-1864.txt if needed.
+NOTE
+if [ "$SOBAYA_ROLE" = review ]; then
+cat >> "$prompt" <<'REVIEW_NOTE'
+
+Read-only review environment diagnosis: Vitest needs to write a temporary Vite config and raises EPERM in this sandbox. Runtime has just passed the full exact suite, Format and Lint in contract_gate before this call at the same HEAD. Coordinator verified typecheck, Webpack production build and approved browser flows at the same source revision. Use runtime results as execution evidence. Independently inspect source, approved requirements, tests, scope, security and correctness without write-producing commands. Report concrete defects if present. Review the full feature from origin dev to HEAD plus the latest baseline diff. Never edit files or Git metadata. The documented read-only tooling limitation alone does not invalidate the existing gate evidence.
+REVIEW_NOTE
+fi
+sandbox=workspace-write
+[ "$SOBAYA_ROLE" != review ] || sandbox=read-only
+codex exec --cd "$SOBAYA_APP" --model "$SOBAYA_MODEL" --sandbox "$sandbox" -c 'approval_policy="never"' --json --output-schema /Users/jeong-gyuhwan/규환/projects/sobaya/tdd-set/worker-result.schema.json --output-last-message "$last" - < "$prompt"
+jq -c . "$last"

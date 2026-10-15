@@ -1,0 +1,12 @@
+
+ RUN  v5.0.3 /private/tmp/poem-report-recovery-link-timer/app
+
+협업: components/ui/button.tsx 를 @solp(feat--checkout) 도 바꾸는 중
+
+ Test Files  19 passed (19)
+      Tests  81 passed (81)
+   Start at  21:48:06
+   Duration  106.58s (tests 93%, environment 5%, transform 1%, import 1%)
+
+
+EXIT: 0

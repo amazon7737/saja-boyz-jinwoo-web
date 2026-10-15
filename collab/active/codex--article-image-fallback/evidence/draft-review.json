@@ -1,0 +1,20 @@
+{
+  "review_kind": "independent draft review, not implementation completion",
+  "findings_resolved": [
+    {
+      "issue": "static NodeList did not inspect post-error current DOM/order",
+      "resolution": "requery current article nodes after error and assert current A/B/C title order"
+    }
+  ],
+  "remaining_actionable_findings": [],
+  "reviewer_executed_tests": false,
+  "scope_files": [
+    "spec.proposal.md",
+    "failed-test.draft.md",
+    "review.md",
+    "support.proposal.md",
+    "support.patch"
+  ],
+  "test_plan_sha256": "e2202edcdd73baedbd98024b4641ed327d976a79c768b874c020ad527603ce34",
+  "review_view_sha256": "6c6af6c4a8a3e3667abdd6db848453296ea66f225477442c539e152de3fb826c"
+}

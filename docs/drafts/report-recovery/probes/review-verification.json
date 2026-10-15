@@ -1,0 +1,73 @@
+{
+  "date": "2026-10-13",
+  "status": "PASS",
+  "block_count": 7,
+  "review_label": "검토용 — 설명 주석은 실행 코드에 포함되지 않음",
+  "comparison": "Remove only inserted standalone Korean // 검토: lines; compare byte-for-byte with each executable draft and plan block. Also compare final hashes and preceding comments on nonempty non-closing-only lines.",
+  "human_review": "All 7 blocks read in order; fixture/native Fetch/body-mock limitations and adjacent explanations checked. Intro narrowed to avoid implying every entry asserts timer cleanup.",
+  "blocks": [
+    {
+      "source": "header.txt",
+      "sha256": "e98dd656d41d96d69387140bf104eb5b5de5e7875d6fc42db6f4a83c37d48662",
+      "source_line_count": 254,
+      "annotation_count": 187,
+      "review_exact": true,
+      "plan_exact": true,
+      "meaningful_line_coverage": true
+    },
+    {
+      "source": "test-1.txt",
+      "sha256": "4a723f14cfa8cedace8caf2ba34193969bc5ae5119675a90a08028a1d4d3b5e0",
+      "source_line_count": 25,
+      "annotation_count": 23,
+      "review_exact": true,
+      "plan_exact": true,
+      "meaningful_line_coverage": true
+    },
+    {
+      "source": "test-2.txt",
+      "sha256": "045d38f0a29ce71f8d8d821c0285465ac0bbde1e1dbfb151d7fb741645e7215b",
+      "source_line_count": 24,
+      "annotation_count": 22,
+      "review_exact": true,
+      "plan_exact": true,
+      "meaningful_line_coverage": true
+    },
+    {
+      "source": "test-3.txt",
+      "sha256": "49f2faa5137418277e02741fa98f5f58db03af3ea226e9dfc796d4aba53b65ff",
+      "source_line_count": 29,
+      "annotation_count": 27,
+      "review_exact": true,
+      "plan_exact": true,
+      "meaningful_line_coverage": true
+    },
+    {
+      "source": "test-4.txt",
+      "sha256": "3205b5fe1395572f17e78b81306cfde9621e6e79a8e2e4a5839c67ed900b8b31",
+      "source_line_count": 44,
+      "annotation_count": 41,
+      "review_exact": true,
+      "plan_exact": true,
+      "meaningful_line_coverage": true
+    },
+    {
+      "source": "test-5.txt",
+      "sha256": "57028f08bf790696bcf22730d40a007369aa41cde7577da0eaebde343d51a26f",
+      "source_line_count": 51,
+      "annotation_count": 42,
+      "review_exact": true,
+      "plan_exact": true,
+      "meaningful_line_coverage": true
+    },
+    {
+      "source": "test-6.txt",
+      "sha256": "20499468267674f982775aa00459819e81aad6cb399ecb653fb581aa8dc3fcca",
+      "source_line_count": 36,
+      "annotation_count": 33,
+      "review_exact": true,
+      "plan_exact": true,
+      "meaningful_line_coverage": true
+    }
+  ]
+}

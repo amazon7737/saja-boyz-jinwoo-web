@@ -1,0 +1,20 @@
+test('foundationUnconnectedArticleFiltersCannotPretendToFilter', async () => {
+  for (const route of ['/', '/incidents']) {
+    await withShell(route, (host) => {
+      const filters = host.querySelector('[aria-label="기사 필터"]');
+      assert(filters);
+      for (const label of ['기간', '카테고리', '상태']) {
+        const button = Array.from(
+          filters.querySelectorAll<HTMLButtonElement>('button'),
+        ).find((candidate) => candidate.textContent?.trim().startsWith(label));
+        assert(button);
+        expect(button.disabled).toBe(true);
+        expect(button.getAttribute('title')).toContain('준비 중');
+      }
+      expect(host.querySelector('main')?.textContent).toContain('기능 내용');
+    });
+  }
+  await withShell('/search', (host) => {
+    expect(host.querySelector('[aria-label="기사 필터"]')).toBeNull();
+  });
+});

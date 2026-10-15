@@ -1,0 +1,137 @@
+{
+  "version": 1,
+  "baseline": "bd400dbac3dc4c38a131db7f77ff842d18681f7f",
+  "approved_at": 1791259789,
+  "calls": 5,
+  "active": null,
+  "receipts": [
+    {
+      "entry": "featureErrorClassifiesAndPropagates",
+      "red": {
+        "status": "red",
+        "failed": [
+          "featureErrorClassifiesAndPropagates"
+        ],
+        "output": "JSON report written to /var/folders/nl/x25_3f7s5xq6pkv5m9l1jnr00000gn/T/tmp.EU8YWdRWLG/vitest.json\n협업: components/ui/button.tsx 를 @solp(feat--checkout) 도 바꾸는 중\n"
+      },
+      "green": [
+        "articleApiRequest",
+        "articleCardsIdentityAndPublication",
+        "articleEmpty",
+        "articleErrors",
+        "articleImageErrorPreservesCards",
+        "articleImageRecoversForNewSource",
+        "articleImageStates",
+        "articleLoading",
+        "articleRequestTimeout",
+        "articleTextAndSourceSafety",
+        "featureErrorClassifiesAndPropagates",
+        "harness_hooks",
+        "harness_loop",
+        "harness_sobaya",
+        "incidentCards",
+        "incidentEmpty",
+        "incidentImages",
+        "incidentLoading",
+        "incidentTimeBoundaries",
+        "incidentUnsafeIds",
+        "빈 검색은 전체를 반환하고 원본 순서를 유지한다",
+        "시작 시각을 포함하고 이전 사건은 제외한다",
+        "잘못된 날짜를 조용히 무시하지 않는다",
+        "주소 검색과 카테고리·상태를 함께 적용한다"
+      ],
+      "summary": "FeatureError 분류와 일반 오류의 상위 경계 전파를 구현했습니다. 내부 메시지 없이 한국어 안내를 표시합니다.",
+      "head": "8ee02b767859685b95bedb4a41ed9d150b246e4f",
+      "before": "bd400dbac3dc4c38a131db7f77ff842d18681f7f"
+    },
+    {
+      "entry": "featureBoundaryRetriesAndResetsOnNavigation",
+      "red": {
+        "status": "red",
+        "failed": [
+          "featureBoundaryRetriesAndResetsOnNavigation"
+        ],
+        "output": "JSON report written to /var/folders/nl/x25_3f7s5xq6pkv5m9l1jnr00000gn/T/tmp.xKdG2FuhTQ/vitest.json\n협업: components/ui/button.tsx 를 @solp(feat--checkout) 도 바꾸는 중\n"
+      },
+      "green": [
+        "articleApiRequest",
+        "articleCardsIdentityAndPublication",
+        "articleEmpty",
+        "articleErrors",
+        "articleImageErrorPreservesCards",
+        "articleImageRecoversForNewSource",
+        "articleImageStates",
+        "articleLoading",
+        "articleRequestTimeout",
+        "articleTextAndSourceSafety",
+        "featureBoundaryRetriesAndResetsOnNavigation",
+        "featureErrorClassifiesAndPropagates",
+        "harness_hooks",
+        "harness_loop",
+        "harness_sobaya",
+        "incidentCards",
+        "incidentEmpty",
+        "incidentImages",
+        "incidentLoading",
+        "incidentTimeBoundaries",
+        "incidentUnsafeIds",
+        "빈 검색은 전체를 반환하고 원본 순서를 유지한다",
+        "시작 시각을 포함하고 이전 사건은 제외한다",
+        "잘못된 날짜를 조용히 무시하지 않는다",
+        "주소 검색과 카테고리·상태를 함께 적용한다"
+      ],
+      "summary": "두 오류 경계에 재시도와 pathname 변경 시 초기화를 구현하고, AppShell의 main만 경계로 감싸 내비게이션을 보존했습니다.",
+      "head": "0c28963d9d8abbb06237cf5d6861f7bb1138ee19",
+      "before": "8ee02b767859685b95bedb4a41ed9d150b246e4f"
+    },
+    {
+      "entry": "nextRouteErrorBridgesResetSafely",
+      "red": {
+        "status": "red",
+        "failed": [
+          "nextRouteErrorBridgesResetSafely"
+        ],
+        "output": "JSON report written to /var/folders/nl/x25_3f7s5xq6pkv5m9l1jnr00000gn/T/tmp.JAGmnFXosy/vitest.json\n협업: components/ui/button.tsx 를 @solp(feat--checkout) 도 바꾸는 중\n"
+      },
+      "green": [
+        "articleApiRequest",
+        "articleCardsIdentityAndPublication",
+        "articleEmpty",
+        "articleErrors",
+        "articleImageErrorPreservesCards",
+        "articleImageRecoversForNewSource",
+        "articleImageStates",
+        "articleLoading",
+        "articleRequestTimeout",
+        "articleTextAndSourceSafety",
+        "featureBoundaryRetriesAndResetsOnNavigation",
+        "featureErrorClassifiesAndPropagates",
+        "harness_hooks",
+        "harness_loop",
+        "harness_sobaya",
+        "incidentCards",
+        "incidentEmpty",
+        "incidentImages",
+        "incidentLoading",
+        "incidentTimeBoundaries",
+        "incidentUnsafeIds",
+        "nextRouteErrorBridgesResetSafely",
+        "빈 검색은 전체를 반환하고 원본 순서를 유지한다",
+        "시작 시각을 포함하고 이전 사건은 제외한다",
+        "잘못된 날짜를 조용히 무시하지 않는다",
+        "주소 검색과 카테고리·상태를 함께 적용한다"
+      ],
+      "summary": "RouteError와 GlobalError에 optional retry를 전달·우선 사용하도록 최소 수정했습니다. retry가 없으면 기존 reset 동작을 유지합니다.",
+      "head": "9debf1c786b4c795864326266c7723212fb396fd",
+      "before": "0c28963d9d8abbb06237cf5d6861f7bb1138ee19"
+    }
+  ],
+  "review": {
+    "head": "9debf1c786b4c795864326266c7723212fb396fd",
+    "worker": "astra",
+    "summary": "지정된 AGENTS.md와 전체 diff를 독립 검토했으며, 수정이 필요한 구체적 결함은 발견하지 못했습니다. src/app/error.tsx:14는 retry를 우선 호출하고 reset 호환성을 유지하며, global-error.tsx:17도 retry를 전달합니다. feature-error-boundary.tsx:39–49의 shouldCatch 타입 추론은 단언 없이 동작하며 타입 검사를 통과했습니다. 고정된 안전 안내, pathname 변경 시 복구, AppShell의 header/nav 보존을 확인했습니다. 기존 API·이미지 처리 코드는 변경되지 않았습니다.",
+    "at": 1791261763
+  },
+  "status": "complete",
+  "allow_go_undefined_red": false
+}

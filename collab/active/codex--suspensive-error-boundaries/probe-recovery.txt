@@ -1,0 +1,32 @@
+
+ RUN  v5.0.3 /Users/jeong-gyuhwan/규환/projects/saja-boyz-jinwoo
+
+ ❯ src/components/errors/zz_sobaya_probe_JMLhwY.test.ts (1 test | 1 failed) 9ms
+   × featureBoundaryRetriesAndResetsOnNavigation 9ms
+
+ Test Files  1 failed (1)
+      Tests  1 failed (1)
+   Start at  13:00:28
+   Duration  359ms (environment 74%, import 15%, transform 7%, tests 3%, worker 1%)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/components/errors/zz_sobaya_probe_JMLhwY.test.ts > featureBoundaryRetriesAndResetsOnNavigation
+AssertionError: 공용 오류 경계 모듈이 있어야 한다: expected undefined to be type of 'function'
+
+Expected: "function"
+Received: "undefined"
+
+ ❯ boundaries src/components/errors/zz_sobaya_probe_JMLhwY.test.ts:46:39
+     44| async function boundaries() {
+     45|   const load = modules['./feature-error-boundary.tsx'];
+     46|   expect(load, '공용 오류 경계 모듈이 있어야 한다').toBeTypeOf('function');
+       |                                       ^
+     47|   return (await load()) as {
+     48|     FeatureError: new (
+ ❯ src/components/errors/zz_sobaya_probe_JMLhwY.test.ts:56:56
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+RED    featureBoundaryRetriesAndResetsOnNavigation  (fails: assertion/test failure; diagnostics above)

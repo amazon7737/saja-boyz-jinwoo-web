@@ -1,0 +1,14 @@
+{
+  "source_revision": "b23c5323c5e622d48289afc0a5657f787c356652",
+  "page_sha256": "baa8deda9f73089c02ea457038bd0f696fbb490df0a9231e7a814d2c84cde985",
+  "approved_header_sha256": "e98dd656d41d96d69387140bf104eb5b5de5e7875d6fc42db6f4a83c37d48662",
+  "approved_test_sha256": {
+    "1": "4a723f14cfa8cedace8caf2ba34193969bc5ae5119675a90a08028a1d4d3b5e0",
+    "2": "045d38f0a29ce71f8d8d821c0285465ac0bbde1e1dbfb151d7fb741645e7215b",
+    "3": "49f2faa5137418277e02741fa98f5f58db03af3ea226e9dfc796d4aba53b65ff",
+    "4": "3205b5fe1395572f17e78b81306cfde9621e6e79a8e2e4a5839c67ed900b8b31",
+    "5": "57028f08bf790696bcf22730d40a007369aa41cde7577da0eaebde343d51a26f",
+    "6": "20499468267674f982775aa00459819e81aad6cb399ecb653fb581aa8dc3fcca"
+  },
+  "scope": "temporary diagnostic copy only; source remains exact b23c532"
+}

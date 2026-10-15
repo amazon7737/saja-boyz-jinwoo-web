@@ -1,0 +1,14 @@
+
+> saja-boyz-jinwoo@0.1.0 format:check /Users/kangminkim/lunch/sobaya/apps/saja-boyz-jinwoo-codex--article-list-api
+> prettier --check src docs/project.md docs/architecture.md docs/figma-analysis.md *.json *.mjs *.ts
+
+Checking formatting...
+All matched files use Prettier code style!
+
+> saja-boyz-jinwoo@0.1.0 lint /Users/kangminkim/lunch/sobaya/apps/saja-boyz-jinwoo-codex--article-list-api
+> eslint .
+
+JSON report written to /var/folders/wv/lv2qb3z92074bwd0pncsq3100000gn/T/tmp.Igs9x7jP7A/vitest.json
+협업: components/ui/button.tsx 를 @solp(feat--checkout) 도 바꾸는 중
+
+PASS

@@ -1,0 +1,32 @@
+
+ RUN  v5.0.3 /private/tmp/poem-report-recovery-link-timer/app
+
+ ❯ src/app/report/report-recovery.test.ts (6 tests | 1 failed) 75ms
+   × reportFailureCleanup: async failures enter the real local boundary and settled attempts leave no deadline 8ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/app/report/report-recovery.test.ts > reportFailureCleanup: async failures enter the real local boundary and settled attempts leave no deadline
+AssertionError: expected 1 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 1
+
+ ❯ src/app/report/report-recovery.test.ts:419:32
+    417|     );
+    418|     expectDraft(values, file);
+    419|     expect(vi.getTimerCount()).toBe(0);
+       |                                ^
+    420|     await act(async () => closeErrorButton().click());
+    421|     await advance(60001);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 5 passed (6)
+   Start at  21:45:55
+   Duration  486ms (environment 64%, tests 18%, import 10%, transform 8%, worker 1%)

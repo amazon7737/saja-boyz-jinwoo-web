@@ -1,0 +1,82 @@
+{
+  "success": true,
+  "flows": [
+    {
+      "width": 320,
+      "listDetailReturn": true,
+      "geolocationReturn": true,
+      "historyBack": true,
+      "reloadResets": true,
+      "sdkScriptCount": 1,
+      "overflow": false
+    },
+    {
+      "width": 393,
+      "listDetailReturn": true,
+      "geolocationReturn": true,
+      "historyBack": true,
+      "reloadResets": true,
+      "sdkScriptCount": 1,
+      "overflow": false
+    },
+    {
+      "width": 1280,
+      "listDetailReturn": true,
+      "geolocationReturn": true,
+      "historyBack": true,
+      "reloadResets": true,
+      "sdkScriptCount": 1,
+      "overflow": false
+    }
+  ],
+  "pageErrors": [],
+  "sdkResponses": [
+    {
+      "width": 320,
+      "status": 200
+    },
+    {
+      "width": 320,
+      "status": 200
+    },
+    {
+      "width": 393,
+      "status": 200
+    },
+    {
+      "width": 393,
+      "status": 200
+    },
+    {
+      "width": 1280,
+      "status": 200
+    },
+    {
+      "width": 1280,
+      "status": 200
+    }
+  ],
+  "tileResponses": [
+    {
+      "width": 320,
+      "total": 65,
+      "statuses": [
+        200
+      ]
+    },
+    {
+      "width": 393,
+      "total": 70,
+      "statuses": [
+        200
+      ]
+    },
+    {
+      "width": 1280,
+      "total": 95,
+      "statuses": [
+        200
+      ]
+    }
+  ]
+}

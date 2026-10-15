@@ -1,0 +1,40 @@
+test('reportSubmissionRetry: an ambiguous failure keeps values files and the same request key', async () => {
+  fetchMock.mockRejectedValueOnce(new TypeError('Failed to fetch'));
+  fetchMock.mockImplementationOnce(async () => receiptResponse(200));
+  const storageWrite = vi.spyOn(Storage.prototype, 'setItem');
+  await renderReport();
+  await fillValid();
+  await selectFiles([testFile('road.png', 'image/png')]);
+  const originalValues = Object.fromEntries(
+    fieldNames.map((name) => [name, field(name).value]),
+  );
+  await checkInput();
+  expect(container.querySelector('[role="alert"]')?.textContent).toContain(
+    '접수 여부를 확인하지 못했어요',
+  );
+  expect(container.textContent).not.toContain(receipt.report_id);
+  for (const name of fieldNames) {
+    expect(field(name).value).toBe(originalValues[name]);
+    expect(field(name).matches(':disabled')).toBe(false);
+  }
+  expect(
+    container.querySelector('button[type="submit"]')?.matches(':disabled'),
+  ).toBe(false);
+  expect(
+    container.querySelector('button[aria-label="road.png 삭제"]'),
+  ).not.toBeNull();
+  const firstKey = new Headers(fetchMock.mock.calls[0][1]?.headers).get(
+    'Idempotency-Key',
+  );
+  expect(firstKey).toBeTruthy();
+  await checkInput();
+  expect(fetchMock).toHaveBeenCalledTimes(2);
+  const secondKey = new Headers(fetchMock.mock.calls[1][1]?.headers).get(
+    'Idempotency-Key',
+  );
+  expect(secondKey).toBe(firstKey);
+  expect(container.querySelector('[role="status"]')?.textContent).toContain(
+    receipt.report_id,
+  );
+  expect(storageWrite).not.toHaveBeenCalled();
+});

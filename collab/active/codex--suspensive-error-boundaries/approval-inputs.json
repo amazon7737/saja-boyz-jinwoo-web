@@ -1,0 +1,12 @@
+{
+  "status": "draft-awaiting-human-approval",
+  "base": "dc020b9",
+  "package": "@suspensive/react@3.21.4",
+  "input_sha256": {
+    "spec.proposal.md": "d8e71f78f5125316011cbc684cbee7290bf8efae25ea8c5fd2b8b00a0523e49d",
+    "failed-test.draft.md": "67051555275e303483daa2b4b7f12dcb8cfc701f856594327baf23e32ad67e07",
+    "support.proposal.md": "95ee91618b8f4241257950134f32fe9a1a0a277266778881212df51e73ab74b4",
+    "support/package.json.proposed": "df70c4eefb421c4cc49299e19c6f8e62e92feab3e87dc90860b1bfeb0d8a5eac",
+    "support/pnpm-lock.yaml.proposed": "c48b1f8fefed8a2a9bbc7f8f6cfac54130c239469ef0ee0f5698b77b98237656"
+  }
+}

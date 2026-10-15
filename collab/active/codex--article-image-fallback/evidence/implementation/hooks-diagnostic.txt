@@ -1,0 +1,109 @@
+# main
+ok   main: 코드 차단
+ok   main: collab/ 허용
+ok   main: 남의 claim 차단
+ok   main: bash 리다이렉션 차단
+ok   main: 없는 디렉토리로 쓰기도 차단
+ok   main: 읽기 통과
+ok   main: 2>/dev/null 은 쓰기 아님
+ok   main: > /dev/null (공백) 도 쓰기 아님
+ok   main: git commit 통과
+# 브랜치, claim 없음
+ok   claim 없음: 차단
+ok   claim 없음: 내 claim 디렉토리 허용
+ok   claim 없음: sed -i 차단
+ok   claim 없음: heredoc 차단
+# 브랜치, claim 있음
+ok   코드 허용
+ok   동료 파일도 허용 (scope 없음)
+ok   bash 코드 허용
+ok   collab.sh 자체는 통과
+ok   남의 claim 차단
+ok   내 claim 디렉토리 산출물 허용
+ok   새 저널 허용
+ok   기존 저널 차단
+ok   심링크 경로도 정규화해 차단
+# 허브 파일 + 동료 wip
+ok   허브 파일을 동료가 편집 중 → 차단
+ok   메시지에 상대와 시각
+ok   허브 아닌 파일은 통과
+ok   동료 브랜치에 커밋만 된 허브 파일은 통과(알림만)
+ok   post-edit: 커밋된 겹침도 알림
+ok   post-edit: 겹침 알림
+ok   post-edit: 같은 파일 재알림 없음
+ok   동료가 안 만지는 허브 파일은 통과
+ok   --allow 후 통과
+ok   CLI guard 도 같은 판정
+# 루트 탐색
+ok   워크스페이스 루트에서 앱 파일 → 앱의 collab 규칙 적용
+# 이벤트 파서
+ok   changed + 경로
+ok   dep zod@3.23 은 경로 아님
+ok   ask @핸들 (경로 없음)
+ok   md_section
+ok   wip_snapshot 이 미추적 파일 포함
+# 온보딩: 리포 상태에 따라 세션 시작이 달라지는가
+ok   플레이스홀더 남음 → state=setup
+ok   setup: 세션 시작이 온보딩 메뉴를 주입
+ok   초기화됐지만 핸들 없음 → state=join
+ok   join: 메뉴 없이 합류 안내
+ok   join.sh 후 → state=ready (핸들·훅·rerere)
+ok   ready: 세션 시작이 협업 현황을 주입
+ok   init.sh 가 scripts/·hooks 의 코드를 안 건드림
+ok   install-into: 하네스 복사 + init, 기존 AGENTS.md 보존
+ok   install-into: 두 번 돌려도 안전(멱등)
+# 보고된 문제 회귀 (cairn-landing 2인 운영)
+ok   claim 디렉토리 경로 자신도 내 것 (git add collab/active/<slug>)
+ok   guard CLI 도 동일
+ok   작업 브랜치: main 머지가 동료 claim 때문에 막히지 않음
+ok   보호 브랜치: 코드 로컬 머지는 여전히 차단
+# 되돌리기·따옴표 (보고 10번)
+ok   git checkout -- 로 되돌리기는 통과
+ok   git restore 로 되돌리기는 통과
+ok   git restore --staged 도 통과
+ok   git stash 통과
+ok   git rm 으로 저널 삭제는 여전히 차단
+ok   허브 파일: 따옴표로 감싸도 차단(우회 없음)
+ok   허브 파일: 큰따옴표도 차단
+ok   따옴표 안의 > 는 여전히 쓰기 아님
+# 하위 디렉토리에서 lib.sh 를 직접 source 해도 리포를 찾는가 (보고 메타)
+ok   CLAUDE_PROJECT_DIR 없이도 ROOT 가 리포 루트
+# 설정 일관성: Claude 와 Codex 가 같은 훅 스크립트를 가리키는가
+ok   git 훅 4개 존재·실행 가능
+ok   settings.json ≡ .codex/hooks.json
+ok   가리키는 스크립트가 모두 존재·실행 가능
+ok   .claude/skills → .agents/skills 심링크
+ok   CLAUDE.md → AGENTS.md 심링크
+# git 훅 (도구 무관): pre-commit 이 guard 와 같은 규칙
+ok   main: 코드 커밋 차단
+FAIL main: collab/ 커밋 허용
+ok   claim 없음: 커밋 차단
+FAIL claim 과 함께면 커밋 허용
+ok   기존 저널 수정 커밋 차단
+ok   남의 claim 변경 커밋 차단 (실제 스테이지와 차단 이유 확인)
+FAIL pre-commit 은 wip 허브를 차단 안 하고 경고만
+FAIL sobaya 앱 pre-commit 을 이어서 실행
+# git 훅: pre-push / pre-merge-commit / post-commit
+FAIL pre-push: main 으로 코드 직접 push 차단
+ok   pre-push: 브랜치 push 통과
+✗ collab/active/feat--hook/claim.md
+  차단: 보호 브랜치에서는 claim 을 편집하지 않습니다. 정리는 scripts/collab.sh prune.
+✗ collab/active/feat--login/claim.md
+  차단: 보호 브랜치에서는 claim 을 편집하지 않습니다. 정리는 scripts/collab.sh prune.
+커밋 차단 (협업 하네스). 위 안내대로 고친 뒤 다시 커밋하세요.
+ok   pre-push: 하네스 메타만 바뀐 main push 통과(초기화 커밋)
+ok   pre-push: 원격에 없던 브랜치의 첫 publish 통과
+ok   pre-push: CI 예외
+ok   pre-merge-commit: main 에서 코드 브랜치 로컬 머지 차단
+# check
+FAIL check 통과
+     검사: feat/login (base main)
+     ✗ claim 없음: collab/active/feat--login/claim.md (start-work 스킬)
+       에이전트 커밋: false
+     위반 있음
+FAIL check: CI(detached HEAD)에서 자기 브랜치를 남으로 안 봄
+ok   check: 이벤트 절 없는 저널 실패
+ok   check: 기존 저널 수정 실패
+FAIL prune: 머지된 claim 삭제
+
+통과 76 / 실패 8

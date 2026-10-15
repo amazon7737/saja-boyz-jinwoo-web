@@ -1,0 +1,3 @@
+Checking formatting...
+All matched files use Prettier code style!
+prefix 3: prettier, eslint, typecheck passed

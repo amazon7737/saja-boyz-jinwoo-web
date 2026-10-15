@@ -1,0 +1,11 @@
+test('mapReturnRestoresViewportWithoutBrowserStorage', async () => {
+  const storage = vi.spyOn(Storage.prototype, 'setItem');
+  await visit();
+  expect(created).toHaveBeenLastCalledWith({ latitude: 37.5665, longitude: 126.978, zoom: 12 });
+  current = { latitude: 35.1796, longitude: 129.0756, zoom: 15 };
+  await leave();
+  expect(destroy).toHaveBeenCalledTimes(1);
+  await visit();
+  expect(created).toHaveBeenLastCalledWith({ latitude: 35.1796, longitude: 129.0756, zoom: 15 });
+  expect(storage).not.toHaveBeenCalled();
+});

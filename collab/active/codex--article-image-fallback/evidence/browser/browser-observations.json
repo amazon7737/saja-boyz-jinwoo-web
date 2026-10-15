@@ -1,0 +1,560 @@
+[
+  {
+    "state": "fixture-success-initial",
+    "observedAt": "2026-10-05T11:39:19.163Z",
+    "page": {
+      "alerts": [],
+      "cards": [
+        {
+          "box": {
+            "height": 123,
+            "width": 361,
+            "x": 16
+          },
+          "captions": [
+            "AI 생성 이미지"
+          ],
+          "dateTime": "2026-10-04T00:00:00.000Z",
+          "images": [
+            {
+              "complete": true,
+              "height": 80,
+              "naturalHeight": 1024,
+              "naturalWidth": 1024,
+              "src": "http://127.0.0.1:39072/images/6ef0a29fc6bc91e5f7e265a9b964278903e06157da1d944b6eea54e1e0fa9338.jpg",
+              "width": 80
+            }
+          ],
+          "paragraphs": [
+            "브라우저 검증용 가상 기사입니다. 원본 이미지 배치와 \"기사 발행\" 문구를 확인합니다.",
+            "기사 발행 2026-10-04 09:00 KST"
+          ],
+          "placeholders": [],
+          "sourceHref": "http://127.0.0.1:39072/source/a",
+          "title": "[합성 샘플 A] 교통 안내 & 점검"
+        },
+        {
+          "box": {
+            "height": 122,
+            "width": 361,
+            "x": 16
+          },
+          "captions": [],
+          "dateTime": "2026-10-03T09:30:00.000Z",
+          "images": [],
+          "paragraphs": [
+            "실제 뉴스가 아닌 합성 데이터입니다. 이미지가 비활성화된 카드도 제목과 발행 시각을 보존합니다.",
+            "기사 발행 2026-10-03 18:30 KST"
+          ],
+          "placeholders": [
+            {
+              "height": 80,
+              "text": "이미지 없음",
+              "width": 80
+            }
+          ],
+          "sourceHref": "http://127.0.0.1:39072/source/b",
+          "title": "[합성 샘플 B] 이미지 없는 기사"
+        }
+      ],
+      "clientWidth": 393,
+      "headerCount": 1,
+      "height": 852,
+      "navCount": 1,
+      "scrollWidth": 393,
+      "url": "http://127.0.0.1:3004/incidents",
+      "width": 393
+    },
+    "logs": []
+  },
+  {
+    "state": "fixture-image404",
+    "observedAt": "2026-10-05T11:39:38.369Z",
+    "page": {
+      "alerts": [],
+      "cards": [
+        {
+          "box": {
+            "height": 122,
+            "width": 361,
+            "x": 16
+          },
+          "captions": [],
+          "dateTime": "2026-10-04T00:00:00.000Z",
+          "images": [],
+          "paragraphs": [
+            "브라우저 검증용 가상 기사입니다. 원본 이미지 배치와 \"기사 발행\" 문구를 확인합니다.",
+            "기사 발행 2026-10-04 09:00 KST"
+          ],
+          "placeholders": [
+            {
+              "height": 80,
+              "text": "이미지 없음",
+              "width": 80
+            }
+          ],
+          "sourceHref": "http://127.0.0.1:39072/source/a",
+          "title": "[합성 샘플 A] 교통 안내 & 점검"
+        },
+        {
+          "box": {
+            "height": 122,
+            "width": 361,
+            "x": 16
+          },
+          "captions": [],
+          "dateTime": "2026-10-03T09:30:00.000Z",
+          "images": [],
+          "paragraphs": [
+            "실제 뉴스가 아닌 합성 데이터입니다. 이미지가 비활성화된 카드도 제목과 발행 시각을 보존합니다.",
+            "기사 발행 2026-10-03 18:30 KST"
+          ],
+          "placeholders": [
+            {
+              "height": 80,
+              "text": "이미지 없음",
+              "width": 80
+            }
+          ],
+          "sourceHref": "http://127.0.0.1:39072/source/b",
+          "title": "[합성 샘플 B] 이미지 없는 기사"
+        }
+      ],
+      "clientWidth": 393,
+      "headerCount": 1,
+      "height": 852,
+      "navCount": 1,
+      "scrollWidth": 393,
+      "url": "http://127.0.0.1:3004/incidents",
+      "width": 393
+    },
+    "logs": []
+  },
+  {
+    "state": "fixture-image-damaged-streaming-intermediate-not-result",
+    "observedAt": "2026-10-05T11:40:08.125Z",
+    "page": {
+      "alerts": [],
+      "cards": [
+        {
+          "box": {
+            "height": 0,
+            "width": 0,
+            "x": 0
+          },
+          "captions": [
+            "AI 생성 이미지"
+          ],
+          "dateTime": "2026-10-04T00:00:00.000Z",
+          "images": [
+            {
+              "complete": false,
+              "height": 0,
+              "naturalHeight": 0,
+              "naturalWidth": 0,
+              "src": "",
+              "width": 0
+            }
+          ],
+          "paragraphs": [
+            "브라우저 검증용 가상 기사입니다. 원본 이미지 배치와 \"기사 발행\" 문구를 확인합니다.",
+            "기사 발행 2026-10-04 09:00 KST"
+          ],
+          "placeholders": [],
+          "sourceHref": "http://127.0.0.1:39072/source/a",
+          "title": "[합성 샘플 A] 교통 안내 & 점검"
+        },
+        {
+          "box": {
+            "height": 0,
+            "width": 0,
+            "x": 0
+          },
+          "captions": [],
+          "dateTime": "2026-10-03T09:30:00.000Z",
+          "images": [],
+          "paragraphs": [
+            "실제 뉴스가 아닌 합성 데이터입니다. 이미지가 비활성화된 카드도 제목과 발행 시각을 보존합니다.",
+            "기사 발행 2026-10-03 18:30 KST"
+          ],
+          "placeholders": [
+            {
+              "height": 0,
+              "text": "이미지 없음",
+              "width": 0
+            }
+          ],
+          "sourceHref": "http://127.0.0.1:39072/source/b",
+          "title": "[합성 샘플 B] 이미지 없는 기사"
+        }
+      ],
+      "clientWidth": 393,
+      "headerCount": 1,
+      "height": 852,
+      "navCount": 1,
+      "scrollWidth": 393,
+      "url": "http://127.0.0.1:3004/incidents",
+      "width": 393
+    },
+    "logs": []
+  },
+  {
+    "state": "fixture-image-damaged-settled",
+    "observedAt": "2026-10-05T11:40:25.034Z",
+    "page": {
+      "alerts": [],
+      "cards": [
+        {
+          "box": {
+            "height": 122,
+            "width": 361,
+            "x": 16
+          },
+          "captions": [],
+          "dateTime": "2026-10-04T00:00:00.000Z",
+          "images": [],
+          "paragraphs": [
+            "브라우저 검증용 가상 기사입니다. 원본 이미지 배치와 \"기사 발행\" 문구를 확인합니다.",
+            "기사 발행 2026-10-04 09:00 KST"
+          ],
+          "placeholders": [
+            {
+              "height": 80,
+              "text": "이미지 없음",
+              "width": 80
+            }
+          ],
+          "sourceHref": "http://127.0.0.1:39072/source/a",
+          "title": "[합성 샘플 A] 교통 안내 & 점검"
+        },
+        {
+          "box": {
+            "height": 122,
+            "width": 361,
+            "x": 16
+          },
+          "captions": [],
+          "dateTime": "2026-10-03T09:30:00.000Z",
+          "images": [],
+          "paragraphs": [
+            "실제 뉴스가 아닌 합성 데이터입니다. 이미지가 비활성화된 카드도 제목과 발행 시각을 보존합니다.",
+            "기사 발행 2026-10-03 18:30 KST"
+          ],
+          "placeholders": [
+            {
+              "height": 80,
+              "text": "이미지 없음",
+              "width": 80
+            }
+          ],
+          "sourceHref": "http://127.0.0.1:39072/source/b",
+          "title": "[합성 샘플 B] 이미지 없는 기사"
+        }
+      ],
+      "clientWidth": 393,
+      "headerCount": 1,
+      "height": 852,
+      "navCount": 1,
+      "scrollWidth": 393,
+      "url": "http://127.0.0.1:3004/incidents",
+      "width": 393
+    },
+    "logs": []
+  },
+  {
+    "state": "fixture-success-restored-after-reload",
+    "observedAt": "2026-10-05T11:40:43.119Z",
+    "page": {
+      "alerts": [],
+      "cards": [
+        {
+          "box": {
+            "height": 123,
+            "width": 361,
+            "x": 16
+          },
+          "captions": [
+            "AI 생성 이미지"
+          ],
+          "dateTime": "2026-10-04T00:00:00.000Z",
+          "images": [
+            {
+              "complete": true,
+              "height": 80,
+              "naturalHeight": 1024,
+              "naturalWidth": 1024,
+              "src": "http://127.0.0.1:39072/images/6ef0a29fc6bc91e5f7e265a9b964278903e06157da1d944b6eea54e1e0fa9338.jpg",
+              "width": 80
+            }
+          ],
+          "paragraphs": [
+            "브라우저 검증용 가상 기사입니다. 원본 이미지 배치와 \"기사 발행\" 문구를 확인합니다.",
+            "기사 발행 2026-10-04 09:00 KST"
+          ],
+          "placeholders": [],
+          "sourceHref": "http://127.0.0.1:39072/source/a",
+          "title": "[합성 샘플 A] 교통 안내 & 점검"
+        },
+        {
+          "box": {
+            "height": 122,
+            "width": 361,
+            "x": 16
+          },
+          "captions": [],
+          "dateTime": "2026-10-03T09:30:00.000Z",
+          "images": [],
+          "paragraphs": [
+            "실제 뉴스가 아닌 합성 데이터입니다. 이미지가 비활성화된 카드도 제목과 발행 시각을 보존합니다.",
+            "기사 발행 2026-10-03 18:30 KST"
+          ],
+          "placeholders": [
+            {
+              "height": 80,
+              "text": "이미지 없음",
+              "width": 80
+            }
+          ],
+          "sourceHref": "http://127.0.0.1:39072/source/b",
+          "title": "[합성 샘플 B] 이미지 없는 기사"
+        }
+      ],
+      "clientWidth": 393,
+      "headerCount": 1,
+      "height": 852,
+      "navCount": 1,
+      "scrollWidth": 393,
+      "url": "http://127.0.0.1:3004/incidents",
+      "width": 393
+    },
+    "logs": []
+  },
+  {
+    "state": "real-api-desktop",
+    "observedAt": "2026-10-05T11:43:46.615Z",
+    "page": {
+      "alerts": [],
+      "cards": [
+        {
+          "box": {
+            "height": 123,
+            "width": 608,
+            "x": 416
+          },
+          "captions": [
+            "AI 생성 이미지"
+          ],
+          "dateTime": "2026-09-28T04:34:00.000Z",
+          "images": [
+            {
+              "complete": true,
+              "height": 80,
+              "naturalHeight": 1024,
+              "naturalWidth": 1024,
+              "src": "https://poem-news.168.107.37.12.sslip.io/images/2378404d1e9e182697a17deb150bf51757c6fd3728d13872c699fcf9713e8ff0.jpg",
+              "width": 80
+            }
+          ],
+          "paragraphs": [
+            "전력·냉각 설비를 공장에서 사전 제작한 뒤 현장에서 조립·설치하는 방식으로, 현장 작업을 줄이고 공사기간을 단축하는 데 활용된다. 현대엔지니어링은 대형 산업시설에서 축적한 전력·기계설비 구축 경험을... ",
+            "기사 발행 2026-09-28 13:34 KST"
+          ],
+          "placeholders": [],
+          "sourceHref": "https://www.kfenews.co.kr/news/articleView.html?idxno=665334",
+          "title": "현대엔지니어링, 8700억 군산 AI 데이터센터 수주"
+        },
+        {
+          "box": {
+            "height": 122,
+            "width": 608,
+            "x": 416
+          },
+          "captions": [],
+          "dateTime": "2026-09-19T15:01:00.000Z",
+          "images": [],
+          "paragraphs": [
+            "16도 △부산 20도 △울산 19도 △제주 22도 등이다. 낮 최고기온은 △서울 29도 △인천 28도 △철원 27도... 바람도 다소 강하게 불면서 작은 불씨가 큰불로 번질 수 있어 산불 등 화재 예방에 유의해야 한다. 미세먼지... ",
+            "기사 발행 2026-09-20 00:01 KST"
+          ],
+          "placeholders": [
+            {
+              "height": 80,
+              "text": "이미지 없음",
+              "width": 80
+            }
+          ],
+          "sourceHref": "https://news.tf.co.kr/read/livingculture/2367973.htm",
+          "title": "[오늘의 날씨] 전국 맑고 한낮 31도…일교차 최대 15도"
+        },
+        {
+          "box": {
+            "height": 122,
+            "width": 608,
+            "x": 416
+          },
+          "captions": [],
+          "dateTime": "2026-09-19T13:46:00.000Z",
+          "images": [],
+          "paragraphs": [
+            "이에 따라 산불을 비롯한 각종 화재 예방에 유의해야 한다. 한편, 내일 새벽부터 아침사이 경북 중·북부... 강수는 오늘 밤 강원 동해안과 산지, 내일 새벽 경북 동해안과 부산, 울산, 제주도 등에 0.1mm 미만의... ",
+            "기사 발행 2026-09-19 22:46 KST"
+          ],
+          "placeholders": [
+            {
+              "height": 80,
+              "text": "이미지 없음",
+              "width": 80
+            }
+          ],
+          "sourceHref": "https://www.mhns.co.kr/news/articleView.html?idxno=761064",
+          "title": "[내일 날씨] 전국 낮밤 기온차 15도…남해동부먼바다 물결 3.5m 강풍·너..."
+        },
+        {
+          "box": {
+            "height": 122,
+            "width": 608,
+            "x": 416
+          },
+          "captions": [],
+          "dateTime": "2026-09-19T09:16:00.000Z",
+          "images": [],
+          "paragraphs": [
+            "오늘(19일) 밤(18~24시)까지 강원동해안.산지에, 내일(20일) 새벽(00~06시)까지 경북동해안.북동산지와 부산.... ○ (건조) 서울.인천.경기도는 대기가 차차 건조해지겠으니, 산불 및 각종 화재 예방에 각별히 유의하기... ",
+            "기사 발행 2026-09-19 18:16 KST"
+          ],
+          "placeholders": [
+            {
+              "height": 80,
+              "text": "이미지 없음",
+              "width": 80
+            }
+          ],
+          "sourceHref": "http://www.economytalk.kr/news/articleView.html?idxno=424232",
+          "title": "[전국 자역별 오늘의 날씨 및 내일날씨]25호 태풍 두쥐안 경로,당분간 낮..."
+        }
+      ],
+      "clientWidth": 1440,
+      "headerCount": 1,
+      "height": 1000,
+      "navCount": 1,
+      "scrollWidth": 1440,
+      "url": "http://127.0.0.1:3005/incidents",
+      "width": 1440
+    },
+    "logs": []
+  },
+  {
+    "state": "real-api-mobile",
+    "observedAt": "2026-10-05T11:43:58.962Z",
+    "page": {
+      "alerts": [],
+      "cards": [
+        {
+          "box": {
+            "height": 123,
+            "width": 361,
+            "x": 16
+          },
+          "captions": [
+            "AI 생성 이미지"
+          ],
+          "dateTime": "2026-09-28T04:34:00.000Z",
+          "images": [
+            {
+              "complete": true,
+              "height": 80,
+              "naturalHeight": 1024,
+              "naturalWidth": 1024,
+              "src": "https://poem-news.168.107.37.12.sslip.io/images/2378404d1e9e182697a17deb150bf51757c6fd3728d13872c699fcf9713e8ff0.jpg",
+              "width": 80
+            }
+          ],
+          "paragraphs": [
+            "전력·냉각 설비를 공장에서 사전 제작한 뒤 현장에서 조립·설치하는 방식으로, 현장 작업을 줄이고 공사기간을 단축하는 데 활용된다. 현대엔지니어링은 대형 산업시설에서 축적한 전력·기계설비 구축 경험을... ",
+            "기사 발행 2026-09-28 13:34 KST"
+          ],
+          "placeholders": [],
+          "sourceHref": "https://www.kfenews.co.kr/news/articleView.html?idxno=665334",
+          "title": "현대엔지니어링, 8700억 군산 AI 데이터센터 수주"
+        },
+        {
+          "box": {
+            "height": 122,
+            "width": 361,
+            "x": 16
+          },
+          "captions": [],
+          "dateTime": "2026-09-19T15:01:00.000Z",
+          "images": [],
+          "paragraphs": [
+            "16도 △부산 20도 △울산 19도 △제주 22도 등이다. 낮 최고기온은 △서울 29도 △인천 28도 △철원 27도... 바람도 다소 강하게 불면서 작은 불씨가 큰불로 번질 수 있어 산불 등 화재 예방에 유의해야 한다. 미세먼지... ",
+            "기사 발행 2026-09-20 00:01 KST"
+          ],
+          "placeholders": [
+            {
+              "height": 80,
+              "text": "이미지 없음",
+              "width": 80
+            }
+          ],
+          "sourceHref": "https://news.tf.co.kr/read/livingculture/2367973.htm",
+          "title": "[오늘의 날씨] 전국 맑고 한낮 31도…일교차 최대 15도"
+        },
+        {
+          "box": {
+            "height": 122,
+            "width": 361,
+            "x": 16
+          },
+          "captions": [],
+          "dateTime": "2026-09-19T13:46:00.000Z",
+          "images": [],
+          "paragraphs": [
+            "이에 따라 산불을 비롯한 각종 화재 예방에 유의해야 한다. 한편, 내일 새벽부터 아침사이 경북 중·북부... 강수는 오늘 밤 강원 동해안과 산지, 내일 새벽 경북 동해안과 부산, 울산, 제주도 등에 0.1mm 미만의... ",
+            "기사 발행 2026-09-19 22:46 KST"
+          ],
+          "placeholders": [
+            {
+              "height": 80,
+              "text": "이미지 없음",
+              "width": 80
+            }
+          ],
+          "sourceHref": "https://www.mhns.co.kr/news/articleView.html?idxno=761064",
+          "title": "[내일 날씨] 전국 낮밤 기온차 15도…남해동부먼바다 물결 3.5m 강풍·너..."
+        },
+        {
+          "box": {
+            "height": 122,
+            "width": 361,
+            "x": 16
+          },
+          "captions": [],
+          "dateTime": "2026-09-19T09:16:00.000Z",
+          "images": [],
+          "paragraphs": [
+            "오늘(19일) 밤(18~24시)까지 강원동해안.산지에, 내일(20일) 새벽(00~06시)까지 경북동해안.북동산지와 부산.... ○ (건조) 서울.인천.경기도는 대기가 차차 건조해지겠으니, 산불 및 각종 화재 예방에 각별히 유의하기... ",
+            "기사 발행 2026-09-19 18:16 KST"
+          ],
+          "placeholders": [
+            {
+              "height": 80,
+              "text": "이미지 없음",
+              "width": 80
+            }
+          ],
+          "sourceHref": "http://www.economytalk.kr/news/articleView.html?idxno=424232",
+          "title": "[전국 자역별 오늘의 날씨 및 내일날씨]25호 태풍 두쥐안 경로,당분간 낮..."
+        }
+      ],
+      "clientWidth": 393,
+      "headerCount": 1,
+      "height": 852,
+      "navCount": 1,
+      "scrollWidth": 393,
+      "url": "http://127.0.0.1:3005/incidents",
+      "width": 393
+    },
+    "logs": []
+  }
+]

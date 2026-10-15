@@ -1,0 +1,38 @@
+{
+  "checks": [
+    "default-production-build",
+    "direct-entry-500-all-four-viewports",
+    "network-timeout-json-contract-exit-and-retry",
+    "error-exit-to-list",
+    "error-exit-to-map",
+    "same-route-retry-to-success-and-single-header",
+    "unconfigured-api-exit-and-retry"
+  ],
+  "failures": [
+    "network",
+    "timeout",
+    "json",
+    "contract"
+  ],
+  "pageErrors": [],
+  "success": true,
+  "api": "local-fixture-read-only",
+  "widths": [
+    {
+      "width": 320,
+      "height": 700
+    },
+    {
+      "width": 393,
+      "height": 852
+    },
+    {
+      "width": 667,
+      "height": 375
+    },
+    {
+      "width": 1440,
+      "height": 900
+    }
+  ]
+}

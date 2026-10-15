@@ -1,0 +1,33 @@
+.badge {
+  --badge-color: var(--color-muted);
+
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--badge-color) 8%, transparent);
+  color: color-mix(in srgb, var(--badge-color) 55%, var(--color-text));
+  font-size: 10px;
+  font-weight: 700;
+  line-height: normal;
+  white-space: nowrap;
+}
+
+.badge[data-category='society'],
+.badge[data-status='ongoing'] {
+  --badge-color: var(--color-progress);
+}
+
+.badge[data-category='security'] {
+  --badge-color: #7c6df5;
+}
+
+.badge[data-category='politics'] {
+  --badge-color: #0369a1;
+}
+
+.badge[data-status='publicized'] {
+  --badge-color: #0369a1;
+}
+
+.badge[data-status='closed'] {
+  --badge-color: var(--color-closed);
+}

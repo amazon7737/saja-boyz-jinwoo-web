@@ -1,0 +1,31 @@
+test('mapLocationDenialUnsupportedAndLateCallbacksKeepMapSafe', async () => {
+  await mount();
+  let success!: PositionCallback;
+  let failure!: PositionErrorCallback;
+  const request = vi.fn((ok: PositionCallback, bad: PositionErrorCallback) => {
+    success = ok;
+    failure = bad;
+  });
+  geolocation({ getCurrentPosition: request });
+  const fixture = await loaded();
+  await act(async () => button('내 위치').click());
+  await act(async () =>
+    failure({ code: 1, message: 'denied' } as GeolocationPositionError),
+  );
+  expect(container.textContent).toMatch(/위치.*권한|권한.*위치/);
+  expect(fixture.centers).toHaveLength(0);
+  expect(button('내 위치').disabled).toBe(false);
+  geolocation(undefined);
+  await act(async () => button('내 위치').click());
+  expect(container.textContent).toMatch(/지원/);
+  geolocation({ getCurrentPosition: request });
+  await act(async () => button('내 위치').click());
+  await act(async () => root.unmount());
+  await act(async () =>
+    success({
+      coords: { latitude: 37.5, longitude: 127.1, accuracy: 10 },
+    } as GeolocationPosition),
+  );
+  expect(fixture.centers).toHaveLength(0);
+  expect(fixture.destroy).toHaveBeenCalledTimes(1);
+});

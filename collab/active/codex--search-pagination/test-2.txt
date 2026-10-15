@@ -1,0 +1,40 @@
+test('searchMoreAppendsDeduplicatedPagesWithRawOffsets', async () => {
+  const first = [...batch().slice(0, 19), article(0)];
+  const second = [article(0), ...batch(19).slice(0, 19)];
+  request.mockResolvedValueOnce(Response.json({ total: 43, items: first }));
+  await mount('  서울 & 화재?#  ');
+  expect(titles()).toEqual(
+    first.slice(0, 19).map((item) => item.article.title),
+  );
+  request.mockResolvedValueOnce(Response.json({ total: 43, items: second }));
+  await click('더 보기');
+  expect(titles()).toEqual(Array.from({ length: 38 }, (_, i) => '기사 ' + i));
+  request.mockResolvedValueOnce(
+    Response.json({
+      total: 43,
+      items: [article(38), article(38), article(39)],
+    }),
+  );
+  await click('더 보기');
+  expect(titles()).toEqual(Array.from({ length: 40 }, (_, i) => '기사 ' + i));
+  expect(offsets()).toEqual(['0', '20', '40']);
+  for (const [input] of request.mock.calls) {
+    expect(new URL(String(input)).searchParams.get('keyword')).toBe(
+      '서울 & 화재?#',
+    );
+    expect(new URL(String(input)).searchParams.get('limit')).toBe('20');
+  }
+  expect(
+    container.querySelector('input[name="q"]')?.getAttribute('value'),
+  ).toBe('서울 & 화재?#');
+  expect(container.textContent).not.toContain('최대 20개의 기사를 보여드려요');
+  expect(container.textContent).not.toContain('43건');
+  expect(
+    Array.from(container.querySelectorAll('button')).some(
+      (b) => b.textContent?.trim() === '더 보기',
+    ),
+  ).toBe(false);
+  expect(container.querySelector('article h2 a')?.getAttribute('href')).toBe(
+    '/incidents/' + article(0).article_id,
+  );
+});

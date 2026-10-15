@@ -1,0 +1,12 @@
+{
+  "status": "done",
+  "summary": "지정된 AGENTS.md와 전체 diff를 독립 검토했으며, 수정이 필요한 구체적 결함은 발견하지 못했습니다. src/app/error.tsx:14는 retry를 우선 호출하고 reset 호환성을 유지하며, global-error.tsx:17도 retry를 전달합니다. feature-error-boundary.tsx:39–49의 shouldCatch 타입 추론은 단언 없이 동작하며 타입 검사를 통과했습니다. 고정된 안전 안내, pathname 변경 시 복구, AppShell의 header/nav 보존을 확인했습니다. 기존 API·이미지 처리 코드는 변경되지 않았습니다.",
+  "reason": "설치된 Next.js 구현과 공식 문서(https://nextjs.org/docs/app/api-reference/file-conventions/error#retry)에서 retry의 refresh+reset 동작을 확인했습니다. 검증 한계: error-boundaries.test.ts:131–175는 reset 호환성만 검사하고 retry 경로는 직접 검증하지 않습니다. 테스트 실행은 읽기 전용 환경의 임시 디렉터리 생성 제한(EPERM)으로 차단되어, 테스트 통과나 실제 브라우저 복구를 독립 재현했다고 주장하지 않습니다. 파일 수정·커밋은 하지 않았습니다.",
+  "usage": {
+    "input_tokens": 317191,
+    "cached_input_tokens": 260480,
+    "cache_write_input_tokens": 0,
+    "output_tokens": 1382,
+    "reasoning_output_tokens": 238
+  }
+}

@@ -1,0 +1,52 @@
+test('nextBoundaryPreservesFeatureClassification', async () => {
+  for (const [reason, message] of [
+    ['network', '연결을 확인'],
+    ['configuration', '서비스 설정'],
+    ['invalid-response', '응답을 확인'],
+  ] as const) {
+    await draw(null);
+    vi.mocked(console.error).mockClear();
+    let broken = true;
+    const error = new FeatureError(reason);
+    error.message = 'SECRET_CLIENT_DETAIL';
+    function Page() {
+      if (broken) throw error;
+      return createElement('p', null, '정상 페이지');
+    }
+    function tree() {
+      const boundaryProps = {
+        pathname,
+        errorComponent: RouteError,
+        children: createElement(Page),
+      };
+      return createElement(
+        AppShell,
+        null,
+        createElement(ErrorBoundaryHandler, boundaryProps),
+      );
+    }
+    await draw(tree());
+    expect(
+      container.querySelector('main [role="alert"]')?.textContent,
+    ).toContain(message);
+    expect(console.error).toHaveBeenCalledWith('기능 오류:', reason);
+    expect(container.textContent).not.toContain('SECRET_CLIENT_DETAIL');
+    expect(container.querySelector('header')?.textContent).toContain('흉흉');
+    expect(container.querySelector('nav')?.textContent).toContain('목록');
+    broken = false;
+    const retry = container.querySelector('main button');
+    expect(retry).toBeInstanceOf(HTMLButtonElement);
+    await act(async () => (retry as HTMLButtonElement).click());
+    expect(container.textContent).toContain('정상 페이지');
+    expect(container.querySelector('[role="alert"]')).toBeNull();
+    broken = true;
+    await draw(tree());
+    expect(container.querySelector('[role="alert"]')).not.toBeNull();
+    broken = false;
+    pathname = '/search';
+    await draw(tree());
+    expect(container.textContent).toContain('정상 페이지');
+    expect(container.querySelector('[role="alert"]')).toBeNull();
+    pathname = '/incidents';
+  }
+});

@@ -1,0 +1,42 @@
+
+ RUN  v5.0.3 /Users/jeong-gyuhwan/규환/projects/saja-boyz-jinwoo-codex--map-viewport-persistence
+
+ ❯ src/features/map/ui/map-home/zz_sobaya_probe_qX2qMT.test.ts (1 test | 1 failed) 57ms
+   × mapRepeatedVisitsKeepLatestViewport 56ms
+
+ Test Files  1 failed (1)
+      Tests  1 failed (1)
+   Start at  17:21:32
+   Duration  599ms (environment 75%, tests 11%, import 10%, transform 4%, worker 1%)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/features/map/ui/map-home/zz_sobaya_probe_qX2qMT.test.ts > mapRepeatedVisitsKeepLatestViewport
+AssertionError: expected last "vi.fn()" call to have been called with [ { latitude: 33.4996, …(2) } ]
+
+- Expected
++ Received
+
+  [
+    {
+-     "latitude": 33.4996,
+-     "longitude": 126.5312,
+-     "zoom": 10,
++     "latitude": 37.5665,
++     "longitude": 126.978,
++     "zoom": 12,
+    },
+  ]
+
+ ❯ src/features/map/ui/map-home/zz_sobaya_probe_qX2qMT.test.ts:77:19
+     75|   await leave();
+     76|   await visit();
+     77|   expect(created).toHaveBeenLastCalledWith({ latitude: 33.4996, longit…
+       |                   ^
+     78|   await leave();
+     79|   const anotherClientId = 'another-client-id';
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+RED    mapRepeatedVisitsKeepLatestViewport  (fails: assertion/test failure; diagnostics above)

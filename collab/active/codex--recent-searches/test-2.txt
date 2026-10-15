@@ -1,0 +1,17 @@
+test('recentSearchesRecordExecutedKeywordAndDeduplicate', async () => {
+  localStorage.setItem(
+    storageKey,
+    JSON.stringify(['서교동 화재', '서울 & 화재', '서울 & 화재']),
+  );
+  await mount(['  서울 & 화재  ', '무시할 값']);
+  expect(stored()).toEqual(['서울 & 화재', '서교동 화재']);
+  expect(
+    new URL(String(request.mock.calls[0][0])).searchParams.get('keyword'),
+  ).toBe('서울 & 화재');
+  await mount('대형화재');
+  expect(stored()).toEqual(['대형화재', '서울 & 화재', '서교동 화재']);
+  await unmount();
+  await mount('   ');
+  expect(terms()).toEqual(['대형화재', '서울 & 화재', '서교동 화재']);
+  expect(request).toHaveBeenCalledTimes(2);
+});

@@ -1,0 +1,29 @@
+
+ RUN  v5.0.3 /Users/kangminkim/lunch/sobaya/apps/saja-boyz-jinwoo-codex--report-submission
+
+ ❯ src/app/report/zz_sobaya_probe_ZPVroS.test.ts (1 test | 1 failed) 24ms
+   × reportSubmissionPayload: trimmed fields Korean time and retained attachments are sent 24ms
+
+ Test Files  1 failed (1)
+      Tests  1 failed (1)
+   Start at  15:04:01
+   Duration  311ms (environment 70%, tests 10%, import 10%, transform 9%, worker 1%)
+
+npm notice run saja-boyz-jinwoo@0.1.0 npx
+npm notice run 'vitest' run src/app/report/zz_sobaya_probe_ZPVroS.test.ts -t ^reportSubmissionPayload: trimmed fields Korean time and retained attachments are sent$
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/app/report/zz_sobaya_probe_ZPVroS.test.ts > reportSubmissionPayload: trimmed fields Korean time and retained attachments are sent
+AssertionError: expected "vi.fn()" to be called 1 times, but got 0 times
+ ❯ src/app/report/zz_sobaya_probe_ZPVroS.test.ts:167:21
+    165|   await act(async () => remove.click());
+    166|   await checkInput();
+    167|   expect(fetchMock).toHaveBeenCalledTimes(1);
+       |                     ^
+    168|   const [url, init] = fetchMock.mock.calls[0];
+    169|   expect(String(url)).toBe('https://reports.example.test/reports');
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+RED    reportSubmissionPayload: trimmed fields Korean time and retained attachments are sent  (fails: assertion/test failure; diagnostics above)

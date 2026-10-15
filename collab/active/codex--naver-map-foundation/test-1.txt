@@ -1,0 +1,10 @@
+test('mapMissingKeyExplainsSetupWithoutSdkRequest', async () => {
+  await mount('');
+  expect(container.querySelector('[role="alert"]')?.textContent).toMatch(
+    /지도/,
+  );
+  expect(
+    document.querySelector('script[src*="oapi.map.naver.com"]'),
+  ).toBeNull();
+  expect(container.querySelector('[aria-label="주변 지도"]')).not.toBeNull();
+});

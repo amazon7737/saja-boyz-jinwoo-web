@@ -1,0 +1,13 @@
+"use client";
+import { useEffect, useState } from "react";
+import { FeatureError } from "@/components/errors/feature-error-boundary";
+export default function Fault({ reason }: { reason: "network" | "configuration" | "invalid-response" }) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  if (mounted && localStorage.getItem("pr5-fixed") !== "yes") {
+    const error = new FeatureError(reason);
+    error.message = "SECRET_CLIENT_DETAIL";
+    throw error;
+  }
+  return <p>정상 페이지 복구: {reason}</p>;
+}

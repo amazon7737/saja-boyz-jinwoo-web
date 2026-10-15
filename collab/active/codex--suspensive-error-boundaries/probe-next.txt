@@ -1,0 +1,31 @@
+
+ RUN  v5.0.3 /Users/jeong-gyuhwan/규환/projects/saja-boyz-jinwoo
+
+ ❯ src/components/errors/zz_sobaya_probe_RLwimH.test.ts (1 test | 1 failed) 9ms
+   × nextRouteErrorBridgesResetSafely 9ms
+
+ Test Files  1 failed (1)
+      Tests  1 failed (1)
+   Start at  13:00:30
+   Duration  371ms (environment 74%, import 15%, transform 7%, tests 3%, worker 1%)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/components/errors/zz_sobaya_probe_RLwimH.test.ts > nextRouteErrorBridgesResetSafely
+AssertionError: ../../app/error.tsx가 있어야 한다: expected undefined to be type of 'function'
+
+Expected: "function"
+Received: "undefined"
+
+ ❯ src/components/errors/zz_sobaya_probe_RLwimH.test.ts:59:37
+     57|     await draw(null);
+     58|     const load = modules[path];
+     59|     expect(load, `${path}가 있어야 한다`).toBeTypeOf('function');
+       |                                     ^
+     60|     const { default: ErrorView } = (await load()) as {
+     61|       default: ComponentType<{
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+RED    nextRouteErrorBridgesResetSafely  (fails: assertion/test failure; diagnostics above)

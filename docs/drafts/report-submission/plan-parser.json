@@ -1,0 +1,47 @@
+[
+  {
+    "name": "reportSubmissionFields",
+    "target": "src/app/report/report-form.test.ts",
+    "checked": false
+  },
+  {
+    "name": "reportSubmissionRequiredFields",
+    "target": "src/app/report/report-form.test.ts",
+    "checked": false
+  },
+  {
+    "name": "reportSubmissionTextLimits",
+    "target": "src/app/report/report-form.test.ts",
+    "checked": false
+  },
+  {
+    "name": "reportSubmissionPayload",
+    "target": "src/app/report/report-form.test.ts",
+    "checked": false
+  },
+  {
+    "name": "reportSubmissionPending",
+    "target": "src/app/report/report-form.test.ts",
+    "checked": false
+  },
+  {
+    "name": "reportSubmissionRetry",
+    "target": "src/app/report/report-form.test.ts",
+    "checked": false
+  },
+  {
+    "name": "reportSubmissionFailures",
+    "target": "src/app/report/report-form.test.ts",
+    "checked": false
+  },
+  {
+    "name": "reportSubmissionConfiguration",
+    "target": "src/app/report/report-form.test.ts",
+    "checked": false
+  },
+  {
+    "name": "reportSubmissionEditedRetry",
+    "target": "src/app/report/report-form.test.ts",
+    "checked": false
+  }
+]

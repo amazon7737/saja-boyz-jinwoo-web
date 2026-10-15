@@ -1,0 +1,10 @@
+COMMAND: node node_modules/typescript/bin/tsc --noEmit --incremental false
+EXIT: 0
+
+COMMAND: node node_modules/eslint/bin/eslint.js src/app/report/report-recovery.test.ts
+EXIT: 0
+
+COMMAND: node node_modules/prettier/bin/prettier.cjs --check src/app/report/report-recovery.test.ts
+EXIT: 0
+Checking formatting...
+All matched files use Prettier code style!

@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 48" role="img" aria-labelledby="title desc">
+  <title id="title">흉흉</title>
+  <desc id="desc">지역을 관측하는 원과 빨간 신호, 기하학적 흉흉 글자</desc>
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M33.3 13.7a16 16 0 1 0 3.7 17.8" stroke="#0f172a" stroke-width="3.2"/>
+    <path d="M29.7 17.1a10 10 0 1 0 2.3 10.8" stroke="#e8192c" stroke-opacity=".28" stroke-width="3.2"/>
+    <path d="M22 24l11.3-10.3" stroke="#e8192c" stroke-width="2.6"/>
+    <circle cx="33.3" cy="13.7" r="3.2" fill="#e8192c"/>
+    <g stroke="#0f172a" stroke-width="3.4">
+      <path d="M58 6h12M52 12h24M52 30h24M58 30v5M70 30v5"/>
+      <ellipse cx="64" cy="21" rx="8" ry="4.7"/>
+      <ellipse cx="64" cy="42" rx="9" ry="4.2"/>
+      <path d="M94 6h12M88 12h24M88 30h24M94 30v5M106 30v5"/>
+      <ellipse cx="100" cy="21" rx="8" ry="4.7"/>
+      <ellipse cx="100" cy="42" rx="9" ry="4.2"/>
+    </g>
+  </g>
+  <circle cx="22" cy="24" r="4.5" fill="#e8192c"/>
+</svg>

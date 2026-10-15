@@ -1,0 +1,37 @@
+test('reportSubmissionFields: labels and shared categories are available', async () => {
+  await renderReport();
+  expect(container.querySelector('h1')?.textContent).toContain('제보하기');
+  for (const name of fieldNames) {
+    const element = field(name);
+    expect(element.id).not.toBe('');
+    expect(
+      container
+        .querySelector(`label[for="${element.id}"]`)
+        ?.textContent?.trim(),
+    ).toBeTruthy();
+    expect(element.required).toBe(true);
+  }
+  const category = field('category');
+  assert(category instanceof HTMLSelectElement);
+  expect(
+    Array.from(category.options)
+      .filter((option) => option.value)
+      .map((option) => [option.value, option.textContent]),
+  ).toEqual(Object.entries(categoryLabels));
+  expect(field('occurredAt').getAttribute('type')).toBe('datetime-local');
+  expect(field('occurredAt').value).toBe('');
+  const fileInput = container.querySelector('input[type="file"]');
+  assert(fileInput instanceof HTMLInputElement);
+  expect(fileInput.multiple).toBe(true);
+  expect(fileInput.required).toBe(false);
+  expect(container.querySelector('form')?.noValidate).toBe(true);
+  expect(
+    container.querySelector('button[type="submit"]')?.textContent,
+  ).toContain('제보 접수');
+  expect(container.textContent).toContain('한국시간');
+  expect(container.textContent).toContain('비공개');
+  expect(
+    container.querySelector('a[aria-label="제보 닫기"]')?.getAttribute('href'),
+  ).toBe('/');
+  expect(fetchMock).not.toHaveBeenCalled();
+});

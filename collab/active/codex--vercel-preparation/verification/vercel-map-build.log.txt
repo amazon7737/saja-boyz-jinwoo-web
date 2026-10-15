@@ -1,0 +1,65 @@
+Vercel CLI 59.5.0 (Node.js 26.5.1)
+Fetching deployment "dpl_7Sj4jtRngvm2qZzuXHdsDhrAXrV6" in amazon7737s-projects
+2026-10-14T04:42:14.398Z  Running build in Washington, D.C., USA (East) – iad1
+2026-10-14T04:42:14.400Z  Build machine configuration: 2 cores, 8 GB
+2026-10-14T04:42:14.540Z  Cloning github.com/amazon7737/saja-boyz-jinwoo-web (Branch: dev, Commit: 20b9471)
+2026-10-14T04:42:15.190Z  Cloning completed: 650.000ms
+2026-10-14T04:42:15.684Z  Restored build cache from previous deployment (FoNCkNEuynjwDPY64TrPTeWxhgNJ)
+2026-10-14T04:42:16.273Z  Running "vercel build"
+2026-10-14T04:42:16.294Z  Vercel CLI 62.7.0
+2026-10-14T04:42:16.689Z  > Detected ENABLE_EXPERIMENTAL_COREPACK=1 and "pnpm@10.34.6" in package.json
+2026-10-14T04:42:16.863Z  Running "install" command: `pnpm install --frozen-lockfile`...
+2026-10-14T04:42:17.761Z  Lockfile is up to date, resolution step is skipped
+2026-10-14T04:42:17.944Z  Already up to date
+2026-10-14T04:42:18.195Z  
+2026-10-14T04:42:18.211Z  ╭ Warning ─────────────────────────────────────────────────────────────────────╮
+2026-10-14T04:42:18.211Z  │                                                                              │
+2026-10-14T04:42:18.211Z  │   Ignored build scripts: unrs-resolver@1.12.2.                               │
+2026-10-14T04:42:18.211Z  │   Run "pnpm approve-builds" to pick which dependencies should be allowed     │
+2026-10-14T04:42:18.211Z  │   to run scripts.                                                            │
+2026-10-14T04:42:18.211Z  │                                                                              │
+2026-10-14T04:42:18.212Z  ╰──────────────────────────────────────────────────────────────────────────────╯
+2026-10-14T04:42:18.217Z  Done in 1.2s using pnpm v10.34.6
+2026-10-14T04:42:18.232Z  Detected Next.js version: 16.3.8
+2026-10-14T04:42:18.233Z  Running "pnpm run build"
+2026-10-14T04:42:18.714Z  
+2026-10-14T04:42:18.714Z  > saja-boyz-jinwoo@0.1.0 build /vercel/path0
+2026-10-14T04:42:18.714Z  > next build
+2026-10-14T04:42:18.714Z  
+2026-10-14T04:42:19.390Z  ▲ Next.js 16.3.8 (Turbopack)
+2026-10-14T04:42:20.494Z  Applying modifyConfig from Vercel
+2026-10-14T04:42:20.496Z  ✓ Running next.config.ts took 1105ms
+2026-10-14T04:42:20.514Z  
+2026-10-14T04:42:20.553Z  Creating an optimized production build ...
+2026-10-14T04:42:22.678Z  ✓ Compiled successfully in 1244ms
+2026-10-14T04:42:22.681Z  Running TypeScript ...
+2026-10-14T04:42:25.414Z  Finished TypeScript in 2.7s ...
+2026-10-14T04:42:25.417Z  Collecting page data using 1 worker ...
+2026-10-14T04:42:26.194Z  Generating static pages using 1 worker (0/5) ...
+2026-10-14T04:42:26.461Z  Generating static pages using 1 worker (1/5)
+2026-10-14T04:42:26.464Z  Generating static pages using 1 worker (2/5)
+2026-10-14T04:42:26.465Z  Generating static pages using 1 worker (3/5)
+2026-10-14T04:42:26.465Z  ✓ Generating static pages using 1 worker (5/5) in 271ms
+2026-10-14T04:42:26.473Z  Finalizing page optimization ...
+2026-10-14T04:42:26.526Z  Running onBuildComplete from Vercel
+2026-10-14T04:42:26.646Z  
+2026-10-14T04:42:26.648Z  Route (app)
+2026-10-14T04:42:26.649Z  ┌ ○ /
+2026-10-14T04:42:26.649Z  ├ ○ /_not-found
+2026-10-14T04:42:26.649Z  ├ ƒ /incidents
+2026-10-14T04:42:26.649Z  ├ ƒ /incidents/[id]
+2026-10-14T04:42:26.649Z  ├ ○ /report
+2026-10-14T04:42:26.649Z  └ ƒ /search
+2026-10-14T04:42:26.650Z  
+2026-10-14T04:42:26.650Z  
+2026-10-14T04:42:26.650Z  ○  (Static)   prerendered as static content
+2026-10-14T04:42:26.650Z  ƒ  (Dynamic)  server-rendered on demand
+2026-10-14T04:42:26.650Z  
+2026-10-14T04:42:27.144Z  Build Completed in /vercel/output [10s]
+2026-10-14T04:42:27.169Z  Deploying outputs...
+2026-10-14T04:42:32.508Z  Deployment completed
+2026-10-14T04:42:32.513Z  Creating build cache...
+2026-10-14T04:42:44.197Z  Created build cache: 12s
+2026-10-14T04:42:44.198Z  Uploading build cache [155.78 MB]
+2026-10-14T04:42:46.541Z  Build cache uploaded: 2.343s
+status	● Ready

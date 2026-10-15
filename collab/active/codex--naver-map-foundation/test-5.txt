@@ -1,0 +1,22 @@
+test('mapLocationStartsOnClickAndMovesOnlyAfterSuccess', async () => {
+  await mount();
+  let success!: PositionCallback;
+  const request = vi.fn((callback: PositionCallback) => {
+    success = callback;
+  });
+  geolocation({ getCurrentPosition: request });
+  const fixture = await loaded();
+  expect(request).not.toHaveBeenCalled();
+  await act(async () => button('내 위치').click());
+  expect(request).toHaveBeenCalledTimes(1);
+  expect(button('내 위치').disabled).toBe(true);
+  await act(async () => button('내 위치').click());
+  expect(request).toHaveBeenCalledTimes(1);
+  const position = {
+    coords: { latitude: 37.5, longitude: 127.1, accuracy: 10 },
+  } as GeolocationPosition;
+  await act(async () => success(position));
+  expect(fixture.centers).toContainEqual([37.5, 127.1]);
+  expect(button('내 위치').disabled).toBe(false);
+  expect(fixture.markers).toHaveBeenCalled();
+});

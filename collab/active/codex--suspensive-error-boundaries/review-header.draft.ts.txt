@@ -1,0 +1,31 @@
+// file: src/components/errors/next-error-boundary.test.ts
+// @vitest-environment jsdom
+import { afterEach, beforeEach, expect, test, vi } from 'vitest';
+import { act, createElement } from 'react';
+import { createRoot, type Root } from 'react-dom/client';
+import { ErrorBoundaryHandler } from 'next/dist/client/components/error-boundary';
+import { AppShell } from '../layout/app-shell';
+import { FeatureError } from './feature-error-boundary';
+import RouteError from '../../app/error';
+
+let pathname = '/incidents';
+vi.mock('next/navigation', () => ({ usePathname: () => pathname }));
+let container: HTMLDivElement;
+let root: Root;
+beforeEach(() => {
+  pathname = '/incidents';
+  vi.stubGlobal('IS_REACT_ACT_ENVIRONMENT', true);
+  container = document.createElement('div');
+  document.body.append(container);
+  root = createRoot(container);
+  vi.spyOn(console, 'error').mockImplementation(() => {});
+});
+afterEach(async () => {
+  await act(async () => root.unmount());
+  container.remove();
+  vi.restoreAllMocks();
+  vi.unstubAllGlobals();
+});
+async function draw(node: ReturnType<typeof createElement> | null) {
+  await act(async () => root.render(node));
+}

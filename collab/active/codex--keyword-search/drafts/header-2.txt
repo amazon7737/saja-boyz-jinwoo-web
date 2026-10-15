@@ -1,0 +1,12 @@
+// file: src/components/layout/app-shell/search-layout.test.ts
+// @vitest-environment jsdom
+import { afterEach, assert, expect, test, vi } from 'vitest';
+import { act, createElement } from 'react';
+import { createRoot } from 'react-dom/client';
+import { AppShell } from './app-shell';
+let pathname = '/search';
+vi.mock('next/navigation', () => ({ usePathname: () => pathname }));
+afterEach(() => {
+  pathname = '/search';
+  vi.unstubAllGlobals();
+});

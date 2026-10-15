@@ -1,0 +1,40 @@
+{
+  "baseline": "3b581746b16bee0fe45d5b5bcecb6b9da842bbcc",
+  "status": "complete",
+  "review": {
+    "head": "22e9220371c886ff931ff856bd779acfe0a2a299",
+    "worker": "astra",
+    "summary": "3b58174..22e9220 독립 리뷰에서 actionable finding 없음. src/features/incident-list/incident-list.tsx:11–20,99–113은 spec.md:31의 ID 예외·정보 보존·비링크 요구를 충족합니다. src/features/incident-list/incident-list.test.ts:137–151은 승인된 테스트와 일치하며 기존 테스트·지원 코드·정책은 보존됐습니다. 범위 이탈도 없습니다.",
+    "at": 1790949245
+  },
+  "receipts": [
+    {
+      "entry": "incidentUnsafeIds",
+      "red": {
+        "status": "red",
+        "failed": [
+          "incidentUnsafeIds"
+        ],
+        "output": "JSON report written to /var/folders/wv/lv2qb3z92074bwd0pncsq3100000gn/T/tmp.3G9hh2BcZr/vitest.json\n협업: components/ui/button.tsx 를 @solp(feat--checkout) 도 바꾸는 중\n"
+      },
+      "green": [
+        "harness_hooks",
+        "harness_loop",
+        "harness_sobaya",
+        "incidentCards",
+        "incidentEmpty",
+        "incidentImages",
+        "incidentLoading",
+        "incidentTimeBoundaries",
+        "incidentUnsafeIds",
+        "빈 검색은 전체를 반환하고 원본 순서를 유지한다",
+        "시작 시각을 포함하고 이전 사건은 제외한다",
+        "잘못된 날짜를 조용히 무시하지 않는다",
+        "주소 검색과 카테고리·상태를 함께 적용한다"
+      ],
+      "summary": "incidentUnsafeIds 구현 완료. 잘못된 ID는 카드 정보를 유지하고 링크 대신 ‘상세 정보 없음’을 표시합니다.",
+      "head": "db70d59a244152a6d71a9229e5c97a18e2a85b31",
+      "before": "3b581746b16bee0fe45d5b5bcecb6b9da842bbcc"
+    }
+  ]
+}

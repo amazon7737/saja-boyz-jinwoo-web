@@ -1,0 +1,47 @@
+// Temporary independent diagnostics, not an approved test baseline.
+export const validCases = [
+  ['RFC API timestamp', 'Thu, 17 Sep 2026 09:00:00 +0900', '2026-09-17T00:00:00.000Z'],
+  ['RFC future 2099', 'Fri, 18 Sep 2099 12:00:00 +0900', '2099-09-18T03:00:00.000Z'],
+  ['RFC negative offset crosses year', 'Thu, 31 Dec 2026 23:30:00 -1200', '2027-01-01T11:30:00.000Z'],
+  ['RFC fractional-hour offset', 'Wed, 30 Sep 2026 00:15:00 +0545', '2026-09-29T18:30:00.000Z'],
+  ['ISO Z', '2026-09-17T09:00:00Z', '2026-09-17T09:00:00.000Z'],
+  ['ISO numeric offset', '2026-09-17T09:00:00+09:00', '2026-09-17T00:00:00.000Z'],
+  ['ISO positive offset crosses year', '2026-01-01T00:30:00+14:00', '2025-12-31T10:30:00.000Z'],
+  ['ISO negative offset crosses year', '2026-12-31T23:30:00-12:00', '2027-01-01T11:30:00.000Z'],
+  ['ISO positive offset crosses month', '2026-03-01T00:30:00+14:00', '2026-02-28T10:30:00.000Z'],
+  ['ISO leap day crosses month', '2024-02-29T23:30:00-05:00', '2024-03-01T04:30:00.000Z'],
+  ['Gregorian century leap year', '2000-02-29T09:00:00+09:00', '2000-02-29T00:00:00.000Z'],
+  ['ISO date only', '2026-09-17', '2026-09-17T00:00:00.000Z'],
+  ['ISO final second and millisecond', '2026-09-17T23:59:59.123Z', '2026-09-17T23:59:59.123Z'],
+];
+
+export const invalidCases = [
+  ['RFC suffix junk', 'Thu, 17 Sep 2026 09:00:00 +0900 junk'],
+  ['RFC date suffix junk', 'Thu, 17 Sep 2026 junk'],
+  ['ISO suffix junk', '2026-09-17T09:00:00Z junk'],
+  ['RFC offset minute 60', 'Thu, 17 Sep 2026 09:00:00 +0960'],
+  ['RFC offset hour 24', 'Thu, 17 Sep 2026 09:00:00 +2400'],
+  ['RFC negative bad offset minute', 'Thu, 17 Sep 2026 09:00:00 -1260'],
+  ['ISO offset minute 60', '2026-09-17T09:00:00+09:60'],
+  ['ISO offset hour 24', '2026-09-17T09:00:00+24:00'],
+  ['RFC hour 25', 'Thu, 17 Sep 2026 25:00:00 +0900'],
+  ['RFC minute 60', 'Thu, 17 Sep 2026 09:60:00 +0900'],
+  ['RFC second 60', 'Thu, 17 Sep 2026 09:00:60 +0900'],
+  ['ISO hour 25', '2026-09-17T25:00:00Z'],
+  ['ISO minute 60', '2026-09-17T09:60:00Z'],
+  ['ISO second 60', '2026-09-17T09:00:60Z'],
+  ['ISO non-midnight hour 24', '2026-09-17T24:00:01Z'],
+  ['ISO non-leap February 30', '2026-02-30'],
+  ['RFC non-leap February 30', 'Mon, 30 Feb 2026 09:00:00 +0900'],
+  ['Non-leap century 1900', '1900-02-29T09:00:00Z'],
+  ['Non-leap century 2100', '2100-02-29T09:00:00Z'],
+  ['Month 13', '2026-13-01T09:00:00Z'],
+  ['Day zero', '2026-09-00T09:00:00Z'],
+  ['April day 31', '2026-04-31T09:00:00Z'],
+];
+
+// Existing parser accepted exact ISO end-of-day midnight. Report separately
+// rather than treating this compatibility observation as a newly approved test.
+export const compatibilityCases = [
+  ['ISO exact end-of-day midnight', '2026-09-17T24:00:00Z', '2026-09-18T00:00:00.000Z'],
+];

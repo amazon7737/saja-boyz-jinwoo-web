@@ -1,0 +1,22 @@
+{
+  "checkedAt": "2026-10-14",
+  "id": "dpl_FoNCkNEuynjwDPY64TrPTeWxhgNJ",
+  "name": "saja-boyz-jinwoo",
+  "url": "saja-boyz-jinwoo-j7wxspevy-amazon7737s-projects.vercel.app",
+  "readyState": "READY",
+  "target": "production",
+  "alias": [
+    "saja-boyz-jinwoo.vercel.app",
+    "saja-boyz-jinwoo-amazon7737s-projects.vercel.app"
+  ],
+  "source": "cli",
+  "projectId": "prj_kxZjBPwFMza7jiVdFuP9nBrT43Pt",
+  "gitSource": null,
+  "meta": {
+    "githubCommitSha": "20b9471d839fa2b96ca6c1c255890faf27d8367c",
+    "githubCommitRef": "dev",
+    "githubRepo": "saja-boyz-jinwoo-web",
+    "githubOrg": "amazon7737"
+  },
+  "nodeVersion": "24.x"
+}

@@ -1,0 +1,14 @@
+test('mapRepeatedVisitsKeepLatestViewport', async () => {
+  await visit();
+  current = { latitude: 35.1796, longitude: 129.0756, zoom: 15 };
+  await leave();
+  await visit();
+  current = { latitude: 33.4996, longitude: 126.5312, zoom: 10 };
+  await leave();
+  await visit();
+  expect(created).toHaveBeenLastCalledWith({ latitude: 33.4996, longitude: 126.5312, zoom: 10 });
+  await leave();
+  const anotherClientId = 'another-client-id';
+  await visit(anotherClientId);
+  expect(created).toHaveBeenLastCalledWith({ latitude: 37.5665, longitude: 126.978, zoom: 12 });
+});

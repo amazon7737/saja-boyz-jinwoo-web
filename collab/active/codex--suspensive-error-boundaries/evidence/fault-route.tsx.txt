@@ -1,0 +1,7 @@
+export const dynamic = "force-dynamic";
+export default async function RouteFault() {
+ const response = await fetch("http://127.0.0.1:39076/__fixture/status", {cache:"no-store"});
+ const status = await response.json();
+ if (status.mode === "503") throw new Error("QA_SECRET_SERVER");
+ return <p>서버 오류 복구</p>;
+}

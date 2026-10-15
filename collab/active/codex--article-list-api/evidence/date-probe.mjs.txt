@@ -1,0 +1,79 @@
+import { readFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
+import vm from 'node:vm';
+import { validCases, invalidCases, compatibilityCases } from './cases.mjs';
+
+if (!process.argv[2]) {
+  throw new Error('Pass the completed candidate source copy explicitly.');
+}
+const app = '/Users/kangminkim/lunch/sobaya/apps/saja-boyz-jinwoo-codex--article-list-api';
+const require = createRequire(`${app}/package.json`);
+const ts = require('typescript');
+const { createElement } = require('react');
+const { renderToStaticMarkup } = require('react-dom/server');
+const source = readFileSync(process.argv[2], 'utf8');
+const result = ts.transpileModule(source, {
+  compilerOptions: {
+    target: ts.ScriptTarget.ES2022,
+    module: ts.ModuleKind.CommonJS,
+    jsx: ts.JsxEmit.ReactJSX,
+    esModuleInterop: true,
+  },
+});
+const module = { exports: {} };
+vm.runInNewContext(result.outputText, {
+  module,
+  exports: module.exports,
+  require: (name) => name.endsWith('.module.css') ? {} : require(name),
+  URL, Date, Intl, console,
+}, { filename: process.argv[2] });
+const { ArticleList } = module.exports;
+
+function inspect(value) {
+  const html = renderToStaticMarkup(createElement(ArticleList, {
+    apiOrigin: 'https://news.example.invalid',
+    items: [{
+      article_id: 'a'.repeat(64),
+      image_status: 'disabled',
+      image_url: null,
+      article: {
+        title: '진단용 기사',
+        description: '진단용 요약',
+        originallink: 'https://example.invalid/article',
+        link: 'https://example.invalid/article',
+        pubDate: value,
+      },
+    }],
+  }));
+  return {
+    iso: html.match(/<time\b[^>]*dateTime="([^"]+)"/i)?.[1] ?? null,
+    fallback: html.includes('발행 시각 미확인'),
+    card: html.includes('<article'),
+  };
+}
+
+const failures = [];
+for (const [name, input, expected] of validCases) {
+  const actual = inspect(input);
+  if (actual.iso !== expected || actual.fallback || !actual.card) {
+    failures.push({ name, input, expected, actual });
+  }
+}
+for (const [name, input] of invalidCases) {
+  const actual = inspect(input);
+  if (actual.iso !== null || !actual.fallback || !actual.card) {
+    failures.push({ name, input, expected: 'date fallback without time', actual });
+  }
+}
+const compatibility = compatibilityCases.map(([name, input, expected]) => ({
+  name, input, expected, actual: inspect(input),
+}));
+console.log(JSON.stringify({
+  candidate: process.argv[2],
+  validCases: validCases.length,
+  invalidCases: invalidCases.length,
+  failures,
+  compatibility,
+  officialTestsRun: false,
+}, null, 2));
+if (failures.length) process.exitCode = 1;

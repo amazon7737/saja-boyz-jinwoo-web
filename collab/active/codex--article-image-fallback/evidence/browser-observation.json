@@ -1,0 +1,38 @@
+{
+  "observedAt": "2026-10-05T02:10:27.454Z",
+  "sourceHead": "fec482341f83561706b1cf176bb6d1d66aa81463",
+  "repositoryHead": "7a2672a6941343b5d96546b9ced3546f97393fa5",
+  "data": "synthetic local fixture",
+  "alerts": [],
+  "cards": [
+    {
+      "caption": "AI 생성 이미지",
+      "image": [
+        {
+          "complete": true,
+          "height": 80,
+          "naturalHeight": 0,
+          "naturalWidth": 0,
+          "src": "http://127.0.0.1:39072/images/6ef0a29fc6bc91e5f7e265a9b964278903e06157da1d944b6eea54e1e0fa9338.jpg",
+          "width": 80
+        }
+      ],
+      "sourceHref": "http://127.0.0.1:39072/source/a",
+      "text": "AI 생성 이미지\n[합성 샘플 A] 교통 안내 & 점검\n\n브라우저 검증용 가상 기사입니다. 원본 이미지 배치와 \"기사 발행\" 문구를 확인합니다.\n\n기사 발행 2026-10-04 09:00 KST\n\n기사 원문",
+      "time": "2026-10-04T00:00:00.000Z",
+      "title": "[합성 샘플 A] 교통 안내 & 점검"
+    },
+    {
+      "image": [],
+      "sourceHref": "http://127.0.0.1:39072/source/b",
+      "text": "이미지 없음\n[합성 샘플 B] 이미지 없는 기사\n\n실제 뉴스가 아닌 합성 데이터입니다. 이미지가 비활성화된 카드도 제목과 발행 시각을 보존합니다.\n\n기사 발행 2026-10-03 18:30 KST\n\n기사 원문",
+      "time": "2026-10-03T09:30:00.000Z",
+      "title": "[합성 샘플 B] 이미지 없는 기사"
+    }
+  ],
+  "clientWidth": 393,
+  "height": 852,
+  "scrollWidth": 393,
+  "url": "http://127.0.0.1:3004/incidents",
+  "width": 393
+}

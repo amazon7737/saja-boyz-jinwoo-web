@@ -1,5 +1,26 @@
-:root {
-  --color-background: #f7f9fc;
+@layer theme, base, components, utilities;
+@import 'tailwindcss/theme.css' layer(theme);
+@import 'tailwindcss/utilities.css' layer(utilities);
+
+@font-face {
+  font-family: 'Inter';
+  src: url('/fonts/InterVariable.woff2') format('woff2');
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Pretendard';
+  src: url('/fonts/PretendardVariable.woff2') format('woff2');
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+}
+
+/* Preserve the existing browser defaults while adopting Tailwind utilities. */
+@theme static {
+  --color-background: #f8fafc;
   --color-surface: #fff;
   --color-floating: rgb(255 255 255 / 88%);
   --color-text: #0f172a;
@@ -12,116 +33,29 @@
   --radius-pill: 28px;
   --shadow-floating: 0 8px 24px rgb(0 0 0 / 7%);
 }
-* {
-  box-sizing: border-box;
-}
-body {
-  margin: 0;
-  color: var(--color-text);
-  background: var(--color-background);
-  font-family: 'Pretendard', 'Inter', system-ui, sans-serif;
-}
-a {
-  color: inherit;
-  text-decoration: none;
-}
-button,
-input,
-textarea {
-  font: inherit;
-}
-:focus-visible {
-  outline: 3px solid var(--color-brand);
-  outline-offset: 4px;
-}
-.app-shell {
-  max-width: 640px;
-  min-height: 100dvh;
-  margin: auto;
-  padding: 24px 16px 110px;
-}
-.app-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 16px;
-  background: var(--color-floating);
-  border-radius: 16px;
-  box-shadow: var(--shadow-floating);
-}
-.brand {
-  font-size: 20px;
-  font-weight: 800;
-}
-.brand::before {
-  content: '';
-  display: inline-block;
-  width: 8px;
-  height: 8px;
-  margin-right: 8px;
-  border-radius: 50%;
-  background: var(--color-brand);
-}
-.app-header > a:last-child {
-  color: var(--color-muted);
-  font-size: 14px;
-}
-.foundation-panel {
-  margin-top: 24px;
-  padding: 24px;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-card);
-}
-h1 {
-  margin: 0 0 12px;
-  font-size: 24px;
-  line-height: 1.4;
-}
-p {
-  color: var(--color-muted);
-  line-height: 1.7;
-}
-.eyebrow {
-  font-size: 12px;
-  color: var(--color-brand);
-  font-weight: 700;
-}
-.route-links {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 24px;
-}
-.route-links a {
-  padding: 10px 14px;
-  background: var(--color-background);
-  border: 1px solid var(--color-border);
-  border-radius: 12px;
-}
-.bottom-nav {
-  position: fixed;
-  bottom: max(20px, env(safe-area-inset-bottom));
-  left: 50%;
-  transform: translateX(-50%);
-  width: min(calc(100% - 32px), 608px);
-  display: flex;
-  align-items: center;
-  justify-content: space-around;
-  padding: 12px;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-pill);
-  background: var(--color-floating);
-  backdrop-filter: blur(20px);
-  box-shadow: var(--shadow-floating);
-}
-.bottom-nav a {
-  padding: 12px 16px;
-  font-size: 14px;
-  font-weight: 700;
-}
-.bottom-nav .report-link {
-  color: white;
-  background: var(--color-brand);
-  border-radius: 24px;
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    margin: 0;
+    color: var(--color-text);
+    background: var(--color-background);
+    font-family: 'Inter', 'Pretendard', system-ui, sans-serif;
+    line-height: 1.5;
+  }
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+  button,
+  input,
+  textarea,
+  select {
+    font: inherit;
+  }
+  :focus-visible {
+    outline: 3px solid var(--color-brand);
+    outline-offset: 4px;
+  }
 }

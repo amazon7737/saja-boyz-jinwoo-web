@@ -1,0 +1,6 @@
+cba41b5d022a425bc4f8eb41a2c6bf1d1d77cf61c457faef8f8d0beae65befce  src/app/incidents/page.tsx
+cb4a436e1aae171bab8d43e463612ff4bad166e01524742276fb9f18b57540f3  src/app/incidents/loading.tsx
+de34db0068f868ab4f6abcc2235aeeaef361118433e19c077e5a6385a0329668  src/features/article-list/article-list.tsx
+be0dc4d0ca0f710195433ff7c2957838798b702e34aa60ec29accf4b429d29ea  src/features/article-list/article-list.module.css
+86933a4140b832416d18f07af7c40b4977f5f0563698f68d0936b5f1f5843f66  src/app/globals.css
+73b8d0892676be2873eebbab921f9189067a595db1935f299efc96f531f1b654  src/components/layout/app-shell.tsx

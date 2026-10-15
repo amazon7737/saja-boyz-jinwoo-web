@@ -1,0 +1,14 @@
+{
+  "head": "d974e9b34909e9f806fb9d39a5b76ecfdf185ccd",
+  "worker": "astra",
+  "summary": "HEAD d974e9b의 전체 diff를 독립 검토했으며 actionable finding은 없습니다. detail-navigation.tsx:5–28은 기존 탐색 마크업·스타일·접근성 이름과 고정 /incidents·/ 링크를 보존합니다. page.tsx:83–95,113에서 오류·정상이 공유하며 재시도를 유지합니다. page.tsx:40–81의 API·5초 timeout·404·ID 검증과 :114–146의 콘텐츠·이미지·공유는 변경되지 않았습니다. app-shell.tsx:14–32의 전역 탐색 숨김도 유지됩니다. article-detail-error-navigation.test.ts:1–122는 승인된 코드 블록과 정확히 일치하며 6종 오류·복귀·재시도·탐색 중복 방지를 검사합니다. 기존 테스트·helpers·fixtures 변경은 없으며 failed-test.md:57 변경은 런타임 체크포인트 표시뿐입니다.",
+  "at": 1791981945,
+  "baseline": "3568b013b45f4ac53512c72fe98491c24ca01f9c",
+  "receipts": [
+    {
+      "entry": "articleDetailErrorsKeepExitNavigationAndRetry",
+      "head": "d974e9b34909e9f806fb9d39a5b76ecfdf185ccd",
+      "executed": 102
+    }
+  ]
+}

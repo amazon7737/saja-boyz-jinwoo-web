@@ -1,0 +1,34 @@
+test('searchDistinguishesEmptyFailureAndLoading', async () => {
+  mock.mockResolvedValueOnce(Response.json({ total: 0, items: [] }));
+  const empty = await renderSearch('화재');
+  const status = empty.querySelector('[role="status"]');
+  assert(status);
+  expect(status.textContent).toContain(
+    '검색 결과가 없어요',
+  );
+  expect(empty.querySelector('[role="alert"]')).toBeNull();
+  mock.mockRejectedValueOnce(new Error('PRIVATE_SERVER_DETAIL'));
+  const failed = await renderSearch('서울 & 화재');
+  const alert = failed.querySelector('[role="alert"]');
+  assert(alert);
+  expect(alert.textContent).toContain('검색 결과를 불러오지 못했어요');
+  expect(failed.textContent).not.toContain('PRIVATE_SERVER_DETAIL');
+  const retry = Array.from(alert.querySelectorAll('a')).find((a) =>
+    a.textContent?.includes('다시 시도'),
+  );
+  assert(retry);
+  const url = new URL(
+    retry.getAttribute('href') ?? '',
+    'https://app.example.invalid',
+  );
+  expect(url.pathname).toBe('/search');
+  expect(url.searchParams.get('q')).toBe('서울 & 화재');
+  const load = loadingModules['./loading.tsx'];
+  assert(load);
+  const module = (await load()) as { default: ComponentType };
+  const loading = document.createElement('div');
+  loading.innerHTML = renderToStaticMarkup(createElement(module.default));
+  expect(
+    loading.querySelector('[role="status"][aria-busy="true"]'),
+  ).not.toBeNull();
+});

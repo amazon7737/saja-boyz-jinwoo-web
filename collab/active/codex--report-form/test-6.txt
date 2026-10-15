@@ -1,0 +1,28 @@
+test('reportLocalConfirmation: valid input is retained without claiming receipt', async () => {
+  const storageWrite = vi.spyOn(Storage.prototype, 'setItem');
+  await renderReport();
+  await fillValid();
+  await changeField(
+    'description',
+    '<img src=x onerror=alert(1)> 사용자가 적은 내용',
+  );
+  await checkInput();
+  const status = container.querySelector('[role="status"]');
+  assert(status);
+  expect(status.textContent).toContain('입력 확인 완료');
+  expect(status.textContent).toContain('입력한 내용은 전송되지 않았어요');
+  expect(container.textContent).not.toMatch(/접수 완료|접수번호/);
+  expect(field('description').value).toBe(
+    '<img src=x onerror=alert(1)> 사용자가 적은 내용',
+  );
+  expect(field('category').value).toBe('society');
+  expect(field('occurredAt').value).toBe('2026-10-12T09:30');
+  expect(container.querySelector('img[src="x"], [onerror]')).toBeNull();
+  expect(fetchMock).not.toHaveBeenCalled();
+  expect(storageWrite).not.toHaveBeenCalled();
+  await changeField('title', '');
+  await checkInput();
+  expectFieldError('title', '필수 항목이에요');
+  expect(container.textContent).not.toContain('입력 확인 완료');
+  expect(field('description').value).toContain('사용자가 적은 내용');
+});

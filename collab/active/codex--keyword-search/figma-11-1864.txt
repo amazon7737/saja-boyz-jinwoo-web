@@ -1,0 +1,166 @@
+const assetPathPrefix = "https://www.figma.com/api/mcp/asset/c2c7b85d-01a6-44c0-9414-15878d53986e";
+const imgIosSignal = `${assetPathPrefix}/0cce4.svg`;
+const imgIosWifiSignal = `${assetPathPrefix}/1148f.svg`;
+const imgIosBatteryFull = `${assetPathPrefix}/47253.svg`;
+const imgMapPin = `${assetPathPrefix}/782e6.svg`;
+
+export default function ScreenSearchTyping() {
+  return (
+    <div className="bg-[#f8fafc] content-stretch flex flex-col items-start justify-between relative size-full" data-node-id="11:1864" data-name="screen-search-typing">
+      <div className="content-stretch flex flex-col gap-[20px] items-start relative shrink-0 w-full" data-node-id="11:1865" data-name="typing-content">
+        <div className="content-stretch flex items-center justify-between pb-[8px] pt-[12px] px-[24px] relative shrink-0 w-full" data-node-id="11:1866" data-name="status-bar">
+          <p className="[word-break:break-word] font-['Inter:Semi_Bold'] font-semibold leading-[normal] not-italic relative shrink-0 text-[#0f172a] text-[14px] whitespace-nowrap" data-node-id="11:1867">
+            9:41
+          </p>
+          <div className="content-stretch flex gap-[6px] items-center relative shrink-0" data-node-id="11:1868" data-name="status-icons">
+            <div className="h-[11px] relative shrink-0 w-[17px]" data-node-id="11:1869" data-name="ios-signal">
+              <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgIosSignal} />
+            </div>
+            <div className="h-[11px] relative shrink-0 w-[15px]" data-node-id="11:1871" data-name="ios-wifi-signal">
+              <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgIosWifiSignal} />
+            </div>
+            <div className="h-[12px] relative shrink-0 w-[25px]" data-node-id="11:1873" data-name="ios-battery-full">
+              <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgIosBatteryFull} />
+            </div>
+          </div>
+        </div>
+        <div className="content-stretch flex gap-[12px] items-center px-[16px] relative shrink-0 w-full" data-node-id="11:1875" data-name="search-bar-header">
+          <div className="bg-white border border-[#e2e8f0] border-solid content-stretch drop-shadow-[0px_4px_8px_rgba(0,0,0,0.05)] flex items-center justify-center relative rounded-[12px] shrink-0 size-[36px]" data-node-id="11:1876" data-name="back-btn">
+            <p className="[word-break:break-word] font-['Inter:Bold'] font-bold leading-[normal] not-italic relative shrink-0 text-[#0f172a] text-[14px] whitespace-nowrap" data-node-id="11:1877">
+              ←
+            </p>
+          </div>
+          <div className="bg-white border-[#e8192c] border-[1.5px] border-solid content-stretch drop-shadow-[0px_4px_8px_rgba(0,0,0,0.05)] flex flex-[1_0_0] gap-[8px] items-center min-w-px px-[14px] py-[10px] relative rounded-[14px]" data-node-id="11:1878" data-name="search-input-field">
+            <p className="[word-break:break-word] font-['Inter:Regular'] font-normal leading-[normal] not-italic relative shrink-0 text-[#64748b] text-[14px] whitespace-nowrap" data-node-id="11:1879">
+              🔍
+            </p>
+            <div className="content-stretch flex flex-[1_0_0] gap-[2px] items-center min-w-px relative" data-node-id="11:1880" data-name="Frame">
+              <p className="[word-break:break-word] font-['Inter:Semi_Bold'] font-semibold leading-[normal] not-italic relative shrink-0 text-[#0f172a] text-[14px] whitespace-nowrap" data-node-id="11:1881">
+                서울 화재
+              </p>
+              <div className="bg-[#e8192c] h-[16px] relative shrink-0 w-[2px]" data-node-id="11:1882" data-name="Rectangle" />
+            </div>
+            <p className="[word-break:break-word] font-['Inter:Regular'] font-normal leading-[normal] not-italic relative shrink-0 text-[#94a3b8] text-[14px] whitespace-nowrap" data-node-id="11:1883">
+              ✕
+            </p>
+          </div>
+        </div>
+        <div className="content-stretch flex flex-col gap-[12px] items-start px-[16px] relative shrink-0 w-full" data-node-id="11:1884" data-name="matches-section">
+          <p className="[word-break:break-word] font-['Inter:Bold'] font-bold leading-[normal] not-italic relative shrink-0 text-[#64748b] text-[12px] whitespace-nowrap" data-node-id="11:1885">
+            DATABASE MATCHES (3)
+          </p>
+          <div className="content-stretch flex flex-col items-start relative shrink-0 w-full" data-node-id="11:1886" data-name="matches-list">
+            <div className="bg-white border border-[#e2e8f0] border-solid content-stretch drop-shadow-[0px_4px_8px_rgba(0,0,0,0.05)] flex gap-[12px] items-start p-[14px] relative rounded-[12px] shrink-0 w-full" data-node-id="11:1887" data-name="match-address">
+              <div className="bg-[#e0f2fe] content-stretch flex items-center justify-center relative rounded-[6px] shrink-0 size-[28px]" data-node-id="11:1888" data-name="Frame">
+                <p className="[word-break:break-word] font-['Inter:Regular'] font-normal leading-[normal] not-italic relative shrink-0 text-[14px] text-black whitespace-nowrap" data-node-id="11:1889">
+                  📍
+                </p>
+              </div>
+              <div className="[word-break:break-word] content-stretch flex flex-[1_0_0] flex-col gap-[2px] items-start min-w-px not-italic relative" data-node-id="11:1890" data-name="Frame">
+                <p className="font-['Inter:Bold'] font-bold leading-[0] relative shrink-0 text-[#0f172a] text-[14px] w-full" data-node-id="11:1891">
+                  <span className="leading-[normal]">{`서울 `}</span>
+                  <span className="leading-[normal] text-[#e8192c]">화재</span>
+                  <span className="leading-[normal]">진압 소방서</span>
+                </p>
+                <p className="font-['Inter:Regular'] font-normal leading-[normal] relative shrink-0 text-[#64748b] text-[11px] w-full" data-node-id="11:1892">
+                  서울특별시 중구 소방로 12
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="content-stretch flex flex-col gap-[12px] items-start px-[16px] relative shrink-0 w-full" data-node-id="34:3149" data-name="matches-section">
+          <p className="[word-break:break-word] font-['Inter:Bold'] font-bold leading-[normal] not-italic relative shrink-0 text-[#64748b] text-[12px] whitespace-nowrap" data-node-id="34:3150">
+            사건
+          </p>
+          <div className="content-stretch flex flex-col gap-[8px] items-start relative shrink-0 w-full" data-node-id="34:3151" data-name="matches-list">
+            <div className="bg-white border border-[#e2e8f0] border-solid content-stretch drop-shadow-[0px_4px_8px_rgba(0,0,0,0.05)] flex flex-col gap-[8px] items-start p-[14px] relative rounded-[12px] shrink-0 w-full" data-node-id="34:3158" data-name="match-incident-active">
+              <div className="content-stretch flex gap-[4px] items-center relative shrink-0" data-node-id="34:3159" data-name="badge-wrapper">
+                <div className="bg-[#f1f5f9] border border-[#e2e8f0] border-solid content-stretch flex items-start px-[6px] py-[2px] relative rounded-[4px] shrink-0" data-node-id="34:3160" data-name="Frame">
+                  <p className="[word-break:break-word] font-['Inter:Semi_Bold'] font-semibold leading-[normal] not-italic relative shrink-0 text-[#64748b] text-[10px] whitespace-nowrap" data-node-id="34:3161">
+                    소방
+                  </p>
+                </div>
+                <div className="bg-[rgba(255,74,90,0.08)] border border-[rgba(255,74,90,0.19)] border-solid content-stretch flex items-start px-[6px] py-[2px] relative rounded-[4px] shrink-0" data-node-id="34:3162" data-name="Frame">
+                  <p className="[word-break:break-word] font-['Inter:Bold'] font-bold leading-[normal] not-italic relative shrink-0 text-[#ff4a5a] text-[10px] whitespace-nowrap" data-node-id="34:3163">
+                    진행 중
+                  </p>
+                </div>
+              </div>
+              <div className="[word-break:break-word] content-stretch flex flex-col gap-[2px] items-start not-italic relative shrink-0 w-full" data-node-id="34:3164" data-name="Frame">
+                <p className="font-['Inter:Bold'] font-bold leading-[0] relative shrink-0 text-[#0f172a] text-[14px] w-full" data-node-id="34:3165">
+                  <span className="leading-[normal]">{`서울 마포구 서교동 상가 `}</span>
+                  <span className="leading-[normal] text-[#e8192c]">화재</span>
+                </p>
+                <p className="font-['Inter:Regular'] font-normal leading-[normal] relative shrink-0 text-[#64748b] text-[11px] w-full" data-node-id="34:3166">
+                  서울 마포구 서교동 365-2 · 10분 전 발생
+                </p>
+              </div>
+            </div>
+            <div className="bg-white border border-[#e2e8f0] border-solid content-stretch drop-shadow-[0px_4px_8px_rgba(0,0,0,0.05)] flex flex-col gap-[8px] items-start p-[14px] relative rounded-[12px] shrink-0 w-full" data-node-id="34:3167" data-name="match-incident-ended">
+              <div className="content-stretch flex gap-[4px] items-center relative shrink-0" data-node-id="34:3168" data-name="badge-wrapper">
+                <div className="bg-[#f1f5f9] border border-[#e2e8f0] border-solid content-stretch flex items-start px-[6px] py-[2px] relative rounded-[4px] shrink-0" data-node-id="34:3169" data-name="Frame">
+                  <p className="[word-break:break-word] font-['Inter:Semi_Bold'] font-semibold leading-[normal] not-italic relative shrink-0 text-[#64748b] text-[10px] whitespace-nowrap" data-node-id="34:3170">
+                    산림
+                  </p>
+                </div>
+                <div className="bg-[rgba(16,185,129,0.08)] border border-[rgba(16,185,129,0.19)] border-solid content-stretch flex items-start px-[6px] py-[2px] relative rounded-[4px] shrink-0" data-node-id="34:3171" data-name="Frame">
+                  <p className="[word-break:break-word] font-['Inter:Bold'] font-bold leading-[normal] not-italic relative shrink-0 text-[#10b981] text-[10px] whitespace-nowrap" data-node-id="34:3172">
+                    종료
+                  </p>
+                </div>
+              </div>
+              <div className="[word-break:break-word] content-stretch flex flex-col gap-[2px] items-start not-italic relative shrink-0 w-full" data-node-id="34:3173" data-name="Frame">
+                <p className="font-['Inter:Bold'] font-bold leading-[0] relative shrink-0 text-[#0f172a] text-[14px] w-full" data-node-id="34:3174">
+                  <span className="leading-[normal]">{`서울 관악구 신림동 산불 `}</span>
+                  <span className="leading-[normal] text-[#e8192c]">화재</span>
+                  <span className="leading-[normal]">{` 진압 완료`}</span>
+                </p>
+                <p className="font-['Inter:Regular'] font-normal leading-[normal] relative shrink-0 text-[#64748b] text-[11px] w-full" data-node-id="34:3175">
+                  서울 관악구 신림동 산 56 · 2일 전 종료
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="content-stretch flex flex-col items-center pb-[32px] px-[16px] relative shrink-0 w-full" data-node-id="19:2581" data-name="floating-bottom-nav-container">
+        <div className="backdrop-blur-[20px] bg-[rgba(255,255,255,0.88)] border border-[#e8edf2] border-solid content-stretch drop-shadow-[0px_8px_16px_rgba(0,0,0,0.1)] flex h-[68px] items-center px-[12px] py-[6px] relative rounded-[28px] shrink-0 w-full" data-node-id="19:2582" data-name="nav-bar-body">
+          <div className="content-stretch flex flex-[1_0_0] flex-col gap-[2px] items-center justify-center min-w-px py-[6px] relative rounded-[20px]" data-node-id="19:2583" data-name="nav-tab-map">
+            <div className="relative shrink-0 size-[22px]" data-node-id="19:2584" data-name="map-pin">
+              <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgMapPin} />
+            </div>
+            <p className="[word-break:break-word] font-['Inter:Bold'] font-bold leading-[normal] not-italic relative shrink-0 text-[#e81a2b] text-[10px] whitespace-nowrap" data-node-id="19:2586">
+              홈
+            </p>
+          </div>
+          <div className="bg-[#e81a2b] content-stretch drop-shadow-[0px_6px_8px_rgba(232,26,43,0.35)] flex flex-col items-center justify-center relative rounded-[27px] shrink-0 size-[54px]" data-node-id="19:2587" data-name="nav-tab-report">
+            <p className="[word-break:break-word] font-['Inter:Regular'] font-normal leading-[normal] not-italic relative shrink-0 text-[22px] text-white whitespace-nowrap" data-node-id="19:2588">
+              📢
+            </p>
+          </div>
+          <div className="[word-break:break-word] content-stretch flex flex-[1_0_0] flex-col gap-[2px] items-center justify-center leading-[normal] min-w-px not-italic py-[6px] relative rounded-[20px] text-[#94a3b8] whitespace-nowrap" data-node-id="19:2589" data-name="nav-tab-list">
+            <p className="font-['Inter:Regular'] font-normal relative shrink-0 text-[18px]" data-node-id="19:2590">
+              ≡
+            </p>
+            <p className="font-['Inter:Bold'] font-bold relative shrink-0 text-[10px]" data-node-id="19:2591">
+              목록
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+SUPER CRITICAL: The generated React+Tailwind code MUST be converted to match the target project's technology stack and styling system.
+1. Analyze the target codebase to identify: technology stack, styling approach, component patterns, and design tokens
+2. Convert React syntax to the target framework/library
+3. Transform all Tailwind classes to the target styling system while preserving exact visual design
+4. Follow the project's existing patterns and conventions
+DO NOT install any Tailwind as a dependency unless the user instructs you to do so.
+
+
+Node ids have been added to the code as data attributes, e.g. `data-node-id="1:2"`.
+
+Images and SVGs will be stored as constants, e.g. const image = `${assetPathPrefix}/<asset file name>`, where assetPathPrefix is declared once at the top of the code and every asset URL interpolates it. These constants will be used in the code as the source for the image, ex: <img src={image} />. Image assets are stored on a remote server for 7 days and can be fetched using the provided URLs until they expire.

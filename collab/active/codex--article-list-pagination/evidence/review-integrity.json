@@ -1,0 +1,10 @@
+{
+  "explanation_lines_removed_match_original": true,
+  "code_blocks": 4,
+  "sha256": {
+    "test-header.txt": "8a370467115fd918141530c80c6ab865f40ebf14203aee55c5597056e548754d",
+    "test-1.txt": "8c6cde43a048814b02f5b0cd8d4cd8c0f7bc245815d83c0aa5eabd191255151d",
+    "test-2.txt": "bf41ae3a02cd97998d9093991b81672d7dcb664cfb67b7091e160a2fb44577e7",
+    "test-3.txt": "01b3ea5fe9a04f16db8c2f9ea0e1ae0579aa8cadf489b3f98a6cd4e1fc27b789"
+  }
+}

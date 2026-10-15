@@ -2,7 +2,7 @@
 
 ## App facts
 <!-- 개발 하네스 sobaya 가 읽는 앱 계약. - Test: 는 정확히 한 줄, 전체 테스트 스위트 명령. Format:/Lint:/Bench: 는 선택 -->
-- Test: `pnpm test`
+- Test: `./node_modules/.bin/vitest run`
 - Format: `pnpm run format:check`
 - Lint: `pnpm run lint`
 - Skills: nodejs
@@ -21,7 +21,7 @@
 
 ## 2. 강제되는 것 (에디터 훅과 git pre-commit 이 같은 판정을 쓴다)
 1. **선언 없이 수정하지 않는다.** `collab/active/<branch-slug>/claim.md` 가 없으면 Write/Edit 도 Bash 쓰기도 막힌다. 첫 행동은 start-work 스킬.
-2. **보호 브랜치(main)에서 코드를 고치지 않는다.**
+2. **보호 브랜치(dev·main)에서 코드를 고치지 않는다.** 기능 PR은 dev로, dev→main 통합은 별도 리뷰 PR로 진행한다.
 3. **동료가 지금 편집 중(커밋 전)인 허브 파일은 막힌다** (package.json, 스키마 등 `harness/config.sh` HOTSPOTS). 멈추고 사용자에게 알린다. 상대가 커밋하면 풀린다. 동료 브랜치에 커밋됐지만 미머지인 파일과 그 외 겹침은 알림만 — 공유 파일이면 작은 선행 PR 을 제안한다.
 4. **git 훅이 커밋·push 도 본다.** 보호 브랜치로의 직접 push 와 로컬 머지는 막히고, 커밋마다 작업 트리 스냅샷과 브랜치가 올라간다 (`.githooks/`).
 5. **저널은 새 파일만.** 남의 claim 은 손대지 않는다. 브랜치마다 새 파일만 추가되므로 머지 충돌이 구조적으로 없다.
@@ -59,7 +59,7 @@
 이 리포는 sobaya 워크스페이스의 `apps/<이름>` 에 산다. 구현은 sobaya 의 `tdd-set/bin/*` 가 하고, 협업 하네스는 그 바깥에서 "누가 무엇을" 을 관리한다. **sobaya 는 바꾸지 않는다.** 맞춤은 전부 이쪽 규칙이다 (`harness/sobaya/RULES.md`).
 - **워커는 `scripts/collab.sh run -- <sobaya 명령>` 으로 감싸서 돌린다.** 워커는 훅을 거치지 않으므로, 돌리기 전에 동료가 편집 중인 허브 파일이 있으면 중단하고, 끝난 뒤 워커가 건드린 허브 파일을 보고한다.
 - `spec.md` 와 `failed-test.md` 는 **브랜치(기능) 단위**. main 에 두지 않는다. handoff 가 gate·review 뒤 마지막 커밋으로 `collab/journal/plans/` 에 옮긴다. 그 뒤 이 브랜치에서 sobaya 명령을 다시 치지 않는다.
-- sobaya 승인 상태가 있는 브랜치는 main 을 **merge** 로 따라잡는다 (기본). rebase 하면 승인이 깨진다.
+- sobaya 승인 상태가 있는 기능 브랜치는 dev를 **merge**로 따라잡는다 (기본). rebase 하면 승인이 깨진다.
 - 이 클론에 승인 브랜치가 있으면 새 브랜치는 **워크트리**로: `scripts/collab.sh worktree <branch>`. 승인 상태가 git-dir 당 하나라 브랜치를 오가면 깨진다.
 - 세션은 앱 안에서 여는 게 기본. Claude 로 루트에서 열면 `attach-sobaya.sh` 가 놓은 어댑터가 이 앱의 훅을 대신 부른다.
 - sobaya 버전은 `harness/sobaya.lock` 이 팀 기준. digest 가 "다르다" 고 하면 `sh harness/attach-sobaya.sh sync`.

@@ -1,0 +1,46 @@
+
+ RUN  v5.0.3 /private/tmp/jinwoo-image-probe-fdw7j3xm/app
+
+ ❯ src/features/article-list/zz_sobaya_probe_LI2A53.test.ts (1 test | 1 failed) 26ms
+   × articleImageErrorPreservesCards 26ms
+
+ Test Files  1 failed (1)
+      Tests  1 failed (1)
+   Start at  11:17:08
+   Duration  340ms (environment 66%, transform 12%, import 11%, tests 9%, worker 1%)
+
+npm notice run saja-boyz-jinwoo@0.1.0 npx
+npm notice run 'vitest' run src/features/article-list/zz_sobaya_probe_LI2A53.test.ts -t ^articleImageErrorPreservesCards$
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/features/article-list/zz_sobaya_probe_LI2A53.test.ts > articleImageErrorPreservesCards
+AssertionError: expected <img alt loading="lazy" …(7)></img> to be null
+
+- Expected:
+null
+
++ Received:
+<img
+  alt=""
+  class="_thumbnail_0199c5"
+  data-nimg="1"
+  decoding="async"
+  height="80"
+  loading="lazy"
+  src="https://news.example.invalid/images/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.jpg"
+  style=""
+  width="80"
+/>
+
+ ❯ src/features/article-list/zz_sobaya_probe_LI2A53.test.ts:81:41
+     79|   ).toEqual(['샘플 기사 A', '샘플 기사 B', '샘플 기사 C']);
+     80|
+     81|   expect(cards[0].querySelector('img')).toBeNull();
+       |                                         ^
+     82|   expect(cards[0].querySelector('figcaption')).toBeNull();
+     83|   expect(cards[0].textContent).toContain('이미지 없음');
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+RED    articleImageErrorPreservesCards  (fails: assertion/test failure; diagnostics above)

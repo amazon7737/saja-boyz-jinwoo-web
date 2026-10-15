@@ -1,0 +1,9 @@
+{
+  "src/app/error.tsx": "d0207292e6181a313f1a961c8656d744daf49a6e87022eede71e0bc2af553eb0",
+  "src/app/global-error.tsx": "a05321f53f37d2a05d25bbdc60ccf522e1aa0b6870a7f932cfe1accc1be4acae",
+  "src/components/errors/feature-error-boundary.tsx": "b9e3b272f250fa5e631c6892351fa03b15c62ea16e15455acfa2ae760580ed96",
+  "src/components/errors/error-boundaries.test.ts": "04b3e1fe0d361c939fbb58917983fe9f70d97838b80f44394f841175ac79bc77",
+  "src/components/layout/app-shell.tsx": "0525b17345c5bd754a1b415818e0357c31ca8f1ef7afc7f551c2da8d7a675d26",
+  "package.json": "df70c4eefb421c4cc49299e19c6f8e62e92feab3e87dc90860b1bfeb0d8a5eac",
+  "pnpm-lock.yaml": "c48b1f8fefed8a2a9bbc7f8f6cfac54130c239469ef0ee0f5698b77b98237656"
+}

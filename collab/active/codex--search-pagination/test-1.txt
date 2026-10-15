@@ -1,0 +1,30 @@
+test('searchPageRequestValidatesOffsetAndRetainsRawTotal', async () => {
+  request.mockResolvedValue(
+    Response.json({ total: 80, items: [article(1), article(1)] }),
+  );
+  const pageRequest = fetchArticleList as (
+    keyword?: string,
+    offset?: number,
+  ) => Promise<{
+    items: ArticleCollectionItem[];
+    apiOrigin: string;
+    total?: number;
+  } | null>;
+  const result = await pageRequest('  서울 & 화재?#  ', 20);
+  expect(result?.total).toBe(80);
+  expect(result?.items).toHaveLength(2);
+  const [input, init] = request.mock.calls[0];
+  const url = new URL(String(input));
+  expect(url.pathname).toBe('/news');
+  expect(url.searchParams.get('keyword')).toBe('서울 & 화재?#');
+  expect(url.searchParams.get('offset')).toBe('20');
+  expect(url.searchParams.get('limit')).toBe('20');
+  expect(init?.method).toBe('GET');
+  expect(init?.cache).toBe('no-store');
+  expect(init?.signal).toBeInstanceOf(AbortSignal);
+  request.mockClear();
+  for (const offset of [-1, 1.5, NaN, Infinity, Number.MAX_SAFE_INTEGER + 1]) {
+    expect(await pageRequest('화재', offset)).toBeNull();
+  }
+  expect(request).not.toHaveBeenCalled();
+});

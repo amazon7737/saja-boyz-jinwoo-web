@@ -1,0 +1,8 @@
+{
+  "scope": "Native Chrome Fetch and response-body abort semantics only; no product implementation is tested",
+  "created_at": "2026-10-13T09:19:42.545Z",
+  "pending_headers": "AbortError",
+  "received_headers_status": 200,
+  "pending_body": "AbortError",
+  "result": "passed"
+}

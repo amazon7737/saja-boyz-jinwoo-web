@@ -1,0 +1,26 @@
+test('mapLoadsNaverSdkAndPreservesHomeNavigation', async () => {
+  await mount();
+  expect(container.querySelector('[aria-label="주변 지도"]')).not.toBeNull();
+  expect(
+    container.querySelector('[role="status"][aria-busy="true"]')?.textContent,
+  ).toMatch(/지도/);
+  const url = new URL(script().src);
+  expect(url.origin).toBe('https://oapi.map.naver.com');
+  expect(url.searchParams.get('ncpKeyId')).toBe('map-test-id');
+  expect(url.searchParams.has('clientSecret')).toBe(false);
+  const fixture = await loaded();
+  expect(fixture.created).toHaveBeenCalledTimes(1);
+  const [element, options] = fixture.created.mock.calls[0];
+  expect(element).toBeInstanceOf(dom.window.HTMLElement);
+  expect(options.center.lat()).toBe(37.5665);
+  expect(options.center.lng()).toBe(126.978);
+  expect(options.zoom).toBe(12);
+  expect(
+    container.querySelector('[role="status"][aria-busy="true"]'),
+  ).toBeNull();
+  expect(container.textContent).not.toMatch(
+    /인천 외국인|방공식별구역|지금 핫한 사건/,
+  );
+  await act(async () => root.unmount());
+  expect(fixture.destroy).toHaveBeenCalledTimes(1);
+});

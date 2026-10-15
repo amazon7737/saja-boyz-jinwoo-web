@@ -1,0 +1,44 @@
+test('reportSubmissionFailures: rejected or malformed responses never claim receipt or erase the draft', async () => {
+  await renderReport();
+  await fillValid();
+  await selectFiles([testFile('road.png', 'image/png')]);
+  const originalValues = Object.fromEntries(
+    fieldNames.map((name) => [name, field(name).value]),
+  );
+  for (const [status, body] of [
+    [422, { detail: 'private-internal-error' }],
+    [429, { detail: 'private-internal-error' }],
+    [507, { detail: 'private-internal-error' }],
+    [500, { detail: 'private-internal-error' }],
+    [201, {}],
+    [201, { ...receipt, report_id: '../../private' }],
+    [201, { ...receipt, status: 'published' }],
+    [201, { ...receipt, received_at: 'not-a-date' }],
+    [202, receipt],
+    [201, '<html>private-internal-error</html>'],
+  ] as const) {
+    fetchMock.mockResolvedValueOnce(
+      new Response(typeof body === 'string' ? body : JSON.stringify(body), {
+        status,
+        headers: { 'Content-Type': 'application/json' },
+      }),
+    );
+    await checkInput();
+    expect(
+      container.querySelector('[role="alert"]')?.textContent?.trim(),
+    ).toBeTruthy();
+    expect(container.textContent).not.toContain('private-internal-error');
+    expect(container.textContent).not.toContain('제보가 접수됐어요');
+    for (const name of fieldNames) {
+      expect(field(name).value).toBe(originalValues[name]);
+      expect(field(name).matches(':disabled')).toBe(false);
+    }
+    expect(
+      container.querySelector('button[type="submit"]')?.matches(':disabled'),
+    ).toBe(false);
+    expect(
+      container.querySelector('button[aria-label="road.png 삭제"]'),
+    ).not.toBeNull();
+  }
+  expect(fetchMock).toHaveBeenCalledTimes(10);
+});

@@ -1,0 +1,114 @@
+
+ RUN  v5.0.3 /Users/kangminkim/lunch/sobaya/apps/saja-boyz-jinwoo-codex--map-article-markers
+
+ ❯ src/features/map/ui/map-home/map-articles.test.ts (10 tests | 1 failed) 56ms
+   × allows Enter and Space to select markers and restores focus without scrolling when the sheet closes 9ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/features/map/ui/map-home/map-articles.test.ts > allows Enter and Space to select markers and restores focus without scrolling when the sheet closes
+AssertionError: expected <body><div>…(1)</div></body> to be <button type="button" …(3)>…(1)</button> // Object.is equality
+
+- Expected
++ Received
+
+@@ -1,5 +1,14 @@
++ <body>
++   <div>
++     <section
++       aria-label="주변 지도"
++       class="relative"
++     >
++       <div
++         class="h-[calc(100dvh-max(110px,env(safe-area-inset-bottom)_+_90px))] overflow-hidden"
++       >
+          <button
+            aria-label="지역 대표 위치: 부산 사하구 장림동 · 장림동 공장 화재"
+            aria-pressed="false"
+            class="relative block size-6 border-0 bg-transparent p-0"
+            type="button"
+@@ -10,5 +19,67 @@
+              height="24"
+              src="/map/article-marker.svg"
+              width="24"
+            />
+          </button>
++         <button
++           aria-label="지역 대표 위치: 부산 사하구 장림동 · 다른 지역 기사"
++           aria-pressed="false"
++           class="relative block size-6 border-0 bg-transparent p-0"
++           type="button"
++         >
++           <img
++             alt=""
++             class="absolute top-0 left-0 block max-w-none"
++             height="24"
++             src="/map/article-marker.svg"
++             width="24"
++           />
++         </button>
++       </div>
++       <button
++         aria-busy="false"
++         aria-label="내 위치"
++         class="absolute right-4 bottom-12 flex size-11 items-center justify-center rounded-full bg-white shadow-floating disabled:opacity-50"
++         type="button"
++       >
++         <img
++           alt=""
++           data-nimg="1"
++           decoding="async"
++           height="20"
++           loading="lazy"
++           src="/naver-map-crosshair.svg"
++           style="color: transparent;"
++           width="20"
++         />
++       </button>
++       <div
++         class="absolute top-26 right-4 left-4 flex items-center justify-between gap-2 rounded-2xl bg-floating p-3 shadow-floating"
++       >
++         <div
++           class="text-xs text-muted"
++         >
++           <p
++             class="m-0"
++           >
++             지도 기사 
++             2
++             건
++           </p>
++           <a
++             class="mt-1 inline-block text-[11px] underline"
++             href="https://www.data.go.kr/data/15084084/openapi.do"
++           >
++             지역 좌표: 기상청
++           </a>
++         </div>
++         <button
++           class="rounded-lg border border-border px-3 py-2 text-sm text-text"
++           type="button"
++         >
++           기사 위치 보기
++         </button>
++       </div>
++     </section>
++   </div>
++ </body>
+
+ ❯ src/features/map/ui/map-home/map-articles.test.ts:372:36
+    370|     const focus = vi.spyOn(button, 'focus');
+    371|     await act(async () => close.click());
+    372|     expect(document.activeElement).toBe(button);
+       |                                    ^
+    373|     expect(focus).toHaveBeenCalledWith({ preventScroll: true });
+    374|     expect(button.getAttribute('aria-pressed')).toBe('false');
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 9 passed (10)
+   Start at  15:00:14
+   Duration  499ms (environment 62%, import 15%, tests 13%, transform 9%, worker 1%)
+

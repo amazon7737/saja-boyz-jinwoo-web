@@ -1,0 +1,25 @@
+test('foundationBrandHasALocalAccessibleSvgAndSearchLink', async () => {
+  for (const route of ['/', '/incidents']) {
+    await withShell(route, (host) => {
+      const home = host.querySelector('header a[href="/"]');
+      assert(home);
+      const logo = home.querySelector('img[alt="흉흉"]');
+      assert(logo);
+      const source = logo.getAttribute('src');
+      assert(source);
+      expect(source).toMatch(/^\/(?!\/).*\.svg$/);
+      const file = resolve(process.cwd(), `public${source}`);
+      expect(existsSync(file)).toBe(true);
+      const svg = new DOMParser().parseFromString(
+        readFileSync(file, 'utf8'),
+        'image/svg+xml',
+      );
+      expect(svg.querySelector('parsererror')).toBeNull();
+      expect(svg.documentElement.localName).toBe('svg');
+      expect(svg.documentElement.getAttribute('viewBox')).toBeTruthy();
+      expect(svg.querySelector('path')).not.toBeNull();
+      expect(svg.querySelector('text')).toBeNull();
+      expect(host.querySelector('header a[href="/search"]')).not.toBeNull();
+    });
+  }
+});

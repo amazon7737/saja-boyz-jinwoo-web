@@ -1,0 +1,55 @@
+
+ RUN  v5.0.3 /Users/kangminkim/lunch/sobaya/apps/saja-boyz-jinwoo-codex--map-article-markers
+
+ ❯ src/features/map/ui/map-home/map-articles.test.ts (10 tests | 1 failed) 57ms
+   × allows Enter and Space to select markers and restores focus without scrolling when the sheet closes 8ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/features/map/ui/map-home/map-articles.test.ts > allows Enter and Space to select markers and restores focus without scrolling when the sheet closes
+AssertionError: expected <button type="button" …(3)>…(1)</button> to be <button type="button" …(2)>…(1)</button> // Object.is equality
+
+- Expected
++ Received
+
+  <button
+-   aria-label="기사 선택 닫기"
+-   class="relative size-6 shrink-0 border-0 bg-transparent p-0"
++   aria-label="지역 대표 위치: 부산 사하구 장림동 · 장림동 공장 화재"
++   aria-pressed="true"
++   class="relative block size-6 border-0 bg-transparent p-0"
+    type="button"
+  >
+    <img
+      alt=""
+-     class="absolute -top-1.5 -left-2 block max-w-none"
+-     data-nimg="1"
+-     decoding="async"
+-     height="40"
+-     loading="lazy"
+-     src="/map/sheet-close.svg"
+-     style="color: transparent;"
+-     width="40"
++     class="absolute -top-0.5 -left-0.5 block max-w-none"
++     height="28"
++     src="/map/article-selected.svg"
++     width="28"
+    />
+  </button>
+
+ ❯ src/features/map/ui/map-home/map-articles.test.ts:378:36
+    376|       'button[aria-label="기사 선택 닫기"]',
+    377|     )!;
+    378|     expect(document.activeElement).toBe(close);
+       |                                    ^
+    379|     const focus = vi.spyOn(button, 'focus');
+    380|     await act(async () =>
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 9 passed (10)
+   Start at  15:02:21
+   Duration  343ms (environment 56%, tests 19%, import 13%, transform 12%, worker 1%)
+
