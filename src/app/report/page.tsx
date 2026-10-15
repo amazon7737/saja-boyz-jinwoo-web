@@ -305,263 +305,295 @@ export default function ReportPage() {
         <Link
           href="/"
           aria-label="제보 닫기"
-          className="grid size-8 place-items-center rounded-full bg-[#f1f5f9] text-[14px]/[normal]"
+          className="-m-1.5 grid size-11 place-items-center rounded-full text-[14px]/[normal]"
         >
-          <span aria-hidden="true">✕</span>
+          <span
+            aria-hidden="true"
+            className="grid size-8 place-items-center rounded-full bg-slate-100"
+          >
+            ✕
+          </span>
         </Link>
       </header>
       <form
-        className="flex flex-col gap-5 px-4 pt-4 pb-6"
+        className="flex min-h-[calc(100dvh-57px)] flex-col"
         noValidate
         onSubmit={checkInput}
       >
-        <div className="flex min-w-0 flex-col gap-2">
-          <label
-            htmlFor="report-category"
-            className="text-[13px]/[normal] font-bold text-muted"
-          >
-            카테고리 선택
-          </label>
-          <select
-            className="box-border w-full min-w-0 rounded-[10px] border border-solid border-border bg-[#f8fafc] px-3.5 py-3 font-[family-name:inherit] text-[14px]/[normal] text-text invalid:text-[#94a3b8]"
-            id="report-category"
-            name="category"
-            disabled={formLocked}
-            required
-            defaultValue=""
-            {...errorAttributes('category')}
-          >
-            <option value="" disabled>
-              카테고리를 선택하세요
-            </option>
-            {Object.entries(categoryLabels).map(([value, label]) => (
-              <option key={value} value={value}>
-                {label}
-              </option>
-            ))}
-          </select>
-          {fieldError('category')}
-        </div>
-        <div className="flex min-w-0 flex-col gap-2">
-          <label
-            htmlFor="report-occurred-at"
-            className="text-[13px]/[normal] font-bold text-muted"
-          >
-            발생 날짜 및 시간 (한국시간)
-          </label>
-          <input
-            className="box-border w-full min-w-0 rounded-[10px] border border-solid border-border bg-[#f8fafc] px-3.5 py-3 text-[14px]/[normal] text-text placeholder:text-[#94a3b8]"
-            id="report-occurred-at"
-            name="occurredAt"
-            disabled={formLocked}
-            {...errorAttributes('occurredAt')}
-            type="datetime-local"
-            required
-          />
-          {fieldError('occurredAt')}
-        </div>
-        <div className="flex min-w-0 flex-col gap-2">
-          <label
-            htmlFor="report-title"
-            className="text-[13px]/[normal] font-bold text-muted"
-          >
-            제보 제목
-          </label>
-          <input
-            className="box-border w-full min-w-0 rounded-[10px] border border-solid border-border bg-[#f8fafc] px-3.5 py-3 text-[14px]/[normal] text-text placeholder:text-[#94a3b8]"
-            id="report-title"
-            name="title"
-            disabled={formLocked}
-            {...errorAttributes('title')}
-            placeholder="사건 제목을 입력하세요"
-            required
-          />
-          {fieldError('title')}
-        </div>
-        <div className="flex min-w-0 flex-col gap-2">
-          <label
-            htmlFor="report-location"
-            className="text-[13px]/[normal] font-bold text-muted"
-          >
-            발생 위치
-          </label>
-          <input
-            className="box-border w-full min-w-0 rounded-[10px] border border-solid border-border bg-[#f8fafc] px-3.5 py-3 text-[14px]/[normal] text-text placeholder:text-[#94a3b8]"
-            id="report-location"
-            name="location"
-            disabled={formLocked}
-            {...errorAttributes('location')}
-            placeholder="위치를 입력하세요"
-            required
-          />
-          {fieldError('location')}
-        </div>
-        <div className="flex min-w-0 flex-col gap-2">
-          <label
-            htmlFor="report-description"
-            className="text-[13px]/[normal] font-bold text-muted"
-          >
-            상세내용
-          </label>
-          <textarea
-            className="box-border h-[120px] w-full min-w-0 resize-y rounded-[10px] border border-solid border-border bg-[#f8fafc] p-3.5 text-[14px]/[normal] text-text placeholder:text-[#94a3b8]"
-            id="report-description"
-            name="description"
-            disabled={formLocked}
-            {...errorAttributes('description')}
-            placeholder="상세 내용을 입력하세요"
-            required
-          />
-          {fieldError('description')}
-        </div>
-        <div className="flex min-w-0 flex-col gap-2">
-          <label
-            htmlFor="report-attachments"
-            className="text-[13px]/[normal] font-bold text-muted"
-          >
-            사진/동영상 첨부
-          </label>
-          <div className="relative flex h-[100px] flex-col items-center justify-center gap-1.5 rounded-[10px] border border-dashed border-[#94a3b8] bg-[#f8fafc] text-[13px]/[normal] font-bold text-muted focus-within:outline-[3px] focus-within:outline-solid focus-within:outline-brand focus-within:outline-offset-4">
-            <span aria-hidden="true">＋</span>
-            <span>이미지 첨부</span>
-            <input
-              className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
-              id="report-attachments"
-              name="attachments"
-              type="file"
-              disabled={formLocked}
-              multiple
-              accept={attachmentTypes.join(',')}
-              aria-invalid={Boolean(attachmentError) || undefined}
-              aria-describedby={
-                attachmentError ? 'report-attachments-error' : undefined
-              }
-              onChange={(event) => {
-                if (submissionInFlight.current || confirmedReportId) return;
-
-                const selected = Array.from(event.currentTarget.files ?? []);
-
-                event.currentTarget.value = '';
-
-                if (selected.length === 0) return;
-
-                if (attachments.length + selected.length > 3) {
-                  setAttachmentError(
-                    '첨부파일은 최대 3개까지 선택할 수 있어요',
-                  );
-
-                  return;
-                }
-
-                if (
-                  selected.some(
-                    (file) =>
-                      !attachmentTypes.includes(file.type) ||
-                      file.size === 0 ||
-                      file.size > 10 * 1024 * 1024,
-                  )
-                ) {
-                  setAttachmentError(
-                    'JPEG·PNG·WebP·MP4·WebM 형식의 0바이트보다 크고 10 MiB 이하인 파일을 선택해 주세요',
-                  );
-
-                  return;
-                }
-
-                setAttachmentError('');
-                setAttachments((previous) => [...previous, ...selected]);
-              }}
-            />
-          </div>
-          {attachmentError && (
-            <p
-              id="report-attachments-error"
-              role="alert"
-              className="m-0 text-[13px]/[normal] text-brand"
+        <div className="flex flex-col gap-5 p-4">
+          <div className="flex min-w-0 flex-col gap-2">
+            <label
+              htmlFor="report-category"
+              className="text-[13px]/[normal] font-bold text-muted"
             >
-              {attachmentError}
+              카테고리 선택
+            </label>
+            <div className="relative">
+              <select
+                className="box-border h-[43px] w-full min-w-0 appearance-none rounded-[10px] border border-solid border-border bg-background py-3 pr-11 pl-3.5 text-[14px]/[17px] text-text invalid:text-slate-400"
+                id="report-category"
+                name="category"
+                disabled={formLocked}
+                required
+                defaultValue=""
+                {...errorAttributes('category')}
+              >
+                <option value="" disabled>
+                  카테고리를 선택하세요
+                </option>
+                {Object.entries(categoryLabels).map(([value, label]) => (
+                  <option key={value} value={value}>
+                    {label}
+                  </option>
+                ))}
+              </select>
+              <span
+                aria-hidden="true"
+                className="pointer-events-none absolute top-1/2 right-3.5 -translate-y-1/2 text-[12px]/[normal] text-muted"
+              >
+                ▼
+              </span>
+            </div>
+            {fieldError('category')}
+          </div>
+          <div className="flex min-w-0 flex-col gap-2">
+            <label
+              htmlFor="report-occurred-at"
+              className="text-[13px]/[normal] font-bold text-muted"
+            >
+              발생 날짜 및 시간 (한국시간)
+            </label>
+            <input
+              className="box-border h-[43px] w-full min-w-0 rounded-[10px] border border-solid border-border bg-background px-3.5 py-3 text-[14px]/[17px] text-muted"
+              id="report-occurred-at"
+              name="occurredAt"
+              disabled={formLocked}
+              {...errorAttributes('occurredAt')}
+              type="datetime-local"
+              required
+            />
+            {fieldError('occurredAt')}
+          </div>
+          <div className="flex min-w-0 flex-col gap-2">
+            <label
+              htmlFor="report-title"
+              className="text-[13px]/[normal] font-bold text-muted"
+            >
+              제보 제목
+            </label>
+            <input
+              className="box-border h-[43px] w-full min-w-0 appearance-none rounded-[10px] border border-solid border-border bg-background px-3.5 py-3 text-[14px]/[17px] text-text placeholder:text-slate-400"
+              id="report-title"
+              name="title"
+              disabled={formLocked}
+              {...errorAttributes('title')}
+              placeholder="사건 제목을 입력하세요"
+              required
+            />
+            {fieldError('title')}
+          </div>
+          <div className="flex min-w-0 flex-col gap-2">
+            <label
+              htmlFor="report-location"
+              className="text-[13px]/[normal] font-bold text-muted"
+            >
+              발생 위치
+            </label>
+            <div className="relative">
+              <span
+                aria-hidden="true"
+                className="pointer-events-none absolute top-1/2 left-3.5 -translate-y-1/2 text-[14px]/[17px]"
+              >
+                📍
+              </span>
+              <input
+                className="box-border h-[43px] w-full min-w-0 appearance-none rounded-[10px] border border-solid border-border bg-background py-3 pr-3.5 pl-10 text-[14px]/[17px] text-text placeholder:text-slate-400"
+                id="report-location"
+                name="location"
+                disabled={formLocked}
+                {...errorAttributes('location')}
+                placeholder="위치를 입력하세요"
+                required
+              />
+            </div>
+            {fieldError('location')}
+          </div>
+          <div className="flex min-w-0 flex-col gap-2">
+            <label
+              htmlFor="report-description"
+              className="text-[13px]/[normal] font-bold text-muted"
+            >
+              상세내용
+            </label>
+            <textarea
+              className="box-border h-[120px] w-full min-w-0 resize-y appearance-none rounded-[10px] border border-solid border-border bg-background p-3.5 text-[14px]/[17px] text-text placeholder:text-slate-400"
+              id="report-description"
+              name="description"
+              disabled={formLocked}
+              {...errorAttributes('description')}
+              placeholder="상세 내용을 입력하세요"
+              required
+            />
+            {fieldError('description')}
+          </div>
+          <div className="flex min-w-0 flex-col gap-2">
+            <label
+              htmlFor="report-attachments"
+              className="text-[13px]/[normal] font-bold text-muted"
+            >
+              사진/동영상 첨부
+            </label>
+            <div className="relative flex h-[100px] flex-col items-center justify-center gap-1.5 rounded-[10px] border border-dashed border-slate-400 bg-background p-5 text-[13px]/[normal] font-bold text-muted focus-within:outline-[3px] focus-within:outline-solid focus-within:outline-brand focus-within:outline-offset-4">
+              <span
+                aria-hidden="true"
+                className="text-[18px]/[normal] font-normal"
+              >
+                ➕
+              </span>
+              <span>이미지 첨부</span>
+              <input
+                className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+                id="report-attachments"
+                name="attachments"
+                type="file"
+                disabled={formLocked}
+                multiple
+                accept={attachmentTypes.join(',')}
+                aria-invalid={Boolean(attachmentError) || undefined}
+                aria-describedby={
+                  attachmentError ? 'report-attachments-error' : undefined
+                }
+                onChange={(event) => {
+                  if (submissionInFlight.current || confirmedReportId) return;
+
+                  const selected = Array.from(event.currentTarget.files ?? []);
+
+                  event.currentTarget.value = '';
+
+                  if (selected.length === 0) return;
+
+                  if (attachments.length + selected.length > 3) {
+                    setAttachmentError(
+                      '첨부파일은 최대 3개까지 선택할 수 있어요',
+                    );
+
+                    return;
+                  }
+
+                  if (
+                    selected.some(
+                      (file) =>
+                        !attachmentTypes.includes(file.type) ||
+                        file.size === 0 ||
+                        file.size > 10 * 1024 * 1024,
+                    )
+                  ) {
+                    setAttachmentError(
+                      'JPEG·PNG·WebP·MP4·WebM 형식의 0바이트보다 크고 10 MiB 이하인 파일을 선택해 주세요',
+                    );
+
+                    return;
+                  }
+
+                  setAttachmentError('');
+                  setAttachments((previous) => [...previous, ...selected]);
+                }}
+              />
+            </div>
+            {attachmentError && (
+              <p
+                id="report-attachments-error"
+                role="alert"
+                className="m-0 text-[13px]/[normal] text-brand"
+              >
+                {attachmentError}
+              </p>
+            )}
+            {attachments.length > 0 && (
+              <ul className="m-0 flex list-none flex-col gap-2 p-0 text-[13px]/[normal]">
+                {attachments.map((file, index) => (
+                  <li
+                    key={`${index}-${file.name}`}
+                    className="flex items-center justify-between gap-2"
+                  >
+                    <span className="min-w-0 [overflow-wrap:anywhere]">
+                      {file.name}
+                    </span>
+                    <button
+                      className="shrink-0 cursor-pointer rounded-[10px] border border-solid border-border bg-surface px-3 py-2 text-muted"
+                      type="button"
+                      disabled={formLocked}
+                      aria-label={`${file.name} 삭제`}
+                      onClick={() => {
+                        if (submissionInFlight.current || confirmedReportId)
+                          return;
+
+                        setAttachmentError('');
+                        setAttachments((previous) =>
+                          previous.filter((_, position) => position !== index),
+                        );
+                      }}
+                    >
+                      삭제
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+          <p className="m-0 text-[13px]/[normal] text-muted">
+            접수된 제보 내용과 첨부파일은 비공개로 저장돼요
+          </p>
+          <ErrorBoundary
+            ref={submissionBoundary}
+            onReset={() => setSubmissionError('')}
+            fallback={({ error, reset }) => (
+              <div>
+                <p role="alert">{error.message}</p>
+                <button
+                  className="cursor-pointer rounded-[10px] border border-solid border-border bg-surface px-3 py-2 text-muted"
+                  type="button"
+                  onClick={reset}
+                >
+                  오류 닫기
+                </button>
+              </div>
+            )}
+          >
+            <SubmissionError message={submissionError} />
+          </ErrorBoundary>
+          {confirmedReportId && (
+            <p role="status">
+              제보가 접수됐어요 · 접수번호: {confirmedReportId}
             </p>
           )}
-          {attachments.length > 0 && (
-            <ul className="m-0 flex list-none flex-col gap-2 p-0 text-[13px]/[normal]">
-              {attachments.map((file, index) => (
-                <li
-                  key={`${index}-${file.name}`}
-                  className="flex items-center justify-between gap-2"
-                >
-                  <span className="min-w-0 [overflow-wrap:anywhere]">
-                    {file.name}
-                  </span>
-                  <button
-                    className="shrink-0 cursor-pointer rounded-[10px] border border-solid border-border bg-surface px-3 py-2 text-muted"
-                    type="button"
-                    disabled={formLocked}
-                    aria-label={`${file.name} 삭제`}
-                    onClick={() => {
-                      if (submissionInFlight.current || confirmedReportId)
-                        return;
-
-                      setAttachmentError('');
-                      setAttachments((previous) =>
-                        previous.filter((_, position) => position !== index),
-                      );
-                    }}
-                  >
-                    삭제
-                  </button>
-                </li>
-              ))}
-            </ul>
+          {confirmedReportId && (
+            <button
+              className="cursor-pointer rounded-[10px] border border-solid border-border bg-surface px-3 py-2 text-muted"
+              type="button"
+              onClick={(event) => {
+                event.currentTarget.form?.reset();
+                retryRequest.current = null;
+                setErrors({});
+                setConfirmedReportId('');
+                setSubmissionError('');
+                setAttachments([]);
+                setAttachmentError('');
+              }}
+            >
+              새 제보 작성
+            </button>
           )}
         </div>
-        <p className="m-0 text-[13px]/[normal] text-muted">
-          접수된 제보 내용과 첨부파일은 비공개로 저장돼요
-        </p>
-        <ErrorBoundary
-          ref={submissionBoundary}
-          onReset={() => setSubmissionError('')}
-          fallback={({ error, reset }) => (
-            <div>
-              <p role="alert">{error.message}</p>
-              <button
-                className="cursor-pointer rounded-[10px] border border-solid border-border bg-surface px-3 py-2 text-muted"
-                type="button"
-                onClick={reset}
-              >
-                오류 닫기
-              </button>
-            </div>
-          )}
-        >
-          <SubmissionError message={submissionError} />
-        </ErrorBoundary>
-        {confirmedReportId && (
-          <p role="status">제보가 접수됐어요 · 접수번호: {confirmedReportId}</p>
-        )}
-        {confirmedReportId && (
+        <div className="mt-auto px-4 pt-4 pb-[max(24px,env(safe-area-inset-bottom))]">
           <button
-            className="cursor-pointer rounded-[10px] border border-solid border-border bg-surface px-3 py-2 text-muted"
-            type="button"
-            onClick={(event) => {
-              event.currentTarget.form?.reset();
-              retryRequest.current = null;
-              setErrors({});
-              setConfirmedReportId('');
-              setSubmissionError('');
-              setAttachments([]);
-              setAttachmentError('');
-            }}
+            className="min-h-[52px] w-full cursor-pointer rounded-card border-0 bg-brand text-[16px]/[normal] font-extrabold text-surface disabled:cursor-default disabled:opacity-60"
+            type="submit"
+            disabled={formLocked}
           >
-            새 제보 작성
+            {isSubmitting ? '접수 중' : '제보 접수'}
           </button>
-        )}
-        <button
-          className="min-h-[52px] cursor-pointer rounded-card border-0 bg-brand text-[16px]/[normal] font-extrabold text-surface"
-          type="submit"
-          disabled={formLocked}
-        >
-          {isSubmitting ? '접수 중' : '제보 접수'}
-        </button>
+        </div>
       </form>
     </section>
   );
