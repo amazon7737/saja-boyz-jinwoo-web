@@ -156,7 +156,7 @@ function expectsObservedTail() {
 }
 ```
 
-- [ ] articleListMoreAppendsWithRawOffsetsAndFirstSeenIdentity — 기존 회귀 이관
+- [x] articleListMoreAppendsWithRawOffsetsAndFirstSeenIdentity — 기존 회귀 이관
 ```ts
 test('articleListMoreAppendsWithRawOffsetsAndFirstSeenIdentity', async () => {
   const first = [...batch().slice(0, 19), article(0)];
