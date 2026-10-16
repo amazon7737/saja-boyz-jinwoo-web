@@ -199,7 +199,7 @@ test('articleMetadataMatchesSummaryAndEscapesStructuredCitation', async () => {
 });
 ```
 
-- [ ] articleMetadataErrorsAreNotIndexableArticles — 명세의 실제 공개 동작 검증
+- [x] articleMetadataErrorsAreNotIndexableArticles — 명세의 실제 공개 동작 검증
 
 ```ts
 test('articleMetadataErrorsAreNotIndexableArticles', async () => {

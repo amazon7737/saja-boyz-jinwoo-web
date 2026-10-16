@@ -182,3 +182,34 @@ test('articleMetadataMatchesSummaryAndEscapesStructuredCitation', async () => {
     /javascript:|data:text|2026-02-31|datePublished/,
   );
 });
+
+test('articleMetadataErrorsAreNotIndexableArticles', async () => {
+  for (const badId of ['short', 'A'.repeat(64), '../news']) {
+    await expect(
+      metadata('./incidents/[id]/page.tsx', props(undefined, badId)),
+    ).rejects.toThrow('TEST_SEO_NOT_FOUND');
+  }
+  expect(request).not.toHaveBeenCalled();
+  request.mockResolvedValueOnce(new Response('', { status: 404 }));
+  await expect(metadata('./incidents/[id]/page.tsx')).rejects.toThrow(
+    'TEST_SEO_NOT_FOUND',
+  );
+  for (const response of [
+    new Response('PRIVATE_UPSTREAM', { status: 503 }),
+    new Response('not-json'),
+    Response.json({ ...item(), article_id: 'b'.repeat(64) }),
+  ]) {
+    request.mockResolvedValueOnce(response);
+    const info = await metadata('./incidents/[id]/page.tsx');
+    expect(info.robots).toMatchObject({ index: false });
+    expect(JSON.stringify(info)).not.toMatch(
+      /PRIVATE_UPSTREAM|교통 안내|article:published_time/,
+    );
+  }
+  request.mockReset();
+  vi.stubEnv('NEWS_API_BASE_URL', '');
+  expect((await metadata('./incidents/[id]/page.tsx')).robots).toMatchObject({
+    index: false,
+  });
+  expect(request).not.toHaveBeenCalled();
+});
