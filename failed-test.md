@@ -1,6 +1,6 @@
-# 검색·공유 기반 최적화 — 신규6개·기존 보안1개 정확 초안
+# 검색·공유 기반 최적화 — 변수명 린트 수정 반영 정확 초안
 
-승인 후 existing-test-changes-proposal.md의 기존1개만 baseline에서 분리하고 소바야가 이 문서의 정확 본문으로 복원한다. 다른 기존114개는 유지. 최종121개, 전체 Test 명령 유지. .ts.txt는 승인 검토용 전체 파일이며 실행 시 src 아래 .test.ts로 등록된다.
+최초 승인과 동일한 6개 신규 및 기존 보안1개 검증. 테스트 이름·기대값·fixture·검증 순서 유지. 신규 테스트의 지역 변수 module만 routeModule로 바꾼다.
 
 ## Node — src/app/search-discovery.test.ts
 
@@ -57,14 +57,14 @@ async function load(path: string) {
   return (await loader()) as Record<string, unknown>;
 }
 async function metadata(path: string, input = props()) {
-  const module = await load(path);
-  if (typeof module.generateMetadata === 'function')
-    return (module.generateMetadata as MetadataRoute)(input);
+  const routeModule = await load(path);
+  if (typeof routeModule.generateMetadata === 'function')
+    return (routeModule.generateMetadata as MetadataRoute)(input);
   assert(
-    module.metadata && typeof module.metadata === 'object',
+    routeModule.metadata && typeof routeModule.metadata === 'object',
     path + ' 메타데이터가 있어야 한다',
   );
-  return module.metadata as Metadata;
+  return routeModule.metadata as Metadata;
 }
 function view(tree: ReactNode) {
   const container = document.createElement('div');
@@ -155,8 +155,8 @@ test('articleMetadataMatchesSummaryAndEscapesStructuredCitation', async () => {
   });
   expect(JSON.stringify(info.openGraph)).not.toContain(apiOrigin + '/images/');
   expect(JSON.stringify(info)).not.toContain('publisher:');
-  const module = await load('./incidents/[id]/page.tsx');
-  const container = view(await (module.default as Route)(props()));
+  const routeModule = await load('./incidents/[id]/page.tsx');
+  const container = view(await (routeModule.default as Route)(props()));
   expect(container.querySelector('h1')?.textContent).toBe(info.title);
   expect(
     container.querySelector('section[aria-label="기사 요약"]')?.textContent,
@@ -192,7 +192,7 @@ test('articleMetadataMatchesSummaryAndEscapesStructuredCitation', async () => {
   invalid.article.originallink = 'javascript:alert(1)';
   invalid.article.link = 'data:text/html,unsafe';
   request.mockImplementation(async () => Response.json(invalid));
-  const safe = view(await (module.default as Route)(props()));
+  const safe = view(await (routeModule.default as Route)(props()));
   expect(JSON.stringify(graphs(safe))).not.toMatch(
     /javascript:|data:text|2026-02-31|datePublished/,
   );
@@ -310,8 +310,8 @@ test('crawlEndpointsListCanonicalRecentArticlesWithBoundedRequests', async () =>
 
 ```ts
 test('serverArchiveLinksOlderRawPagesWithoutReplacingInfiniteScroll', async () => {
-  const module = await load('./archive/page.tsx');
-  assert(typeof module.default === 'function');
+  const routeModule = await load('./archive/page.tsx');
+  assert(typeof routeModule.default === 'function');
   const fixtures = Array.from({ length: 20 }, (_, index) =>
     item((index + 21).toString(16).padStart(64, '0')),
   );
@@ -319,7 +319,7 @@ test('serverArchiveLinksOlderRawPagesWithoutReplacingInfiniteScroll', async () =
   request.mockImplementation(async () =>
     Response.json({ total: 41, items: fixtures }),
   );
-  const container = view(await (module.default as Route)(props('2')));
+  const container = view(await (routeModule.default as Route)(props('2')));
   expect(container.querySelectorAll('article')).toHaveLength(19);
   expect(container.querySelector('a[href="/archive"]')).not.toBeNull();
   expect(container.querySelector('a[href="/archive?page=3"]')).not.toBeNull();
@@ -339,7 +339,7 @@ test('serverArchiveLinksOlderRawPagesWithoutReplacingInfiniteScroll', async () =
   });
   request.mockReset();
   for (const page of ['0', '-1', '1.5', 'x', '9007199254740992']) {
-    await expect((module.default as Route)(props(page))).rejects.toThrow(
+    await expect((routeModule.default as Route)(props(page))).rejects.toThrow(
       'TEST_SEO_NOT_FOUND',
     );
   }
@@ -347,10 +347,10 @@ test('serverArchiveLinksOlderRawPagesWithoutReplacingInfiniteScroll', async () =
   request.mockImplementation(async () =>
     Response.json({ total: 41, items: [] }),
   );
-  const end = view(await (module.default as Route)(props('4')));
+  const end = view(await (routeModule.default as Route)(props('4')));
   expect(end.querySelector('a[href="/archive?page=5"]')).toBeNull();
   request.mockImplementation(async () => new Response('', { status: 503 }));
-  const failed = view(await (module.default as Route)(props('2')));
+  const failed = view(await (routeModule.default as Route)(props('2')));
   expect(failed.querySelector('[role="alert"]')).not.toBeNull();
   expect(failed.querySelector('a[href="/archive?page=2"]')).not.toBeNull();
 });
@@ -360,8 +360,8 @@ test('serverArchiveLinksOlderRawPagesWithoutReplacingInfiniteScroll', async () =
 
 ```ts
 test('serviceAnswersAreVisibleAndReachableWithoutMapJavaScript', async () => {
-  const module = await load('./about/page.tsx');
-  const container = view(await (module.default as Route)(props()));
+  const routeModule = await load('./about/page.tsx');
+  const container = view(await (routeModule.default as Route)(props()));
   expect(container.querySelector('h1')?.textContent).toContain('흉흉');
   for (const text of [
     '내 주변의 사건 사고',
