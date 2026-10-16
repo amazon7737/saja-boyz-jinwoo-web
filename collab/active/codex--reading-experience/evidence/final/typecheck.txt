@@ -1,0 +1,6 @@
+
+> saja-boyz-jinwoo@0.1.0 typecheck /Users/jeong-gyuhwan/규환/projects/saja-boyz-jinwoo-codex--reading-experience
+> next typegen && tsc --noEmit
+
+Generating route types...
+✓ Types generated successfully

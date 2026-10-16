@@ -30,6 +30,7 @@ function batch(start = 0) {
 beforeEach(() => {
   localStorage.clear();
   request.mockReset();
+  installObserver();
   vi.stubEnv('NEWS_API_BASE_URL', 'https://news.example.invalid');
   vi.stubGlobal('fetch', request);
   vi.stubGlobal('IS_REACT_ACT_ENVIRONMENT', true);
@@ -69,6 +70,71 @@ function offsets() {
   return request.mock.calls.map(([input]) =>
     new URL(String(input)).searchParams.get('offset'),
   );
+}
+
+type ObservedEntry = {
+  callback: IntersectionObserverCallback;
+  targets: Set<Element>;
+  disconnected: boolean;
+};
+const observers: ObservedEntry[] = [];
+
+function installObserver() {
+  observers.length = 0;
+  vi.stubGlobal(
+    'IntersectionObserver',
+    class {
+      entry: ObservedEntry;
+      constructor(callback: IntersectionObserverCallback) {
+        this.entry = { callback, targets: new Set(), disconnected: false };
+        observers.push(this.entry);
+      }
+      observe(target: Element) {
+        this.entry.disconnected = false;
+        this.entry.targets.add(target);
+      }
+      unobserve(target: Element) {
+        this.entry.targets.delete(target);
+      }
+      disconnect() {
+        this.entry.disconnected = true;
+        this.entry.targets.clear();
+      }
+    },
+  );
+}
+
+function dispatchIntersections(isIntersecting = true) {
+  for (const observer of [...observers]) {
+    if (observer.disconnected || observer.targets.size === 0) continue;
+    observer.callback(
+      [...observer.targets].map((target) => ({
+        target,
+        isIntersecting,
+        intersectionRatio: isIntersecting ? 1 : 0,
+        boundingClientRect: target.getBoundingClientRect(),
+        intersectionRect: target.getBoundingClientRect(),
+        rootBounds: null,
+        time: 0,
+      })),
+      observer as unknown as IntersectionObserver,
+    );
+  }
+}
+
+async function intersect(isIntersecting = true) {
+  await act(async () => dispatchIntersections(isIntersecting));
+}
+
+function expectsObservedTail() {
+  expect(
+    observers.some((entry) => !entry.disconnected && entry.targets.size > 0),
+  ).toBe(true);
+  expect(
+    Array.from(container.querySelectorAll('button')).some(
+      (entry) => entry.textContent?.trim() === '더 보기',
+    ),
+  ).toBe(false);
 }
 
 test('searchPageRequestValidatesOffsetAndRetainsRawTotal', async () => {
@@ -111,7 +177,7 @@ test('searchMoreAppendsDeduplicatedPagesWithRawOffsets', async () => {
     first.slice(0, 19).map((item) => item.article.title),
   );
   request.mockResolvedValueOnce(Response.json({ total: 43, items: second }));
-  await click('더 보기');
+  await intersect();
   expect(titles()).toEqual(Array.from({ length: 38 }, (_, i) => '기사 ' + i));
   request.mockResolvedValueOnce(
     Response.json({
@@ -119,7 +185,7 @@ test('searchMoreAppendsDeduplicatedPagesWithRawOffsets', async () => {
       items: [article(38), article(38), article(39)],
     }),
   );
-  await click('더 보기');
+  await intersect();
   expect(titles()).toEqual(Array.from({ length: 40 }, (_, i) => '기사 ' + i));
   expect(offsets()).toEqual(['0', '20', '40']);
   for (const [input] of request.mock.calls) {
@@ -153,13 +219,16 @@ test('searchMorePendingFailureAndRetryPreserveLoadedArticles', async () => {
         finish = resolve;
       }),
   );
-  const more = button('더 보기');
+  await intersect(false);
+  expect(request).toHaveBeenCalledTimes(1);
   await act(async () => {
-    more.click();
-    more.click();
+    dispatchIntersections();
+    dispatchIntersections();
   });
   expect(request).toHaveBeenCalledTimes(2);
-  expect(more.disabled).toBe(true);
+  expect(
+    container.querySelector('[role="status"][aria-busy="true"]'),
+  ).not.toBeNull();
   expect(
     container.querySelector('[role="status"][aria-busy="true"]'),
   ).not.toBeNull();
@@ -172,6 +241,10 @@ test('searchMorePendingFailureAndRetryPreserveLoadedArticles', async () => {
   );
   expect(container.textContent).not.toContain('PRIVATE_MORE_FAILURE');
   expect(titles()).toHaveLength(20);
+  const failedCalls = request.mock.calls.length;
+  await intersect();
+  await intersect();
+  expect(request).toHaveBeenCalledTimes(failedCalls);
   request.mockResolvedValueOnce(new Response('invalid-json'));
   await click('다시 시도');
   expect(titles()).toHaveLength(20);
@@ -204,7 +277,8 @@ test('searchMoreResetsOnKeywordChangeAndIgnoresLatePages', async () => {
         finish = resolve;
       }),
   );
-  await click('더 보기');
+  await intersect();
+  expect(request).toHaveBeenCalledTimes(2);
   request.mockResolvedValueOnce(
     Response.json({ total: 60, items: batch(100) }),
   );
@@ -213,7 +287,7 @@ test('searchMoreResetsOnKeywordChangeAndIgnoresLatePages', async () => {
   await act(async () => finish(Response.json({ total: 40, items: batch(20) })));
   expect(titles()).toEqual(batch(100).map((item) => item.article.title));
   request.mockResolvedValueOnce(Response.json({ total: 60, items: [] }));
-  await click('더 보기');
+  await intersect();
   expect(titles()).toHaveLength(20);
   expect(
     Array.from(container.querySelectorAll('button')).some(

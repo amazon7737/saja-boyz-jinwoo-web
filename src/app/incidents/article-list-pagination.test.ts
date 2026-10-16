@@ -32,6 +32,7 @@ function batch(start = 0) {
 
 beforeEach(() => {
   request.mockReset();
+  installObserver();
   vi.stubEnv('NEWS_API_BASE_URL', apiOrigin);
   vi.stubGlobal('fetch', request);
   vi.stubGlobal('IS_REACT_ACT_ENVIRONMENT', true);
@@ -80,6 +81,71 @@ function offsets() {
   );
 }
 
+type ObservedEntry = {
+  callback: IntersectionObserverCallback;
+  targets: Set<Element>;
+  disconnected: boolean;
+};
+const observers: ObservedEntry[] = [];
+
+function installObserver() {
+  observers.length = 0;
+  vi.stubGlobal(
+    'IntersectionObserver',
+    class {
+      entry: ObservedEntry;
+      constructor(callback: IntersectionObserverCallback) {
+        this.entry = { callback, targets: new Set(), disconnected: false };
+        observers.push(this.entry);
+      }
+      observe(target: Element) {
+        this.entry.disconnected = false;
+        this.entry.targets.add(target);
+      }
+      unobserve(target: Element) {
+        this.entry.targets.delete(target);
+      }
+      disconnect() {
+        this.entry.disconnected = true;
+        this.entry.targets.clear();
+      }
+    },
+  );
+}
+
+function dispatchIntersections(isIntersecting = true) {
+  for (const observer of [...observers]) {
+    if (observer.disconnected || observer.targets.size === 0) continue;
+    observer.callback(
+      [...observer.targets].map((target) => ({
+        target,
+        isIntersecting,
+        intersectionRatio: isIntersecting ? 1 : 0,
+        boundingClientRect: target.getBoundingClientRect(),
+        intersectionRect: target.getBoundingClientRect(),
+        rootBounds: null,
+        time: 0,
+      })),
+      observer as unknown as IntersectionObserver,
+    );
+  }
+}
+
+async function intersect(isIntersecting = true) {
+  await act(async () => dispatchIntersections(isIntersecting));
+}
+
+function expectsObservedTail() {
+  expect(
+    observers.some((entry) => !entry.disconnected && entry.targets.size > 0),
+  ).toBe(true);
+  expect(
+    Array.from(container.querySelectorAll('button')).some(
+      (entry) => entry.textContent?.trim() === '더 보기',
+    ),
+  ).toBe(false);
+}
+
 test('articleListMoreAppendsWithRawOffsetsAndFirstSeenIdentity', async () => {
   const first = [...batch().slice(0, 19), article(0)];
   request.mockResolvedValueOnce(Response.json({ total: 100, items: first }));
@@ -88,7 +154,7 @@ test('articleListMoreAppendsWithRawOffsetsAndFirstSeenIdentity', async () => {
     first.slice(0, 19).map((item) => item.article.title),
   );
   expect(request).toHaveBeenCalledTimes(1);
-  expect(button('더 보기').disabled).toBe(false);
+  expectsObservedTail();
 
   const duplicate = article(0);
   duplicate.article.title = '뒤늦은 중복 제목';
@@ -98,11 +164,11 @@ test('articleListMoreAppendsWithRawOffsetsAndFirstSeenIdentity', async () => {
       items: Array.from({ length: 20 }, () => duplicate),
     }),
   );
-  await click('더 보기');
+  await intersect();
   expect(titles()).toEqual(
     first.slice(0, 19).map((item) => item.article.title),
   );
-  expect(button('더 보기').disabled).toBe(false);
+  expectsObservedTail();
 
   const next = article(19);
   next.image_status = 'ready';
@@ -114,9 +180,9 @@ test('articleListMoreAppendsWithRawOffsetsAndFirstSeenIdentity', async () => {
   request.mockResolvedValueOnce(
     Response.json({ total: 100, items: [next, repeatedNext] }),
   );
-  await click('더 보기');
+  await intersect();
   expect(titles()).toEqual(batch().map((item) => item.article.title));
-  expect(button('더 보기').disabled).toBe(false);
+  expectsObservedTail();
   const added = Array.from(container.querySelectorAll('article')).at(-1);
   assert(added);
   expect(added.querySelector('h2 a')?.getAttribute('href')).toBe(
@@ -133,7 +199,7 @@ test('articleListMoreAppendsWithRawOffsetsAndFirstSeenIdentity', async () => {
   request.mockResolvedValueOnce(
     Response.json({ total: 43, items: [duplicate] }),
   );
-  await click('더 보기');
+  await intersect();
   expect(offsets()).toEqual(['0', '20', '40', '42']);
   expect(titles()).toEqual(batch().map((item) => item.article.title));
   expect(container.querySelector('button')).toBeNull();
@@ -163,13 +229,16 @@ test('articleListMorePendingFailuresAndRetryPreserveArticles', async () => {
         finish = resolve;
       }),
   );
-  const more = button('더 보기');
+  await intersect(false);
+  expect(request).toHaveBeenCalledTimes(1);
   await act(async () => {
-    more.click();
-    more.click();
+    dispatchIntersections();
+    dispatchIntersections();
   });
   expect(request).toHaveBeenCalledTimes(2);
-  expect(more.disabled).toBe(true);
+  expect(
+    container.querySelector('[role="status"][aria-busy="true"]'),
+  ).not.toBeNull();
   const busy = container.querySelector('[role="status"][aria-busy="true"]');
   expect(busy?.textContent).toContain('추가 기사를 불러오는 중이에요');
   expect(titles()).toEqual(batch().map((item) => item.article.title));
@@ -184,6 +253,10 @@ test('articleListMorePendingFailuresAndRetryPreserveArticles', async () => {
   expect(container.textContent).not.toContain('PRIVATE_HTTP_FAILURE');
   expect(container.querySelector('[aria-busy="true"]')).toBeNull();
   expect(button('다시 시도').disabled).toBe(false);
+  const failedCalls = request.mock.calls.length;
+  await intersect();
+  await intersect();
+  expect(request).toHaveBeenCalledTimes(failedCalls);
   expect(titles()).toEqual(batch().map((item) => item.article.title));
 
   for (const response of [
@@ -221,14 +294,16 @@ test('articleListMorePendingFailuresAndRetryPreserveArticles', async () => {
 test('articleListMoreStopsOnEmptyPageAndDoesNotOfferFinishedLists', async () => {
   request.mockResolvedValueOnce(Response.json({ total: 100, items: batch() }));
   await mount();
-  expect(button('더 보기').disabled).toBe(false);
+  expectsObservedTail();
   request.mockResolvedValueOnce(Response.json({ total: 100, items: [] }));
-  await click('더 보기');
+  await intersect();
   expect(titles()).toEqual(batch().map((item) => item.article.title));
   expect(container.querySelector('button')).toBeNull();
   expect(container.textContent).not.toContain('아직 수집된 기사가 없어요');
   expect(container.querySelector('[role="alert"]')).toBeNull();
   expect(offsets()).toEqual(['0', '20']);
+  await intersect();
+  expect(request).toHaveBeenCalledTimes(2);
 
   await act(async () => root.render(null));
   request.mockResolvedValueOnce(Response.json({ total: 99, items: [] }));
@@ -247,4 +322,28 @@ test('articleListMoreStopsOnEmptyPageAndDoesNotOfferFinishedLists', async () => 
   expect(container.querySelector('button')).toBeNull();
   expect(offsets()).toEqual(['0', '20', '0', '0']);
   expect(request).toHaveBeenCalledTimes(4);
+});
+
+test('articleInfiniteScrollFallbackLoadsNearViewportAndCleansUp', async () => {
+  vi.stubGlobal('IntersectionObserver', undefined);
+  request.mockResolvedValueOnce(Response.json({ total: 21, items: batch() }));
+  request.mockResolvedValueOnce(
+    Response.json({ total: 21, items: [article(20)] }),
+  );
+  await mount();
+  await act(async () => {
+    window.dispatchEvent(new Event('scroll'));
+    window.dispatchEvent(new Event('resize'));
+  });
+  expect(titles()).toHaveLength(21);
+  expect(offsets()).toEqual(['0', '20']);
+  expect(container.querySelector('button')).toBeNull();
+
+  await act(async () => root.render(null));
+  const calls = request.mock.calls.length;
+  await act(async () => {
+    window.dispatchEvent(new Event('scroll'));
+    window.dispatchEvent(new Event('resize'));
+  });
+  expect(request).toHaveBeenCalledTimes(calls);
 });

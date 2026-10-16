@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { ErrorBoundary, useErrorBoundary } from '@suspensive/react';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 
+import { LoadingSpinner } from '@/components/feedback/loading-spinner';
 import { categoryLabels } from '@/features/incidents/model/labels';
 
 const requiredFields = [
@@ -587,11 +588,21 @@ export default function ReportPage() {
         </div>
         <div className="mt-auto px-4 pt-4 pb-[max(24px,env(safe-area-inset-bottom))]">
           <button
-            className="min-h-[52px] w-full cursor-pointer rounded-card border-0 bg-brand text-[16px]/[normal] font-extrabold text-surface disabled:cursor-default disabled:opacity-60"
+            className="ui-control ui-primary flex min-h-[52px] w-full items-center justify-center cursor-pointer rounded-card border-0 bg-brand text-[16px]/[normal] font-extrabold text-surface disabled:cursor-default disabled:opacity-60"
+            aria-busy={isSubmitting}
             type="submit"
             disabled={formLocked}
           >
-            {isSubmitting ? '접수 중' : '제보 접수'}
+            {isSubmitting ? (
+              <>
+                <span className="size-5">
+                  <LoadingSpinner />
+                </span>
+                <span className="sr-only">접수 중</span>
+              </>
+            ) : (
+              '제보 접수'
+            )}
           </button>
         </div>
       </form>

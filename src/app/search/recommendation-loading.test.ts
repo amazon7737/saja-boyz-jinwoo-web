@@ -156,7 +156,35 @@ test('recommendedKeywordShowsPendingUntilResultsArrive', async () => {
     expect(await page.locator('article').innerText()).toContain(
       '화재 검증 기사',
     );
-    await page.getByRole('link', { name: /교통통제/ }).click();
+    for (const width of [320, 393, 640]) {
+      await page.setViewportSize({ width, height: 852 });
+      const geometry = await page.evaluate(() => {
+        const form = document.querySelector('form[action="/search"]')!;
+        const submit = form.querySelector('button')!;
+        const fr = form.getBoundingClientRect();
+        const sr = submit.getBoundingClientRect();
+        const tabs = [
+          ...document.querySelectorAll('nav[aria-label="주 메뉴"] a'),
+        ].map((el) => el.getBoundingClientRect());
+        return {
+          overflow: document.documentElement.scrollWidth > innerWidth,
+          formHeight: fr.height,
+          submitHeight: sr.height,
+          contained: sr.top >= fr.top && sr.bottom <= fr.bottom,
+          gaps: [tabs[1].left - tabs[0].right, tabs[2].left - tabs[1].right],
+        };
+      });
+      expect(geometry.overflow).toBe(false);
+      expect(geometry.formHeight).toBeGreaterThanOrEqual(44);
+      expect(geometry.submitHeight).toBeGreaterThanOrEqual(44);
+      expect(geometry.contained).toBe(true);
+      expect(geometry.gaps.every((gap) => gap >= 8)).toBe(true);
+    }
+    await page.setViewportSize({ width: 393, height: 852 });
+    const keywordLink = page.getByRole('link', { name: /교통통제/ });
+    const beforePending = await keywordLink.boundingBox();
+    expect(beforePending).not.toBeNull();
+    await keywordLink.click();
     await Promise.race([
       requested,
       wait(10000).then(() => {
@@ -166,6 +194,15 @@ test('recommendedKeywordShowsPendingUntilResultsArrive', async () => {
     const loading = page.getByRole('status').filter({ hasText: /검색.*불러/ });
     await loading.waitFor({ state: 'visible', timeout: 2500 });
     expect(await loading.getAttribute('aria-busy')).toBe('true');
+    expect(await loading.locator('svg[aria-hidden="true"]').count()).toBe(1);
+    const duringPending = await keywordLink.boundingBox();
+    expect(duringPending).not.toBeNull();
+    expect(Math.abs(duringPending!.width - beforePending!.width)).toBeLessThan(
+      1,
+    );
+    expect(
+      Math.abs(duringPending!.height - beforePending!.height),
+    ).toBeLessThan(1);
     expect(await page.locator('article').innerText()).not.toContain(
       '교통통제 검증 기사',
     );

@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 
+import { ArticleSkeleton } from '@/components/feedback/article-skeleton';
 import {
   categoryLabels,
   statusLabels,
@@ -41,19 +42,7 @@ function formatRelativeTime(occurredAt: string, now: Date) {
 
 export function IncidentList(props: IncidentListProps) {
   if (props.state === 'loading') {
-    return (
-      <div className="flex flex-col gap-3 px-4 py-2">
-        <div
-          className="flex min-h-40 flex-col items-center justify-center gap-2 rounded-card border border-solid border-border bg-surface px-4 py-6 text-center"
-          role="status"
-          aria-busy="true"
-        >
-          <p className="m-0 text-[14px]/[1.5] font-bold text-text">
-            사건을 불러오는 중
-          </p>
-        </div>
-      </div>
-    );
+    return <ArticleSkeleton label="사건을 불러오는 중" initial />;
   }
 
   if (props.incidents.length === 0) {
