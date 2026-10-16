@@ -1,0 +1,58 @@
+{
+  "baseline": "c28258cf6356b4b25b7f3c8f658ff7cee9f59fa1",
+  "reviewedHead": "05c26e8401666db22bbd101b9398770abe845816",
+  "review": {
+    "head": "05c26e8401666db22bbd101b9398770abe845816",
+    "worker": "astra",
+    "summary": "HEAD 05c26e8401666db22bbd101b9398770abe845816을 승인 baseline 및 origin/dev와 독립 대조했으며 actionable defect를 발견하지 못했습니다. 근거: src/app/site-metadata.ts:29 canonical·자식 OG/Twitter 이미지, next.config.ts:6 공유 크롤러 처리, src/app/incidents/[id]/load-detail.ts:28 요청 단위 조회·검증·5초 제한, src/app/incidents/[id]/page.tsx:74 안전한 WebPage/citation, src/app/archive/page.tsx:23 페이지 검증·raw offset·noindex, src/app/sitemap.ts:16 단일 조회·fallback. 기존115개와 신규6개 복원 및 승인된 selector 변경만 확인했습니다.",
+    "at": 1792138530
+  },
+  "workerCalls": 9,
+  "receipts": [
+    {
+      "entry": "searchDiscoveryUsesProductionBrandAndRouteMetadata",
+      "redStatus": "green",
+      "passedCount": 115,
+      "head": "94d1765e2c105f3e21d9df70e69adcb95f152ff9"
+    },
+    {
+      "entry": "articleMetadataMatchesSummaryAndEscapesStructuredCitation",
+      "redStatus": "red",
+      "passedCount": 116,
+      "head": "04127f9ce4734f2152264e075264f42b09714f1c"
+    },
+    {
+      "entry": "articleMetadataErrorsAreNotIndexableArticles",
+      "redStatus": "green",
+      "passedCount": 117,
+      "head": "1443490fedf472ae60481163b9d9b9a3e5b74bac"
+    },
+    {
+      "entry": "crawlEndpointsListCanonicalRecentArticlesWithBoundedRequests",
+      "redStatus": "red",
+      "passedCount": 118,
+      "head": "6fabb8c97ff3236a7d6249c030556aaef12072bf"
+    },
+    {
+      "entry": "serverArchiveLinksOlderRawPagesWithoutReplacingInfiniteScroll",
+      "redStatus": "red",
+      "passedCount": 119,
+      "head": "0fd1e07e5fcc03ee547b2f49f64f51b6baeb78e7"
+    },
+    {
+      "entry": "serviceAnswersAreVisibleAndReachableWithoutMapJavaScript",
+      "redStatus": "red",
+      "passedCount": 120,
+      "head": "f6479ee99940b7651a8a7f1ec232702b780fd959"
+    },
+    {
+      "entry": "articleDetailSafePresentation",
+      "redStatus": "green",
+      "passedCount": 121,
+      "head": "05c26e8401666db22bbd101b9398770abe845816"
+    }
+  ],
+  "productFileHashesMatchProductionQA": 91,
+  "runtime": "sobaya 83af28d",
+  "finalMetadataCommitMustNotChangeProductOrTests": true
+}
