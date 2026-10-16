@@ -131,7 +131,7 @@ test('searchDiscoveryUsesProductionBrandAndRouteMetadata', async () => {
 });
 ```
 
-- [ ] articleMetadataMatchesSummaryAndEscapesStructuredCitation — 명세의 실제 공개 동작 검증
+- [x] articleMetadataMatchesSummaryAndEscapesStructuredCitation — 명세의 실제 공개 동작 검증
 
 ```ts
 test('articleMetadataMatchesSummaryAndEscapesStructuredCitation', async () => {
