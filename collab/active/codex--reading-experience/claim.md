@@ -2,9 +2,9 @@
 branch: codex/reading-experience
 owner: easter721
 started: 2026-10-16
-status: active
+status: done
 goal: feat(ux): 간격·로딩 피드백과 기사 무한 스크롤 개선
-next: 사용자 정확 초안 승인 완료; Sobaya 항목별 구현·전체115개 검증·브라우저 대조·PR
+next: 검증·독립 리뷰 완료; dev 대상 PR 게시·리뷰 대기
 base: dev
 ---
 
