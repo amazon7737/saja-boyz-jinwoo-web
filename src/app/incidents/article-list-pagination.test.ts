@@ -218,3 +218,75 @@ test('articleListMoreAppendsWithRawOffsetsAndFirstSeenIdentity', async () => {
     expect(init?.body).toBeUndefined();
   }
 });
+
+test('articleListMorePendingFailuresAndRetryPreserveArticles', async () => {
+  request.mockResolvedValueOnce(Response.json({ total: 21, items: batch() }));
+  await mount();
+  let finish: ((response: Response) => void) | undefined;
+  request.mockImplementationOnce(
+    () =>
+      new Promise((resolve) => {
+        finish = resolve;
+      }),
+  );
+  await intersect(false);
+  expect(request).toHaveBeenCalledTimes(1);
+  await act(async () => {
+    dispatchIntersections();
+    dispatchIntersections();
+  });
+  expect(request).toHaveBeenCalledTimes(2);
+  expect(
+    container.querySelector('[role="status"][aria-busy="true"]'),
+  ).not.toBeNull();
+  const busy = container.querySelector('[role="status"][aria-busy="true"]');
+  expect(busy?.textContent).toContain('추가 기사를 불러오는 중이에요');
+  expect(titles()).toEqual(batch().map((item) => item.article.title));
+  assert(finish);
+  const resolvePending = finish;
+  await act(async () =>
+    resolvePending(new Response('PRIVATE_HTTP_FAILURE', { status: 503 })),
+  );
+  expect(container.querySelector('[role="alert"]')?.textContent).toContain(
+    '추가 기사를 불러오지 못했어요',
+  );
+  expect(container.textContent).not.toContain('PRIVATE_HTTP_FAILURE');
+  expect(container.querySelector('[aria-busy="true"]')).toBeNull();
+  expect(button('다시 시도').disabled).toBe(false);
+  const failedCalls = request.mock.calls.length;
+  await intersect();
+  await intersect();
+  expect(request).toHaveBeenCalledTimes(failedCalls);
+  expect(titles()).toEqual(batch().map((item) => item.article.title));
+
+  for (const response of [
+    new Response('invalid-json'),
+    Response.json({
+      total: 21,
+      items: [{ ...article(20), article_id: 'invalid' }],
+    }),
+  ]) {
+    request.mockResolvedValueOnce(response);
+    await click('다시 시도');
+    expect(titles()).toEqual(batch().map((item) => item.article.title));
+    expect(container.querySelector('[role="alert"]')?.textContent).toContain(
+      '추가 기사를 불러오지 못했어요',
+    );
+  }
+  request.mockRejectedValueOnce(new Error('PRIVATE_NETWORK_FAILURE'));
+  await click('다시 시도');
+  expect(titles()).toEqual(batch().map((item) => item.article.title));
+  expect(container.textContent).not.toContain('PRIVATE_NETWORK_FAILURE');
+  expect(button('다시 시도').disabled).toBe(false);
+  request.mockResolvedValueOnce(
+    Response.json({ total: 21, items: [article(20)] }),
+  );
+  await click('다시 시도');
+  expect(titles()).toEqual(
+    [...batch(), article(20)].map((item) => item.article.title),
+  );
+  expect(offsets()).toEqual(['0', '20', '20', '20', '20', '20']);
+  expect(container.querySelector('[role="alert"]')).toBeNull();
+  expect(container.querySelector('[aria-busy="true"]')).toBeNull();
+  expect(container.querySelector('button')).toBeNull();
+});

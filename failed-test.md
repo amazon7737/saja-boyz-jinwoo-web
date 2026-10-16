@@ -232,7 +232,7 @@ test('articleListMoreAppendsWithRawOffsetsAndFirstSeenIdentity', async () => {
 });
 ```
 
-- [ ] articleListMorePendingFailuresAndRetryPreserveArticles — 기존 회귀 이관
+- [x] articleListMorePendingFailuresAndRetryPreserveArticles — 기존 회귀 이관
 ```ts
 test('articleListMorePendingFailuresAndRetryPreserveArticles', async () => {
   request.mockResolvedValueOnce(Response.json({ total: 21, items: batch() }));
