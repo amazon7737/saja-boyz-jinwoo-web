@@ -343,7 +343,7 @@ test('articleListMoreStopsOnEmptyPageAndDoesNotOfferFinishedLists', async () => 
 });
 ```
 
-- [ ] articleInfiniteScrollFallbackLoadsNearViewportAndCleansUp — 신규 회귀
+- [x] articleInfiniteScrollFallbackLoadsNearViewportAndCleansUp — 신규 회귀
 ```ts
 test('articleInfiniteScrollFallbackLoadsNearViewportAndCleansUp', async () => {
   vi.stubGlobal('IntersectionObserver', undefined);
