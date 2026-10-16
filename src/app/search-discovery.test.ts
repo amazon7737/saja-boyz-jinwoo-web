@@ -213,3 +213,71 @@ test('articleMetadataErrorsAreNotIndexableArticles', async () => {
   });
   expect(request).not.toHaveBeenCalled();
 });
+
+test('crawlEndpointsListCanonicalRecentArticlesWithBoundedRequests', async () => {
+  const robots = await load('./robots.ts');
+  assert(typeof robots.default === 'function');
+  const policy = await (robots.default as () => Record<string, unknown>)();
+  expect(policy.sitemap).toBe(origin + '/sitemap.xml');
+  const rules = Array.isArray(policy.rules) ? policy.rules : [policy.rules];
+  const all = rules.find(
+    (rule) => rule.userAgent === '*' || rule.userAgent?.includes('*'),
+  );
+  expect(all).toMatchObject({ allow: '/' });
+  expect(JSON.stringify(all.disallow ?? [])).not.toMatch(
+    /search|report|incidents|archive|about|_next/,
+  );
+  request.mockResolvedValueOnce(
+    Response.json({
+      total: 100000,
+      items: [item(), item(), item('b'.repeat(64))],
+    }),
+  );
+  const sitemap = await load('./sitemap.ts');
+  assert(typeof sitemap.default === 'function');
+  const entries = await (
+    sitemap.default as () => Promise<Array<Record<string, unknown>>>
+  )();
+  const urls = entries.map((entry) => entry.url);
+  expect(urls).toEqual(
+    expect.arrayContaining([
+      origin + '/',
+      origin + '/incidents',
+      origin + '/archive',
+      origin + '/about',
+      origin + '/incidents/' + id,
+      origin + '/incidents/' + 'b'.repeat(64),
+    ]),
+  );
+  expect(new Set(urls).size).toBe(urls.length);
+  expect(
+    urls.every(
+      (url) => typeof url === 'string' && url.startsWith(origin + '/'),
+    ),
+  ).toBe(true);
+  expect(urls.join(' ')).not.toMatch(/\/search|\/report|\?|#/);
+  expect(entries.every((entry) => entry.lastModified === undefined)).toBe(true);
+  expect(request).toHaveBeenCalledTimes(1);
+  const [input] = request.mock.calls[0];
+  const apiUrl = new URL(String(input));
+  expect(apiUrl.pathname).toBe('/news');
+  expect(apiUrl.searchParams.get('offset')).toBe('0');
+  expect(apiUrl.searchParams.get('limit')).toBe('20');
+  request.mockReset();
+  request.mockResolvedValueOnce(new Response('', { status: 503 }));
+  const fallback = await (
+    sitemap.default as () => Promise<Array<Record<string, unknown>>>
+  )();
+  expect(fallback.map((entry) => entry.url)).toEqual(
+    expect.arrayContaining([
+      origin + '/',
+      origin + '/incidents',
+      origin + '/archive',
+      origin + '/about',
+    ]),
+  );
+  expect(
+    fallback.some((entry) => String(entry.url).includes('/incidents/')),
+  ).toBe(false);
+  expect(request).toHaveBeenCalledTimes(1);
+});

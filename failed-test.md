@@ -234,7 +234,7 @@ test('articleMetadataErrorsAreNotIndexableArticles', async () => {
 });
 ```
 
-- [ ] crawlEndpointsListCanonicalRecentArticlesWithBoundedRequests — 명세의 실제 공개 동작 검증
+- [x] crawlEndpointsListCanonicalRecentArticlesWithBoundedRequests — 명세의 실제 공개 동작 검증
 
 ```ts
 test('crawlEndpointsListCanonicalRecentArticlesWithBoundedRequests', async () => {
