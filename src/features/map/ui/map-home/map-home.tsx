@@ -4,6 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
+import { LoadingSpinner } from '@/components/feedback/loading-spinner';
 import { articleText } from '@/features/article-list/model/article-presentation';
 
 import { filterMapPeriod, type MapPeriod } from '../../model/map-period-filter';
@@ -638,14 +639,21 @@ export function MapHome({
             aria-busy={locating}
             disabled={!ready || locating}
             onClick={() => locate.current?.()}
-            className="absolute right-4 -top-[58px] flex size-11 items-center justify-center rounded-full border-0 bg-white p-0 shadow-floating disabled:opacity-50"
+            className="ui-control absolute right-4 -top-[58px] flex size-11 items-center justify-center rounded-full border-0 bg-white p-0 shadow-floating disabled:opacity-50"
           >
-            <Image
-              src="/naver-map-crosshair.svg"
-              alt=""
-              width={20}
-              height={20}
-            />
+            {locating ? (
+              <span className="size-5" role="status" aria-busy="true">
+                <LoadingSpinner />
+                <span className="sr-only">내 위치를 확인하는 중입니다.</span>
+              </span>
+            ) : (
+              <Image
+                src="/naver-map-crosshair.svg"
+                alt=""
+                width={20}
+                height={20}
+              />
+            )}
           </button>
           {ready && articles && articles.items.length > 0 && (
             <MapArticleCarousel articles={filteredArticles!} />
@@ -746,7 +754,10 @@ export function MapHome({
           aria-busy="true"
           className="absolute top-[calc(112px_+_env(safe-area-inset-top))] right-4 left-4 rounded-2xl bg-floating p-4 shadow-floating"
         >
-          지도를 불러오는 중입니다.
+          <span className="block size-5 text-muted">
+            <LoadingSpinner />
+          </span>
+          <span className="sr-only">지도를 불러오는 중입니다.</span>
         </div>
       )}
     </section>
