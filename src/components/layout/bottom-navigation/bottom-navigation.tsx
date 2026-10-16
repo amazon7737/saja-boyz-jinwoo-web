@@ -11,7 +11,7 @@ export function BottomNavigation({ pathname }: { pathname: string }) {
   return (
     <nav
       aria-label="주 메뉴"
-      className="fixed bottom-[calc(8px_+_env(safe-area-inset-bottom))] left-1/2 z-30 flex h-[68px] w-[min(calc(100%_-_32px),608px)] -translate-x-1/2 items-center rounded-[28px] border border-solid border-[#e8edf2] bg-floating px-3 py-[6px] shadow-[0_8px_16px_rgba(0,0,0,0.1)] backdrop-blur-[20px]"
+      className="fixed bottom-[calc(8px_+_env(safe-area-inset-bottom))] left-1/2 z-30 flex h-[68px] w-[min(calc(100%_-_32px),608px)] -translate-x-1/2 items-center gap-2 rounded-[28px] border border-solid border-[#e8edf2] bg-floating px-3 py-[6px] shadow-[0_8px_16px_rgba(0,0,0,0.1)] backdrop-blur-[20px]"
     >
       <Link
         href="/"
