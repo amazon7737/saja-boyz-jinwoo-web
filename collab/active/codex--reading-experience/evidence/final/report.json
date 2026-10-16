@@ -1,0 +1,900 @@
+{
+  "success": true,
+  "checks": [
+    "실제 지도 SDK 준비·위치 요청: 접근 가능한 spinner, 위치는 로컬 fixture로만 전달",
+    "320/393/640/1440 지도·검색·목록·상세·제보: 가로 넘침 없음, 검색44px 컨트롤 포함, 내비 간격8px 이상 및 키보드 포커스 유지",
+    "실제 App Router의 목록·검색·상세 초기 응답 보류: 카드/본문 skeleton과 접근성 상태",
+    "검색/목록 실제 스크롤: 기존19카드 유지+추가 skeleton, 503 자동 재시도 멈춤, 수동 복구, offset0/20/20/40·고유40개, 종료 뒤 요청 없음",
+    "실제 next/link pending: 칩 크기 변화1px 미만·spinner, reduced-motion 시 실행 애니메이션0",
+    "제보 접수 로컬 fixture만 사용: spinner·버튼 크기/잠금·접수 완료, 외부 POST0"
+  ],
+  "geometry": [
+    {
+      "path": "/search",
+      "width": 320,
+      "overflow": false,
+      "form": {
+        "x": 72,
+        "y": 20,
+        "w": 232,
+        "h": 47,
+        "right": 304,
+        "bottom": 67
+      },
+      "control": {
+        "x": 73,
+        "y": 21.5,
+        "w": 44,
+        "h": 44,
+        "right": 117,
+        "bottom": 65.5
+      },
+      "nav": {
+        "x": 16,
+        "y": 776,
+        "w": 288,
+        "h": 68,
+        "right": 304,
+        "bottom": 844
+      },
+      "tabs": [
+        {
+          "x": 29,
+          "y": 786,
+          "w": 96,
+          "h": 48,
+          "right": 125,
+          "bottom": 834
+        },
+        {
+          "x": 133,
+          "y": 783,
+          "w": 54,
+          "h": 54,
+          "right": 187,
+          "bottom": 837
+        },
+        {
+          "x": 195,
+          "y": 786.5,
+          "w": 96,
+          "h": 47,
+          "right": 291,
+          "bottom": 833.5
+        }
+      ],
+      "article": []
+    },
+    {
+      "path": "/incidents",
+      "width": 320,
+      "overflow": false,
+      "form": null,
+      "control": null,
+      "nav": {
+        "x": 16,
+        "y": 776,
+        "w": 288,
+        "h": 68,
+        "right": 304,
+        "bottom": 844
+      },
+      "tabs": [
+        {
+          "x": 29,
+          "y": 783,
+          "w": 96,
+          "h": 54,
+          "right": 125,
+          "bottom": 837
+        },
+        {
+          "x": 133,
+          "y": 783,
+          "w": 54,
+          "h": 54,
+          "right": 187,
+          "bottom": 837
+        },
+        {
+          "x": 195,
+          "y": 786.5,
+          "w": 96,
+          "h": 47,
+          "right": 291,
+          "bottom": 833.5
+        }
+      ],
+      "article": [
+        {
+          "x": 16,
+          "y": 124,
+          "w": 288,
+          "h": 146,
+          "right": 304,
+          "bottom": 270
+        },
+        {
+          "x": 16,
+          "y": 282,
+          "w": 288,
+          "h": 146,
+          "right": 304,
+          "bottom": 428
+        },
+        {
+          "x": 16,
+          "y": 440,
+          "w": 288,
+          "h": 146,
+          "right": 304,
+          "bottom": 586
+        }
+      ]
+    },
+    {
+      "path": "/report",
+      "width": 320,
+      "overflow": false,
+      "form": null,
+      "control": null,
+      "nav": null,
+      "tabs": [],
+      "article": []
+    },
+    {
+      "path": "/incidents/0000000000000000000000000000000000000000000000000000000000000000",
+      "width": 320,
+      "overflow": false,
+      "form": null,
+      "control": null,
+      "nav": null,
+      "tabs": [],
+      "article": [
+        {
+          "x": 0,
+          "y": 0,
+          "w": 320,
+          "h": 852,
+          "right": 320,
+          "bottom": 852
+        }
+      ]
+    },
+    {
+      "path": "/",
+      "width": 320,
+      "overflow": false,
+      "form": null,
+      "control": null,
+      "nav": {
+        "x": 16,
+        "y": 776,
+        "w": 288,
+        "h": 68,
+        "right": 304,
+        "bottom": 844
+      },
+      "tabs": [
+        {
+          "x": 29,
+          "y": 786,
+          "w": 96,
+          "h": 48,
+          "right": 125,
+          "bottom": 834
+        },
+        {
+          "x": 133,
+          "y": 783,
+          "w": 54,
+          "h": 54,
+          "right": 187,
+          "bottom": 837
+        },
+        {
+          "x": 195,
+          "y": 786.5,
+          "w": 96,
+          "h": 47,
+          "right": 291,
+          "bottom": 833.5
+        }
+      ],
+      "article": []
+    },
+    {
+      "path": "/search",
+      "width": 393,
+      "overflow": false,
+      "form": {
+        "x": 72,
+        "y": 20,
+        "w": 305,
+        "h": 47,
+        "right": 377,
+        "bottom": 67
+      },
+      "control": {
+        "x": 73,
+        "y": 21.5,
+        "w": 44,
+        "h": 44,
+        "right": 117,
+        "bottom": 65.5
+      },
+      "nav": {
+        "x": 16,
+        "y": 776,
+        "w": 361,
+        "h": 68,
+        "right": 377,
+        "bottom": 844
+      },
+      "tabs": [
+        {
+          "x": 29,
+          "y": 786,
+          "w": 132.5,
+          "h": 48,
+          "right": 161.5,
+          "bottom": 834
+        },
+        {
+          "x": 169.5,
+          "y": 783,
+          "w": 54,
+          "h": 54,
+          "right": 223.5,
+          "bottom": 837
+        },
+        {
+          "x": 231.5,
+          "y": 786.5,
+          "w": 132.5,
+          "h": 47,
+          "right": 364,
+          "bottom": 833.5
+        }
+      ],
+      "article": []
+    },
+    {
+      "path": "/incidents",
+      "width": 393,
+      "overflow": false,
+      "form": null,
+      "control": null,
+      "nav": {
+        "x": 16,
+        "y": 776,
+        "w": 361,
+        "h": 68,
+        "right": 377,
+        "bottom": 844
+      },
+      "tabs": [
+        {
+          "x": 29,
+          "y": 783,
+          "w": 132.5,
+          "h": 54,
+          "right": 161.5,
+          "bottom": 837
+        },
+        {
+          "x": 169.5,
+          "y": 783,
+          "w": 54,
+          "h": 54,
+          "right": 223.5,
+          "bottom": 837
+        },
+        {
+          "x": 231.5,
+          "y": 786.5,
+          "w": 132.5,
+          "h": 47,
+          "right": 364,
+          "bottom": 833.5
+        }
+      ],
+      "article": [
+        {
+          "x": 16,
+          "y": 124,
+          "w": 361,
+          "h": 146,
+          "right": 377,
+          "bottom": 270
+        },
+        {
+          "x": 16,
+          "y": 282,
+          "w": 361,
+          "h": 146,
+          "right": 377,
+          "bottom": 428
+        },
+        {
+          "x": 16,
+          "y": 440,
+          "w": 361,
+          "h": 146,
+          "right": 377,
+          "bottom": 586
+        }
+      ]
+    },
+    {
+      "path": "/report",
+      "width": 393,
+      "overflow": false,
+      "form": null,
+      "control": null,
+      "nav": null,
+      "tabs": [],
+      "article": []
+    },
+    {
+      "path": "/incidents/0000000000000000000000000000000000000000000000000000000000000000",
+      "width": 393,
+      "overflow": false,
+      "form": null,
+      "control": null,
+      "nav": null,
+      "tabs": [],
+      "article": [
+        {
+          "x": 0,
+          "y": 0,
+          "w": 393,
+          "h": 852,
+          "right": 393,
+          "bottom": 852
+        }
+      ]
+    },
+    {
+      "path": "/",
+      "width": 393,
+      "overflow": false,
+      "form": null,
+      "control": null,
+      "nav": {
+        "x": 16,
+        "y": 776,
+        "w": 361,
+        "h": 68,
+        "right": 377,
+        "bottom": 844
+      },
+      "tabs": [
+        {
+          "x": 29,
+          "y": 786,
+          "w": 132.5,
+          "h": 48,
+          "right": 161.5,
+          "bottom": 834
+        },
+        {
+          "x": 169.5,
+          "y": 783,
+          "w": 54,
+          "h": 54,
+          "right": 223.5,
+          "bottom": 837
+        },
+        {
+          "x": 231.5,
+          "y": 786.5,
+          "w": 132.5,
+          "h": 47,
+          "right": 364,
+          "bottom": 833.5
+        }
+      ],
+      "article": []
+    },
+    {
+      "path": "/search",
+      "width": 640,
+      "overflow": false,
+      "form": {
+        "x": 72,
+        "y": 20,
+        "w": 552,
+        "h": 47,
+        "right": 624,
+        "bottom": 67
+      },
+      "control": {
+        "x": 73,
+        "y": 21.5,
+        "w": 44,
+        "h": 44,
+        "right": 117,
+        "bottom": 65.5
+      },
+      "nav": {
+        "x": 16,
+        "y": 776,
+        "w": 608,
+        "h": 68,
+        "right": 624,
+        "bottom": 844
+      },
+      "tabs": [
+        {
+          "x": 29,
+          "y": 786,
+          "w": 256,
+          "h": 48,
+          "right": 285,
+          "bottom": 834
+        },
+        {
+          "x": 293,
+          "y": 783,
+          "w": 54,
+          "h": 54,
+          "right": 347,
+          "bottom": 837
+        },
+        {
+          "x": 355,
+          "y": 786.5,
+          "w": 256,
+          "h": 47,
+          "right": 611,
+          "bottom": 833.5
+        }
+      ],
+      "article": []
+    },
+    {
+      "path": "/incidents",
+      "width": 640,
+      "overflow": false,
+      "form": null,
+      "control": null,
+      "nav": {
+        "x": 16,
+        "y": 776,
+        "w": 608,
+        "h": 68,
+        "right": 624,
+        "bottom": 844
+      },
+      "tabs": [
+        {
+          "x": 29,
+          "y": 783,
+          "w": 256,
+          "h": 54,
+          "right": 285,
+          "bottom": 837
+        },
+        {
+          "x": 293,
+          "y": 783,
+          "w": 54,
+          "h": 54,
+          "right": 347,
+          "bottom": 837
+        },
+        {
+          "x": 355,
+          "y": 786.5,
+          "w": 256,
+          "h": 47,
+          "right": 611,
+          "bottom": 833.5
+        }
+      ],
+      "article": [
+        {
+          "x": 16,
+          "y": 124,
+          "w": 608,
+          "h": 126,
+          "right": 624,
+          "bottom": 250
+        },
+        {
+          "x": 16,
+          "y": 262,
+          "w": 608,
+          "h": 126,
+          "right": 624,
+          "bottom": 388
+        },
+        {
+          "x": 16,
+          "y": 400,
+          "w": 608,
+          "h": 126,
+          "right": 624,
+          "bottom": 526
+        }
+      ]
+    },
+    {
+      "path": "/report",
+      "width": 640,
+      "overflow": false,
+      "form": null,
+      "control": null,
+      "nav": null,
+      "tabs": [],
+      "article": []
+    },
+    {
+      "path": "/incidents/0000000000000000000000000000000000000000000000000000000000000000",
+      "width": 640,
+      "overflow": false,
+      "form": null,
+      "control": null,
+      "nav": null,
+      "tabs": [],
+      "article": [
+        {
+          "x": 0,
+          "y": 0,
+          "w": 640,
+          "h": 852,
+          "right": 640,
+          "bottom": 852
+        }
+      ]
+    },
+    {
+      "path": "/",
+      "width": 640,
+      "overflow": false,
+      "form": null,
+      "control": null,
+      "nav": {
+        "x": 16,
+        "y": 776,
+        "w": 608,
+        "h": 68,
+        "right": 624,
+        "bottom": 844
+      },
+      "tabs": [
+        {
+          "x": 29,
+          "y": 786,
+          "w": 256,
+          "h": 48,
+          "right": 285,
+          "bottom": 834
+        },
+        {
+          "x": 293,
+          "y": 783,
+          "w": 54,
+          "h": 54,
+          "right": 347,
+          "bottom": 837
+        },
+        {
+          "x": 355,
+          "y": 786.5,
+          "w": 256,
+          "h": 47,
+          "right": 611,
+          "bottom": 833.5
+        }
+      ],
+      "article": []
+    },
+    {
+      "path": "/search",
+      "width": 1440,
+      "overflow": false,
+      "form": {
+        "x": 472,
+        "y": 20,
+        "w": 552,
+        "h": 47,
+        "right": 1024,
+        "bottom": 67
+      },
+      "control": {
+        "x": 473,
+        "y": 21.5,
+        "w": 44,
+        "h": 44,
+        "right": 517,
+        "bottom": 65.5
+      },
+      "nav": {
+        "x": 416,
+        "y": 776,
+        "w": 608,
+        "h": 68,
+        "right": 1024,
+        "bottom": 844
+      },
+      "tabs": [
+        {
+          "x": 429,
+          "y": 786,
+          "w": 256,
+          "h": 48,
+          "right": 685,
+          "bottom": 834
+        },
+        {
+          "x": 693,
+          "y": 783,
+          "w": 54,
+          "h": 54,
+          "right": 747,
+          "bottom": 837
+        },
+        {
+          "x": 755,
+          "y": 786.5,
+          "w": 256,
+          "h": 47,
+          "right": 1011,
+          "bottom": 833.5
+        }
+      ],
+      "article": []
+    },
+    {
+      "path": "/incidents",
+      "width": 1440,
+      "overflow": false,
+      "form": null,
+      "control": null,
+      "nav": {
+        "x": 416,
+        "y": 776,
+        "w": 608,
+        "h": 68,
+        "right": 1024,
+        "bottom": 844
+      },
+      "tabs": [
+        {
+          "x": 429,
+          "y": 783,
+          "w": 256,
+          "h": 54,
+          "right": 685,
+          "bottom": 837
+        },
+        {
+          "x": 693,
+          "y": 783,
+          "w": 54,
+          "h": 54,
+          "right": 747,
+          "bottom": 837
+        },
+        {
+          "x": 755,
+          "y": 786.5,
+          "w": 256,
+          "h": 47,
+          "right": 1011,
+          "bottom": 833.5
+        }
+      ],
+      "article": [
+        {
+          "x": 416,
+          "y": 124,
+          "w": 608,
+          "h": 126,
+          "right": 1024,
+          "bottom": 250
+        },
+        {
+          "x": 416,
+          "y": 262,
+          "w": 608,
+          "h": 126,
+          "right": 1024,
+          "bottom": 388
+        },
+        {
+          "x": 416,
+          "y": 400,
+          "w": 608,
+          "h": 126,
+          "right": 1024,
+          "bottom": 526
+        }
+      ]
+    },
+    {
+      "path": "/report",
+      "width": 1440,
+      "overflow": false,
+      "form": null,
+      "control": null,
+      "nav": null,
+      "tabs": [],
+      "article": []
+    },
+    {
+      "path": "/incidents/0000000000000000000000000000000000000000000000000000000000000000",
+      "width": 1440,
+      "overflow": false,
+      "form": null,
+      "control": null,
+      "nav": null,
+      "tabs": [],
+      "article": [
+        {
+          "x": 400,
+          "y": 0,
+          "w": 640,
+          "h": 852,
+          "right": 1040,
+          "bottom": 852
+        }
+      ]
+    },
+    {
+      "path": "/",
+      "width": 1440,
+      "overflow": false,
+      "form": null,
+      "control": null,
+      "nav": {
+        "x": 416,
+        "y": 776,
+        "w": 608,
+        "h": 68,
+        "right": 1024,
+        "bottom": 844
+      },
+      "tabs": [
+        {
+          "x": 429,
+          "y": 786,
+          "w": 256,
+          "h": 48,
+          "right": 685,
+          "bottom": 834
+        },
+        {
+          "x": 693,
+          "y": 783,
+          "w": 54,
+          "h": 54,
+          "right": 747,
+          "bottom": 837
+        },
+        {
+          "x": 755,
+          "y": 786.5,
+          "w": 256,
+          "h": 47,
+          "right": 1011,
+          "bottom": 833.5
+        }
+      ],
+      "article": []
+    },
+    {
+      "path": "/incidents",
+      "retryFocusWhilePending": true
+    },
+    {
+      "path": "/search?q=AI",
+      "retryFocusWhilePending": true
+    },
+    {
+      "path": "/",
+      "width": 667,
+      "overflow": false,
+      "form": null,
+      "control": null,
+      "nav": {
+        "x": 29.5,
+        "y": 299,
+        "w": 608,
+        "h": 68,
+        "right": 637.5,
+        "bottom": 367
+      },
+      "tabs": [
+        {
+          "x": 42.5,
+          "y": 309,
+          "w": 256,
+          "h": 48,
+          "right": 298.5,
+          "bottom": 357
+        },
+        {
+          "x": 306.5,
+          "y": 306,
+          "w": 54,
+          "h": 54,
+          "right": 360.5,
+          "bottom": 360
+        },
+        {
+          "x": 368.5,
+          "y": 309.5,
+          "w": 256,
+          "h": 47,
+          "right": 624.5,
+          "bottom": 356.5
+        }
+      ],
+      "article": [
+        {
+          "x": 29.5,
+          "y": 219,
+          "w": 200,
+          "h": 62,
+          "right": 229.5,
+          "bottom": 281
+        },
+        {
+          "x": 239.5,
+          "y": 219,
+          "w": 200,
+          "h": 62,
+          "right": 439.5,
+          "bottom": 281
+        },
+        {
+          "x": 449.5,
+          "y": 219,
+          "w": 200,
+          "h": 62,
+          "right": 649.5,
+          "bottom": 281
+        }
+      ]
+    }
+  ],
+  "requests": [
+    {
+      "path": "/news",
+      "q": "AI",
+      "offset": 0
+    },
+    {
+      "path": "/news",
+      "q": "AI",
+      "offset": 20
+    },
+    {
+      "path": "/news",
+      "q": "AI",
+      "offset": 20
+    },
+    {
+      "path": "/news",
+      "q": "AI",
+      "offset": 40
+    },
+    {
+      "path": "/news",
+      "q": "교통통제",
+      "offset": 0
+    },
+    {
+      "path": "/news",
+      "q": "교통통제",
+      "offset": 0
+    }
+  ],
+  "errors": [],
+  "reportFixturePosts": 1,
+  "liveReads": 22,
+  "externalWrites": 0
+}
