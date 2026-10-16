@@ -307,7 +307,7 @@ test('articleListMorePendingFailuresAndRetryPreserveArticles', async () => {
 });
 ```
 
-- [ ] articleListMoreStopsOnEmptyPageAndDoesNotOfferFinishedLists — 기존 회귀 이관
+- [x] articleListMoreStopsOnEmptyPageAndDoesNotOfferFinishedLists — 기존 회귀 이관
 ```ts
 test('articleListMoreStopsOnEmptyPageAndDoesNotOfferFinishedLists', async () => {
   request.mockResolvedValueOnce(Response.json({ total: 100, items: batch() }));

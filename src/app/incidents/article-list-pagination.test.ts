@@ -290,3 +290,36 @@ test('articleListMorePendingFailuresAndRetryPreserveArticles', async () => {
   expect(container.querySelector('[aria-busy="true"]')).toBeNull();
   expect(container.querySelector('button')).toBeNull();
 });
+
+test('articleListMoreStopsOnEmptyPageAndDoesNotOfferFinishedLists', async () => {
+  request.mockResolvedValueOnce(Response.json({ total: 100, items: batch() }));
+  await mount();
+  expectsObservedTail();
+  request.mockResolvedValueOnce(Response.json({ total: 100, items: [] }));
+  await intersect();
+  expect(titles()).toEqual(batch().map((item) => item.article.title));
+  expect(container.querySelector('button')).toBeNull();
+  expect(container.textContent).not.toContain('아직 수집된 기사가 없어요');
+  expect(container.querySelector('[role="alert"]')).toBeNull();
+  expect(offsets()).toEqual(['0', '20']);
+  await intersect();
+  expect(request).toHaveBeenCalledTimes(2);
+
+  await act(async () => root.render(null));
+  request.mockResolvedValueOnce(Response.json({ total: 99, items: [] }));
+  await mount();
+  expect(titles()).toEqual([]);
+  expect(container.querySelector('[role="status"]')?.textContent).toContain(
+    '아직 수집된 기사가 없어요',
+  );
+  expect(container.querySelector('button')).toBeNull();
+  expect(container.querySelector('[role="alert"]')).toBeNull();
+
+  await act(async () => root.render(null));
+  request.mockResolvedValueOnce(Response.json({ total: 20, items: batch() }));
+  await mount();
+  expect(titles()).toEqual(batch().map((item) => item.article.title));
+  expect(container.querySelector('button')).toBeNull();
+  expect(offsets()).toEqual(['0', '20', '0', '0']);
+  expect(request).toHaveBeenCalledTimes(4);
+});
