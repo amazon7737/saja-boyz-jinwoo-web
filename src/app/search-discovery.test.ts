@@ -281,3 +281,49 @@ test('crawlEndpointsListCanonicalRecentArticlesWithBoundedRequests', async () =>
   ).toBe(false);
   expect(request).toHaveBeenCalledTimes(1);
 });
+
+test('serverArchiveLinksOlderRawPagesWithoutReplacingInfiniteScroll', async () => {
+  const routeModule = await load('./archive/page.tsx');
+  assert(typeof routeModule.default === 'function');
+  const fixtures = Array.from({ length: 20 }, (_, index) =>
+    item((index + 21).toString(16).padStart(64, '0')),
+  );
+  fixtures[1] = fixtures[0];
+  request.mockImplementation(async () =>
+    Response.json({ total: 41, items: fixtures }),
+  );
+  const container = view(await (routeModule.default as Route)(props('2')));
+  expect(container.querySelectorAll('article')).toHaveLength(19);
+  expect(container.querySelector('a[href="/archive"]')).not.toBeNull();
+  expect(container.querySelector('a[href="/archive?page=3"]')).not.toBeNull();
+  expect(
+    container.querySelector(
+      'a[href="/incidents/' + fixtures[0].article_id + '"]',
+    ),
+  ).not.toBeNull();
+  expect(container.textContent).not.toMatch(/41.*(?:사건|사고)|더 보기/);
+  for (const [input] of request.mock.calls)
+    expect(new URL(String(input)).searchParams.get('offset')).toBe('20');
+  expect(await metadata('./archive/page.tsx', props('2'))).toMatchObject({
+    alternates: { canonical: origin + '/archive?page=2' },
+  });
+  expect(await metadata('./archive/page.tsx', props('1'))).toMatchObject({
+    alternates: { canonical: origin + '/archive' },
+  });
+  request.mockReset();
+  for (const page of ['0', '-1', '1.5', 'x', '9007199254740992']) {
+    await expect((routeModule.default as Route)(props(page))).rejects.toThrow(
+      'TEST_SEO_NOT_FOUND',
+    );
+  }
+  expect(request).not.toHaveBeenCalled();
+  request.mockImplementation(async () =>
+    Response.json({ total: 41, items: [] }),
+  );
+  const end = view(await (routeModule.default as Route)(props('4')));
+  expect(end.querySelector('a[href="/archive?page=5"]')).toBeNull();
+  request.mockImplementation(async () => new Response('', { status: 503 }));
+  const failed = view(await (routeModule.default as Route)(props('2')));
+  expect(failed.querySelector('[role="alert"]')).not.toBeNull();
+  expect(failed.querySelector('a[href="/archive?page=2"]')).not.toBeNull();
+});
