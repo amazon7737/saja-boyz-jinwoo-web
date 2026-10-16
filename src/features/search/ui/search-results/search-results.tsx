@@ -1,6 +1,8 @@
 'use client';
 
-import { Fragment, useEffect, useRef, useState } from 'react';
+import { Fragment, useCallback, useEffect, useRef, useState } from 'react';
+
+import { useArticleTail } from '@/features/article-list/ui/article-list/use-article-tail';
 
 import { loadSearchPage } from '../../api/load-search-page';
 
@@ -42,8 +44,8 @@ export function SearchResults({
     };
   }, []);
 
-  async function loadMore() {
-    if (inFlight.current || !hasMore) return;
+  const loadMore = useCallback(async () => {
+    if (!active.current || inFlight.current || !hasMore) return;
     inFlight.current = true;
     setPending(true);
     setFailed(false);
@@ -70,13 +72,15 @@ export function SearchResults({
       inFlight.current = false;
       if (active.current) setPending(false);
     }
-  }
+  }, [hasMore, keyword, offset]);
+
+  const tail = useArticleTail(hasMore && !pending && !failed, loadMore);
 
   return (
     <section aria-label="기사 검색 결과" className="ui-results-enter">
       <h1 className="m-0 mb-3 text-xs font-bold text-muted">기사 검색 결과</h1>
       <p className="sr-only">
-        더 보기로 기사를 이어서 볼 수 있어요. 중복 기사는 한 번만 표시해요.
+        아래로 이동하면 기사를 이어서 불러와요. 중복 기사는 한 번만 표시해요.
       </p>
       {cards.length === 0 ? (
         <p role="status" className="text-muted leading-[1.7]">
@@ -95,16 +99,17 @@ export function SearchResults({
         </p>
       )}
       {failed && <p role="alert">추가 기사를 불러오지 못했어요</p>}
-      {hasMore && (
+      {hasMore && failed && (
         <button
           type="button"
           disabled={pending}
           onClick={loadMore}
           className="ui-control rounded-lg border border-solid border-border bg-surface px-3 py-2 text-brand disabled:opacity-50"
         >
-          {failed ? '다시 시도' : '더 보기'}
+          다시 시도
         </button>
       )}
+      {hasMore && <div ref={tail} aria-hidden="true" className="h-px" />}
     </section>
   );
 }

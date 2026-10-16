@@ -544,7 +544,7 @@ test('searchPageRequestValidatesOffsetAndRetainsRawTotal', async () => {
 });
 ```
 
-- [ ] searchMoreAppendsDeduplicatedPagesWithRawOffsets — 기존 회귀 이관
+- [x] searchMoreAppendsDeduplicatedPagesWithRawOffsets — 기존 회귀 이관
 ```ts
 test('searchMoreAppendsDeduplicatedPagesWithRawOffsets', async () => {
   const first = [...batch().slice(0, 19), article(0)];
