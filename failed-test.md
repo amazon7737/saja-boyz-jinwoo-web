@@ -588,7 +588,7 @@ test('searchMoreAppendsDeduplicatedPagesWithRawOffsets', async () => {
 });
 ```
 
-- [ ] searchMorePendingFailureAndRetryPreserveLoadedArticles — 기존 회귀 이관
+- [x] searchMorePendingFailureAndRetryPreserveLoadedArticles — 기존 회귀 이관
 ```ts
 test('searchMorePendingFailureAndRetryPreserveLoadedArticles', async () => {
   request.mockResolvedValueOnce(Response.json({ total: 21, items: batch() }));
