@@ -2,9 +2,9 @@
 branch: codex/search-discovery
 owner: easter721
 started: 2026-10-16
-status: active
+status: done
 goal: feat(seo): 검색 수집·기사 공유 미리보기와 서비스 정보 최적화
-next: src/app 메타데이터·robots·sitemap, 기사 상세 공유·구조화 정보, 서비스 소개와 검색 수집 경로
+next: dev 대상 PR 리뷰 후 dev→main 운영 배포·Search Console 확인
 base: dev
 ---
 
@@ -15,3 +15,5 @@ base: dev
 - 소바야 정확 명세·테스트를 승인받은 뒤 구현한다.
 
 - 2026-10-16 정확 초안 신규6개/기존 보안1개·브랜드 PNG 준비, probe14개 중 기존8PASS/신규6RED·타입PASS. 사용자 정확 승인 대기.
+
+- 최종: 신규6개/기존115개 총121개, 운영 QA96개·기본빌드·타입·포맷·독립 리뷰 완료. 사용자 제공 Google 확인 태그 포함. 검증 근거 evidence/final/.

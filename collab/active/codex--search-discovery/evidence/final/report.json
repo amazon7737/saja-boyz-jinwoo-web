@@ -1,0 +1,1578 @@
+{
+  "checks": [
+    {
+      "name": "browser detail200",
+      "passed": true,
+      "status": 200
+    },
+    {
+      "name": "browser article title",
+      "passed": true,
+      "meta": {
+        "title": "검증 기사 · 서울 도로 점검 & 안내 · 흉흉 · 내 주변의 사건 사고",
+        "description": "검색과 공유 검증용 기사 요약입니다. 실제 사건 정보가 아닙니다.",
+        "canonical": "https://hyunghyung.vercel.app/incidents/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "ogTitle": "검증 기사 · 서울 도로 점검 & 안내",
+        "ogUrl": "https://hyunghyung.vercel.app/incidents/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "ogImage": "https://hyunghyung.vercel.app/og/site.png",
+        "ogLocale": "ko_KR",
+        "ogSite": "흉흉",
+        "twitter": "summary_large_image"
+      }
+    },
+    {
+      "name": "browser clean production canonical",
+      "passed": true,
+      "meta": {
+        "title": "검증 기사 · 서울 도로 점검 & 안내 · 흉흉 · 내 주변의 사건 사고",
+        "description": "검색과 공유 검증용 기사 요약입니다. 실제 사건 정보가 아닙니다.",
+        "canonical": "https://hyunghyung.vercel.app/incidents/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "ogTitle": "검증 기사 · 서울 도로 점검 & 안내",
+        "ogUrl": "https://hyunghyung.vercel.app/incidents/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "ogImage": "https://hyunghyung.vercel.app/og/site.png",
+        "ogLocale": "ko_KR",
+        "ogSite": "흉흉",
+        "twitter": "summary_large_image"
+      }
+    },
+    {
+      "name": "browser preview fields",
+      "passed": true,
+      "meta": {
+        "title": "검증 기사 · 서울 도로 점검 & 안내 · 흉흉 · 내 주변의 사건 사고",
+        "description": "검색과 공유 검증용 기사 요약입니다. 실제 사건 정보가 아닙니다.",
+        "canonical": "https://hyunghyung.vercel.app/incidents/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "ogTitle": "검증 기사 · 서울 도로 점검 & 안내",
+        "ogUrl": "https://hyunghyung.vercel.app/incidents/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "ogImage": "https://hyunghyung.vercel.app/og/site.png",
+        "ogLocale": "ko_KR",
+        "ogSite": "흉흉",
+        "twitter": "summary_large_image"
+      }
+    },
+    {
+      "name": "browser Korean brand preview identity",
+      "passed": true,
+      "meta": {
+        "title": "검증 기사 · 서울 도로 점검 & 안내 · 흉흉 · 내 주변의 사건 사고",
+        "description": "검색과 공유 검증용 기사 요약입니다. 실제 사건 정보가 아닙니다.",
+        "canonical": "https://hyunghyung.vercel.app/incidents/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "ogTitle": "검증 기사 · 서울 도로 점검 & 안내",
+        "ogUrl": "https://hyunghyung.vercel.app/incidents/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "ogImage": "https://hyunghyung.vercel.app/og/site.png",
+        "ogLocale": "ko_KR",
+        "ogSite": "흉흉",
+        "twitter": "summary_large_image"
+      }
+    },
+    {
+      "name": "browser one request-scoped detail fetch",
+      "passed": true,
+      "delta": 1
+    },
+    {
+      "name": "browser visible source citation",
+      "passed": true
+    },
+    {
+      "name": "google detail200",
+      "passed": true,
+      "status": 200
+    },
+    {
+      "name": "google article title",
+      "passed": true,
+      "meta": {
+        "title": "검증 기사 · 서울 도로 점검 & 안내 · 흉흉 · 내 주변의 사건 사고",
+        "description": "검색과 공유 검증용 기사 요약입니다. 실제 사건 정보가 아닙니다.",
+        "canonical": "https://hyunghyung.vercel.app/incidents/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "ogTitle": "검증 기사 · 서울 도로 점검 & 안내",
+        "ogUrl": "https://hyunghyung.vercel.app/incidents/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "ogImage": "https://hyunghyung.vercel.app/og/site.png",
+        "ogLocale": "ko_KR",
+        "ogSite": "흉흉",
+        "twitter": "summary_large_image"
+      }
+    },
+    {
+      "name": "google clean production canonical",
+      "passed": true,
+      "meta": {
+        "title": "검증 기사 · 서울 도로 점검 & 안내 · 흉흉 · 내 주변의 사건 사고",
+        "description": "검색과 공유 검증용 기사 요약입니다. 실제 사건 정보가 아닙니다.",
+        "canonical": "https://hyunghyung.vercel.app/incidents/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "ogTitle": "검증 기사 · 서울 도로 점검 & 안내",
+        "ogUrl": "https://hyunghyung.vercel.app/incidents/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "ogImage": "https://hyunghyung.vercel.app/og/site.png",
+        "ogLocale": "ko_KR",
+        "ogSite": "흉흉",
+        "twitter": "summary_large_image"
+      }
+    },
+    {
+      "name": "google preview fields",
+      "passed": true,
+      "meta": {
+        "title": "검증 기사 · 서울 도로 점검 & 안내 · 흉흉 · 내 주변의 사건 사고",
+        "description": "검색과 공유 검증용 기사 요약입니다. 실제 사건 정보가 아닙니다.",
+        "canonical": "https://hyunghyung.vercel.app/incidents/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "ogTitle": "검증 기사 · 서울 도로 점검 & 안내",
+        "ogUrl": "https://hyunghyung.vercel.app/incidents/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "ogImage": "https://hyunghyung.vercel.app/og/site.png",
+        "ogLocale": "ko_KR",
+        "ogSite": "흉흉",
+        "twitter": "summary_large_image"
+      }
+    },
+    {
+      "name": "google Korean brand preview identity",
+      "passed": true,
+      "meta": {
+        "title": "검증 기사 · 서울 도로 점검 & 안내 · 흉흉 · 내 주변의 사건 사고",
+        "description": "검색과 공유 검증용 기사 요약입니다. 실제 사건 정보가 아닙니다.",
+        "canonical": "https://hyunghyung.vercel.app/incidents/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "ogTitle": "검증 기사 · 서울 도로 점검 & 안내",
+        "ogUrl": "https://hyunghyung.vercel.app/incidents/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "ogImage": "https://hyunghyung.vercel.app/og/site.png",
+        "ogLocale": "ko_KR",
+        "ogSite": "흉흉",
+        "twitter": "summary_large_image"
+      }
+    },
+    {
+      "name": "google one request-scoped detail fetch",
+      "passed": true,
+      "delta": 1
+    },
+    {
+      "name": "google visible source citation",
+      "passed": true
+    },
+    {
+      "name": "facebook detail200",
+      "passed": true,
+      "status": 200
+    },
+    {
+      "name": "facebook article title",
+      "passed": true,
+      "meta": {
+        "title": "검증 기사 · 서울 도로 점검 & 안내 · 흉흉 · 내 주변의 사건 사고",
+        "description": "검색과 공유 검증용 기사 요약입니다. 실제 사건 정보가 아닙니다.",
+        "canonical": "https://hyunghyung.vercel.app/incidents/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "ogTitle": "검증 기사 · 서울 도로 점검 & 안내",
+        "ogUrl": "https://hyunghyung.vercel.app/incidents/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "ogImage": "https://hyunghyung.vercel.app/og/site.png",
+        "ogLocale": "ko_KR",
+        "ogSite": "흉흉",
+        "twitter": "summary_large_image"
+      }
+    },
+    {
+      "name": "facebook clean production canonical",
+      "passed": true,
+      "meta": {
+        "title": "검증 기사 · 서울 도로 점검 & 안내 · 흉흉 · 내 주변의 사건 사고",
+        "description": "검색과 공유 검증용 기사 요약입니다. 실제 사건 정보가 아닙니다.",
+        "canonical": "https://hyunghyung.vercel.app/incidents/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "ogTitle": "검증 기사 · 서울 도로 점검 & 안내",
+        "ogUrl": "https://hyunghyung.vercel.app/incidents/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "ogImage": "https://hyunghyung.vercel.app/og/site.png",
+        "ogLocale": "ko_KR",
+        "ogSite": "흉흉",
+        "twitter": "summary_large_image"
+      }
+    },
+    {
+      "name": "facebook preview fields",
+      "passed": true,
+      "meta": {
+        "title": "검증 기사 · 서울 도로 점검 & 안내 · 흉흉 · 내 주변의 사건 사고",
+        "description": "검색과 공유 검증용 기사 요약입니다. 실제 사건 정보가 아닙니다.",
+        "canonical": "https://hyunghyung.vercel.app/incidents/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "ogTitle": "검증 기사 · 서울 도로 점검 & 안내",
+        "ogUrl": "https://hyunghyung.vercel.app/incidents/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "ogImage": "https://hyunghyung.vercel.app/og/site.png",
+        "ogLocale": "ko_KR",
+        "ogSite": "흉흉",
+        "twitter": "summary_large_image"
+      }
+    },
+    {
+      "name": "facebook Korean brand preview identity",
+      "passed": true,
+      "meta": {
+        "title": "검증 기사 · 서울 도로 점검 & 안내 · 흉흉 · 내 주변의 사건 사고",
+        "description": "검색과 공유 검증용 기사 요약입니다. 실제 사건 정보가 아닙니다.",
+        "canonical": "https://hyunghyung.vercel.app/incidents/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "ogTitle": "검증 기사 · 서울 도로 점검 & 안내",
+        "ogUrl": "https://hyunghyung.vercel.app/incidents/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "ogImage": "https://hyunghyung.vercel.app/og/site.png",
+        "ogLocale": "ko_KR",
+        "ogSite": "흉흉",
+        "twitter": "summary_large_image"
+      }
+    },
+    {
+      "name": "facebook preview present in raw head",
+      "passed": true,
+      "head": {
+        "title": "검증 기사 · 서울 도로 점검 & 안내 · 흉흉 · 내 주변의 사건 사고",
+        "description": "검색과 공유 검증용 기사 요약입니다. 실제 사건 정보가 아닙니다.",
+        "canonical": "https://hyunghyung.vercel.app/incidents/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "ogTitle": "검증 기사 · 서울 도로 점검 & 안내",
+        "ogUrl": "https://hyunghyung.vercel.app/incidents/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "ogImage": "https://hyunghyung.vercel.app/og/site.png",
+        "ogLocale": "ko_KR",
+        "ogSite": "흉흉",
+        "twitter": "summary_large_image"
+      }
+    },
+    {
+      "name": "facebook one request-scoped detail fetch",
+      "passed": true,
+      "delta": 1
+    },
+    {
+      "name": "facebook visible source citation",
+      "passed": true
+    },
+    {
+      "name": "twitter detail200",
+      "passed": true,
+      "status": 200
+    },
+    {
+      "name": "twitter article title",
+      "passed": true,
+      "meta": {
+        "title": "검증 기사 · 서울 도로 점검 & 안내 · 흉흉 · 내 주변의 사건 사고",
+        "description": "검색과 공유 검증용 기사 요약입니다. 실제 사건 정보가 아닙니다.",
+        "canonical": "https://hyunghyung.vercel.app/incidents/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "ogTitle": "검증 기사 · 서울 도로 점검 & 안내",
+        "ogUrl": "https://hyunghyung.vercel.app/incidents/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "ogImage": "https://hyunghyung.vercel.app/og/site.png",
+        "ogLocale": "ko_KR",
+        "ogSite": "흉흉",
+        "twitter": "summary_large_image"
+      }
+    },
+    {
+      "name": "twitter clean production canonical",
+      "passed": true,
+      "meta": {
+        "title": "검증 기사 · 서울 도로 점검 & 안내 · 흉흉 · 내 주변의 사건 사고",
+        "description": "검색과 공유 검증용 기사 요약입니다. 실제 사건 정보가 아닙니다.",
+        "canonical": "https://hyunghyung.vercel.app/incidents/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "ogTitle": "검증 기사 · 서울 도로 점검 & 안내",
+        "ogUrl": "https://hyunghyung.vercel.app/incidents/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "ogImage": "https://hyunghyung.vercel.app/og/site.png",
+        "ogLocale": "ko_KR",
+        "ogSite": "흉흉",
+        "twitter": "summary_large_image"
+      }
+    },
+    {
+      "name": "twitter preview fields",
+      "passed": true,
+      "meta": {
+        "title": "검증 기사 · 서울 도로 점검 & 안내 · 흉흉 · 내 주변의 사건 사고",
+        "description": "검색과 공유 검증용 기사 요약입니다. 실제 사건 정보가 아닙니다.",
+        "canonical": "https://hyunghyung.vercel.app/incidents/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "ogTitle": "검증 기사 · 서울 도로 점검 & 안내",
+        "ogUrl": "https://hyunghyung.vercel.app/incidents/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "ogImage": "https://hyunghyung.vercel.app/og/site.png",
+        "ogLocale": "ko_KR",
+        "ogSite": "흉흉",
+        "twitter": "summary_large_image"
+      }
+    },
+    {
+      "name": "twitter Korean brand preview identity",
+      "passed": true,
+      "meta": {
+        "title": "검증 기사 · 서울 도로 점검 & 안내 · 흉흉 · 내 주변의 사건 사고",
+        "description": "검색과 공유 검증용 기사 요약입니다. 실제 사건 정보가 아닙니다.",
+        "canonical": "https://hyunghyung.vercel.app/incidents/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "ogTitle": "검증 기사 · 서울 도로 점검 & 안내",
+        "ogUrl": "https://hyunghyung.vercel.app/incidents/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "ogImage": "https://hyunghyung.vercel.app/og/site.png",
+        "ogLocale": "ko_KR",
+        "ogSite": "흉흉",
+        "twitter": "summary_large_image"
+      }
+    },
+    {
+      "name": "twitter preview present in raw head",
+      "passed": true,
+      "head": {
+        "title": "검증 기사 · 서울 도로 점검 & 안내 · 흉흉 · 내 주변의 사건 사고",
+        "description": "검색과 공유 검증용 기사 요약입니다. 실제 사건 정보가 아닙니다.",
+        "canonical": "https://hyunghyung.vercel.app/incidents/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "ogTitle": "검증 기사 · 서울 도로 점검 & 안내",
+        "ogUrl": "https://hyunghyung.vercel.app/incidents/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "ogImage": "https://hyunghyung.vercel.app/og/site.png",
+        "ogLocale": "ko_KR",
+        "ogSite": "흉흉",
+        "twitter": "summary_large_image"
+      }
+    },
+    {
+      "name": "twitter one request-scoped detail fetch",
+      "passed": true,
+      "delta": 1
+    },
+    {
+      "name": "twitter visible source citation",
+      "passed": true
+    },
+    {
+      "name": "kakao detail200",
+      "passed": true,
+      "status": 200
+    },
+    {
+      "name": "kakao article title",
+      "passed": true,
+      "meta": {
+        "title": "검증 기사 · 서울 도로 점검 & 안내 · 흉흉 · 내 주변의 사건 사고",
+        "description": "검색과 공유 검증용 기사 요약입니다. 실제 사건 정보가 아닙니다.",
+        "canonical": "https://hyunghyung.vercel.app/incidents/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "ogTitle": "검증 기사 · 서울 도로 점검 & 안내",
+        "ogUrl": "https://hyunghyung.vercel.app/incidents/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "ogImage": "https://hyunghyung.vercel.app/og/site.png",
+        "ogLocale": "ko_KR",
+        "ogSite": "흉흉",
+        "twitter": "summary_large_image"
+      }
+    },
+    {
+      "name": "kakao clean production canonical",
+      "passed": true,
+      "meta": {
+        "title": "검증 기사 · 서울 도로 점검 & 안내 · 흉흉 · 내 주변의 사건 사고",
+        "description": "검색과 공유 검증용 기사 요약입니다. 실제 사건 정보가 아닙니다.",
+        "canonical": "https://hyunghyung.vercel.app/incidents/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "ogTitle": "검증 기사 · 서울 도로 점검 & 안내",
+        "ogUrl": "https://hyunghyung.vercel.app/incidents/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "ogImage": "https://hyunghyung.vercel.app/og/site.png",
+        "ogLocale": "ko_KR",
+        "ogSite": "흉흉",
+        "twitter": "summary_large_image"
+      }
+    },
+    {
+      "name": "kakao preview fields",
+      "passed": true,
+      "meta": {
+        "title": "검증 기사 · 서울 도로 점검 & 안내 · 흉흉 · 내 주변의 사건 사고",
+        "description": "검색과 공유 검증용 기사 요약입니다. 실제 사건 정보가 아닙니다.",
+        "canonical": "https://hyunghyung.vercel.app/incidents/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "ogTitle": "검증 기사 · 서울 도로 점검 & 안내",
+        "ogUrl": "https://hyunghyung.vercel.app/incidents/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "ogImage": "https://hyunghyung.vercel.app/og/site.png",
+        "ogLocale": "ko_KR",
+        "ogSite": "흉흉",
+        "twitter": "summary_large_image"
+      }
+    },
+    {
+      "name": "kakao Korean brand preview identity",
+      "passed": true,
+      "meta": {
+        "title": "검증 기사 · 서울 도로 점검 & 안내 · 흉흉 · 내 주변의 사건 사고",
+        "description": "검색과 공유 검증용 기사 요약입니다. 실제 사건 정보가 아닙니다.",
+        "canonical": "https://hyunghyung.vercel.app/incidents/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "ogTitle": "검증 기사 · 서울 도로 점검 & 안내",
+        "ogUrl": "https://hyunghyung.vercel.app/incidents/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "ogImage": "https://hyunghyung.vercel.app/og/site.png",
+        "ogLocale": "ko_KR",
+        "ogSite": "흉흉",
+        "twitter": "summary_large_image"
+      }
+    },
+    {
+      "name": "kakao preview present in raw head",
+      "passed": true,
+      "head": {
+        "title": "검증 기사 · 서울 도로 점검 & 안내 · 흉흉 · 내 주변의 사건 사고",
+        "description": "검색과 공유 검증용 기사 요약입니다. 실제 사건 정보가 아닙니다.",
+        "canonical": "https://hyunghyung.vercel.app/incidents/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "ogTitle": "검증 기사 · 서울 도로 점검 & 안내",
+        "ogUrl": "https://hyunghyung.vercel.app/incidents/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "ogImage": "https://hyunghyung.vercel.app/og/site.png",
+        "ogLocale": "ko_KR",
+        "ogSite": "흉흉",
+        "twitter": "summary_large_image"
+      }
+    },
+    {
+      "name": "kakao one request-scoped detail fetch",
+      "passed": true,
+      "delta": 1
+    },
+    {
+      "name": "kakao visible source citation",
+      "passed": true
+    },
+    {
+      "name": "separate article request isolation",
+      "passed": true
+    },
+    {
+      "name": "concise normalized real summary",
+      "passed": true,
+      "meta": {
+        "title": "검증 제목 · 공백 정리 · 흉흉 · 내 주변의 사건 사고",
+        "description": "긴 검증 요약입니다. 실제 사건이 아닌 수집 메타데이터 표시 검증입니다. 긴 검증 요약입니다. 실제 사건이 아닌 수집 메타데이터 표시 검증입니다. 긴 검증 요약입니다. 실제 사건이 아닌 수집 메타데이터 표시 검증입니다. 긴 검증 요약입니다. 실제 사건이 아닌 수집 메타데이터 표시…",
+        "canonical": "https://hyunghyung.vercel.app/incidents/cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+        "ogTitle": "검증 제목 · 공백 정리",
+        "ogUrl": "https://hyunghyung.vercel.app/incidents/cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+        "ogImage": "https://hyunghyung.vercel.app/og/site.png",
+        "ogLocale": "ko_KR",
+        "ogSite": "흉흉",
+        "twitter": "summary_large_image"
+      }
+    },
+    {
+      "name": "temporary error noindex no leaked error",
+      "passed": true,
+      "status": 200,
+      "meta": {
+        "title": "기사를 불러오지 못했어요 · 흉흉 · 내 주변의 사건 사고",
+        "description": "내 주변의 사건 사고 기사를 지도와 목록에서 살펴보고, 기사 요약과 원문을 확인하세요.",
+        "ogTitle": "흉흉 · 내 주변의 사건 사고",
+        "ogImage": "https://hyunghyung.vercel.app/og/site.png",
+        "ogLocale": "ko_KR",
+        "ogSite": "흉흉",
+        "twitter": "summary_large_image",
+        "robots": "noindex, follow"
+      }
+    },
+    {
+      "name": "missing article notFound noindex; streamed200 or nonstream404",
+      "passed": true,
+      "status": 200,
+      "meta": {
+        "title": "흉흉 · 내 주변의 사건 사고",
+        "description": "내 주변의 사건 사고 기사를 지도와 목록에서 살펴보고, 기사 요약과 원문을 확인하세요.",
+        "ogTitle": "흉흉 · 내 주변의 사건 사고",
+        "ogImage": "https://hyunghyung.vercel.app/og/site.png",
+        "ogLocale": "ko_KR",
+        "ogSite": "흉흉",
+        "twitter": "summary_large_image",
+        "robots": "noindex"
+      },
+      "reference": "https://nextjs.org/docs/app/api-reference/file-conventions/not-found"
+    },
+    {
+      "name": "missing article server signals the notFound boundary",
+      "passed": true
+    },
+    {
+      "name": "invalid ID notFound noindex without article metadata",
+      "passed": true,
+      "status": 200
+    },
+    {
+      "name": "unmatched global route HTTP404",
+      "passed": true,
+      "status": 404
+    },
+    {
+      "name": "JSON-LD escape and absent invalid dates/source",
+      "passed": true
+    },
+    {
+      "name": "route metadata /",
+      "passed": true,
+      "status": 200,
+      "meta": {
+        "title": "흉흉 · 내 주변의 사건 사고",
+        "description": "내 주변의 사건 사고 기사를 지도와 목록에서 살펴보고, 기사 요약과 원문을 확인하세요.",
+        "canonical": "https://hyunghyung.vercel.app/",
+        "ogTitle": "흉흉 · 내 주변의 사건 사고",
+        "ogUrl": "https://hyunghyung.vercel.app",
+        "ogImage": "https://hyunghyung.vercel.app/og/site.png",
+        "ogLocale": "ko_KR",
+        "ogSite": "흉흉",
+        "twitter": "summary_large_image"
+      }
+    },
+    {
+      "name": "Google ownership tag exactly once in head /",
+      "passed": true,
+      "count": 1
+    },
+    {
+      "name": "route metadata /incidents",
+      "passed": true,
+      "status": 200,
+      "meta": {
+        "title": "사건 사고 기사 목록 · 흉흉 · 내 주변의 사건 사고",
+        "description": "수집된 사건 사고 기사의 요약과 원문을 목록에서 확인하세요.",
+        "canonical": "https://hyunghyung.vercel.app/incidents",
+        "ogTitle": "사건 사고 기사 목록",
+        "ogUrl": "https://hyunghyung.vercel.app/incidents",
+        "ogImage": "https://hyunghyung.vercel.app/og/site.png",
+        "ogLocale": "ko_KR",
+        "ogSite": "흉흉",
+        "twitter": "summary_large_image"
+      }
+    },
+    {
+      "name": "Google ownership tag exactly once in head /incidents",
+      "passed": true,
+      "count": 1
+    },
+    {
+      "name": "route metadata /about",
+      "passed": true,
+      "status": 200,
+      "meta": {
+        "title": "서비스 안내 · 흉흉 · 내 주변의 사건 사고",
+        "description": "흉흉의 기사 검색, 지도 위치, 발행일, AI 생성 이미지와 원문 확인 방법을 안내합니다.",
+        "canonical": "https://hyunghyung.vercel.app/about",
+        "ogTitle": "서비스 안내",
+        "ogUrl": "https://hyunghyung.vercel.app/about",
+        "ogImage": "https://hyunghyung.vercel.app/og/site.png",
+        "ogLocale": "ko_KR",
+        "ogSite": "흉흉",
+        "twitter": "summary_large_image"
+      }
+    },
+    {
+      "name": "Google ownership tag exactly once in head /about",
+      "passed": true,
+      "count": 1
+    },
+    {
+      "name": "service answers server rendered",
+      "passed": true
+    },
+    {
+      "name": "route metadata /archive",
+      "passed": true,
+      "status": 200,
+      "meta": {
+        "title": "기사 아카이브 · 1페이지 · 흉흉 · 내 주변의 사건 사고",
+        "description": "수집된 사건 사고 기사를 페이지별로 살펴보세요.",
+        "canonical": "https://hyunghyung.vercel.app/archive",
+        "ogTitle": "기사 아카이브 · 1페이지",
+        "ogUrl": "https://hyunghyung.vercel.app/archive",
+        "ogImage": "https://hyunghyung.vercel.app/og/site.png",
+        "ogLocale": "ko_KR",
+        "ogSite": "흉흉",
+        "twitter": "summary_large_image"
+      }
+    },
+    {
+      "name": "Google ownership tag exactly once in head /archive",
+      "passed": true,
+      "count": 1
+    },
+    {
+      "name": "route metadata /archive?page=2",
+      "passed": true,
+      "status": 200,
+      "meta": {
+        "title": "기사 아카이브 · 2페이지 · 흉흉 · 내 주변의 사건 사고",
+        "description": "수집된 사건 사고 기사를 페이지별로 살펴보세요.",
+        "canonical": "https://hyunghyung.vercel.app/archive?page=2",
+        "ogTitle": "기사 아카이브 · 2페이지",
+        "ogUrl": "https://hyunghyung.vercel.app/archive?page=2",
+        "ogImage": "https://hyunghyung.vercel.app/og/site.png",
+        "ogLocale": "ko_KR",
+        "ogSite": "흉흉",
+        "twitter": "summary_large_image"
+      }
+    },
+    {
+      "name": "Google ownership tag exactly once in head /archive?page=2",
+      "passed": true,
+      "count": 1
+    },
+    {
+      "name": "archive2 canonical and real pagination",
+      "passed": true
+    },
+    {
+      "name": "route metadata /search?q=검증",
+      "passed": true,
+      "status": 200,
+      "meta": {
+        "title": "기사 검색 · 흉흉 · 내 주변의 사건 사고",
+        "description": "키워드로 사건 사고 기사를 검색하세요.",
+        "canonical": "https://hyunghyung.vercel.app/search",
+        "ogTitle": "기사 검색",
+        "ogUrl": "https://hyunghyung.vercel.app/search",
+        "ogImage": "https://hyunghyung.vercel.app/og/site.png",
+        "ogLocale": "ko_KR",
+        "ogSite": "흉흉",
+        "twitter": "summary_large_image",
+        "robots": "noindex, follow"
+      }
+    },
+    {
+      "name": "Google ownership tag exactly once in head /search?q=검증",
+      "passed": true,
+      "count": 1
+    },
+    {
+      "name": "non-content noindex /search?q=검증",
+      "passed": true,
+      "meta": {
+        "title": "기사 검색 · 흉흉 · 내 주변의 사건 사고",
+        "description": "키워드로 사건 사고 기사를 검색하세요.",
+        "canonical": "https://hyunghyung.vercel.app/search",
+        "ogTitle": "기사 검색",
+        "ogUrl": "https://hyunghyung.vercel.app/search",
+        "ogImage": "https://hyunghyung.vercel.app/og/site.png",
+        "ogLocale": "ko_KR",
+        "ogSite": "흉흉",
+        "twitter": "summary_large_image",
+        "robots": "noindex, follow"
+      }
+    },
+    {
+      "name": "route metadata /report",
+      "passed": true,
+      "status": 200,
+      "meta": {
+        "title": "제보하기 · 흉흉 · 내 주변의 사건 사고",
+        "description": "주변의 사건 사고를 제보하는 화면입니다.",
+        "canonical": "https://hyunghyung.vercel.app/report",
+        "ogTitle": "제보하기",
+        "ogUrl": "https://hyunghyung.vercel.app/report",
+        "ogImage": "https://hyunghyung.vercel.app/og/site.png",
+        "ogLocale": "ko_KR",
+        "ogSite": "흉흉",
+        "twitter": "summary_large_image",
+        "robots": "noindex, follow"
+      }
+    },
+    {
+      "name": "Google ownership tag exactly once in head /report",
+      "passed": true,
+      "count": 1
+    },
+    {
+      "name": "non-content noindex /report",
+      "passed": true,
+      "meta": {
+        "title": "제보하기 · 흉흉 · 내 주변의 사건 사고",
+        "description": "주변의 사건 사고를 제보하는 화면입니다.",
+        "canonical": "https://hyunghyung.vercel.app/report",
+        "ogTitle": "제보하기",
+        "ogUrl": "https://hyunghyung.vercel.app/report",
+        "ogImage": "https://hyunghyung.vercel.app/og/site.png",
+        "ogLocale": "ko_KR",
+        "ogSite": "흉흉",
+        "twitter": "summary_large_image",
+        "robots": "noindex, follow"
+      }
+    },
+    {
+      "name": "invalid archive page404",
+      "passed": true,
+      "status": 404
+    },
+    {
+      "name": "archive duplicate query uses first value",
+      "passed": true,
+      "status": 200,
+      "meta": {
+        "title": "기사 아카이브 · 2페이지 · 흉흉 · 내 주변의 사건 사고",
+        "description": "수집된 사건 사고 기사를 페이지별로 살펴보세요.",
+        "canonical": "https://hyunghyung.vercel.app/archive?page=2",
+        "ogTitle": "기사 아카이브 · 2페이지",
+        "ogUrl": "https://hyunghyung.vercel.app/archive?page=2",
+        "ogImage": "https://hyunghyung.vercel.app/og/site.png",
+        "ogLocale": "ko_KR",
+        "ogSite": "흉흉",
+        "twitter": "summary_large_image"
+      }
+    },
+    {
+      "name": "archive metadata and body share one request-scoped fetch",
+      "passed": true
+    },
+    {
+      "name": "empty archive noindex no next",
+      "passed": true
+    },
+    {
+      "name": "robots200 sitemap absolute",
+      "passed": true,
+      "type": "text/plain",
+      "text": "User-Agent: *\nAllow: /\n\nSitemap: https://hyunghyung.vercel.app/sitemap.xml\n"
+    },
+    {
+      "name": "sitemap canonical recent IDs",
+      "passed": true,
+      "count": 1,
+      "type": "application/xml"
+    },
+    {
+      "name": "sitemap single bounded request",
+      "passed": true,
+      "count": 1
+    },
+    {
+      "name": "sitemap static fallback on outage",
+      "passed": true
+    },
+    {
+      "name": "archive error noindex retry",
+      "passed": true
+    },
+    {
+      "name": "share PNG200 1200x630",
+      "passed": true
+    },
+    {
+      "name": "home no horizontal overflow 393",
+      "passed": true,
+      "geometry": {
+        "width": 393,
+        "scrollWidth": 393,
+        "main": {
+          "x": 0,
+          "y": 0,
+          "width": 393,
+          "height": 1150,
+          "top": 0,
+          "right": 393,
+          "bottom": 1150,
+          "left": 0
+        },
+        "title": "흉흉 · 내 주변의 사건 사고",
+        "headOG": "흉흉 · 내 주변의 사건 사고",
+        "headCanonical": "https://hyunghyung.vercel.app/"
+      }
+    },
+    {
+      "name": "home map remains one viewport 393",
+      "passed": true,
+      "mapBox": {
+        "x": 0,
+        "y": 0,
+        "width": 393,
+        "height": 852
+      }
+    },
+    {
+      "name": "home has visible service link 393",
+      "passed": true
+    },
+    {
+      "name": "home service link is readable not hidden 393",
+      "passed": true,
+      "linkBox": {
+        "x": 16,
+        "y": 702,
+        "width": 73.59375,
+        "height": 40
+      }
+    },
+    {
+      "name": "about no horizontal overflow 393",
+      "passed": true,
+      "geometry": {
+        "width": 393,
+        "scrollWidth": 393,
+        "main": {
+          "x": 16,
+          "y": 64,
+          "width": 361,
+          "height": 1014,
+          "top": 64,
+          "right": 377,
+          "bottom": 1078,
+          "left": 16
+        },
+        "title": "서비스 안내 · 흉흉 · 내 주변의 사건 사고",
+        "headOG": "서비스 안내",
+        "headCanonical": "https://hyunghyung.vercel.app/about"
+      }
+    },
+    {
+      "name": "archive no horizontal overflow 393",
+      "passed": true,
+      "geometry": {
+        "width": 393,
+        "scrollWidth": 393,
+        "main": {
+          "x": 16,
+          "y": 64,
+          "width": 361,
+          "height": 2990,
+          "top": 64,
+          "right": 377,
+          "bottom": 3054,
+          "left": 16
+        },
+        "title": "기사 아카이브 · 2페이지 · 흉흉 · 내 주변의 사건 사고",
+        "headOG": "기사 아카이브 · 2페이지",
+        "headCanonical": "https://hyunghyung.vercel.app/archive?page=2"
+      }
+    },
+    {
+      "name": "detail no horizontal overflow 393",
+      "passed": true,
+      "geometry": {
+        "width": 393,
+        "scrollWidth": 393,
+        "main": {
+          "x": 0,
+          "y": 0,
+          "width": 393,
+          "height": 852,
+          "top": 0,
+          "right": 393,
+          "bottom": 852,
+          "left": 0
+        },
+        "title": "검증 기사 · 서울 도로 점검 & 안내 · 흉흉 · 내 주변의 사건 사고"
+      }
+    },
+    {
+      "name": "search no horizontal overflow 393",
+      "passed": true,
+      "geometry": {
+        "width": 393,
+        "scrollWidth": 393,
+        "main": {
+          "x": 16,
+          "y": 20,
+          "width": 361,
+          "height": 2296,
+          "top": 20,
+          "right": 377,
+          "bottom": 2316,
+          "left": 16
+        },
+        "title": "기사 검색 · 흉흉 · 내 주변의 사건 사고",
+        "headOG": "기사 검색",
+        "headCanonical": "https://hyunghyung.vercel.app/search"
+      }
+    },
+    {
+      "name": "list no horizontal overflow 393",
+      "passed": true,
+      "geometry": {
+        "width": 393,
+        "scrollWidth": 393,
+        "main": {
+          "x": 16,
+          "y": 116,
+          "width": 361,
+          "height": 2679,
+          "top": 116,
+          "right": 377,
+          "bottom": 2795,
+          "left": 16
+        },
+        "title": "사건 사고 기사 목록 · 흉흉 · 내 주변의 사건 사고",
+        "headOG": "사건 사고 기사 목록",
+        "headCanonical": "https://hyunghyung.vercel.app/incidents"
+      }
+    },
+    {
+      "name": "home no horizontal overflow 320",
+      "passed": true,
+      "geometry": {
+        "width": 320,
+        "scrollWidth": 320,
+        "main": {
+          "x": 0,
+          "y": 0,
+          "width": 320,
+          "height": 1150,
+          "top": 0,
+          "right": 320,
+          "bottom": 1150,
+          "left": 0
+        },
+        "title": "흉흉 · 내 주변의 사건 사고",
+        "headOG": "흉흉 · 내 주변의 사건 사고",
+        "headCanonical": "https://hyunghyung.vercel.app/"
+      }
+    },
+    {
+      "name": "home map remains one viewport 320",
+      "passed": true,
+      "mapBox": {
+        "x": 0,
+        "y": 0,
+        "width": 320,
+        "height": 852
+      }
+    },
+    {
+      "name": "home has visible service link 320",
+      "passed": true
+    },
+    {
+      "name": "home service link is readable not hidden 320",
+      "passed": true,
+      "linkBox": {
+        "x": 16,
+        "y": 702,
+        "width": 73.59375,
+        "height": 40
+      }
+    },
+    {
+      "name": "about no horizontal overflow 320",
+      "passed": true,
+      "geometry": {
+        "width": 320,
+        "scrollWidth": 320,
+        "main": {
+          "x": 16,
+          "y": 64,
+          "width": 288,
+          "height": 1110,
+          "top": 64,
+          "right": 304,
+          "bottom": 1174,
+          "left": 16
+        },
+        "title": "서비스 안내 · 흉흉 · 내 주변의 사건 사고",
+        "headOG": "서비스 안내",
+        "headCanonical": "https://hyunghyung.vercel.app/about"
+      }
+    },
+    {
+      "name": "archive no horizontal overflow 320",
+      "passed": true,
+      "geometry": {
+        "width": 320,
+        "scrollWidth": 320,
+        "main": {
+          "x": 16,
+          "y": 64,
+          "width": 288,
+          "height": 3330,
+          "top": 64,
+          "right": 304,
+          "bottom": 3394,
+          "left": 16
+        },
+        "title": "기사 아카이브 · 2페이지 · 흉흉 · 내 주변의 사건 사고",
+        "headOG": "기사 아카이브 · 2페이지",
+        "headCanonical": "https://hyunghyung.vercel.app/archive?page=2"
+      }
+    },
+    {
+      "name": "detail no horizontal overflow 320",
+      "passed": true,
+      "geometry": {
+        "width": 320,
+        "scrollWidth": 320,
+        "main": {
+          "x": 0,
+          "y": 0,
+          "width": 320,
+          "height": 852,
+          "top": 0,
+          "right": 320,
+          "bottom": 852,
+          "left": 0
+        },
+        "title": "검증 기사 · 서울 도로 점검 & 안내 · 흉흉 · 내 주변의 사건 사고"
+      }
+    },
+    {
+      "name": "search no horizontal overflow 320",
+      "passed": true,
+      "geometry": {
+        "width": 320,
+        "scrollWidth": 320,
+        "main": {
+          "x": 16,
+          "y": 20,
+          "width": 288,
+          "height": 2340,
+          "top": 20,
+          "right": 304,
+          "bottom": 2360,
+          "left": 16
+        },
+        "title": "기사 검색 · 흉흉 · 내 주변의 사건 사고",
+        "headOG": "기사 검색",
+        "headCanonical": "https://hyunghyung.vercel.app/search"
+      }
+    },
+    {
+      "name": "list no horizontal overflow 320",
+      "passed": true,
+      "geometry": {
+        "width": 320,
+        "scrollWidth": 320,
+        "main": {
+          "x": 16,
+          "y": 116,
+          "width": 288,
+          "height": 2699,
+          "top": 116,
+          "right": 304,
+          "bottom": 2815,
+          "left": 16
+        },
+        "title": "사건 사고 기사 목록 · 흉흉 · 내 주변의 사건 사고",
+        "headOG": "사건 사고 기사 목록",
+        "headCanonical": "https://hyunghyung.vercel.app/incidents"
+      }
+    },
+    {
+      "name": "share copy clean current-origin URL",
+      "passed": true,
+      "copied": [
+        "http://localhost:3000/incidents/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      ]
+    },
+    {
+      "name": "hydrated notFound preserves article-specific recovery link",
+      "passed": true
+    },
+    {
+      "name": "no browser page errors",
+      "passed": true,
+      "errors": []
+    },
+    {
+      "name": "no application external POST; SDK telemetry intercepted",
+      "passed": true,
+      "posts": [],
+      "blockedSDK": [
+        "https://kr-col-ext.nelo.navercorp.com/_store",
+        "https://kr-col-ext.nelo.navercorp.com/_store"
+      ]
+    }
+  ],
+  "screens": [
+    "home-393.png",
+    "home-intro-393.png",
+    "about-393.png",
+    "archive-393.png",
+    "detail-393.png",
+    "search-393.png",
+    "list-393.png",
+    "home-320.png",
+    "home-intro-320.png",
+    "about-320.png",
+    "archive-320.png",
+    "detail-320.png",
+    "search-320.png",
+    "list-320.png",
+    "missing-detail-320.png"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/map/articles",
+      "query": "?offset=0&limit=100"
+    },
+    {
+      "method": "GET",
+      "path": "/news/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/news/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/news/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/news/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/news/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/news/bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/news/cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/news/dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/news/ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/news/eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/map/articles",
+      "query": "?offset=0&limit=100"
+    },
+    {
+      "method": "GET",
+      "path": "/news",
+      "query": "?offset=0&limit=20"
+    },
+    {
+      "method": "GET",
+      "path": "/news",
+      "query": "?offset=0&limit=20"
+    },
+    {
+      "method": "GET",
+      "path": "/news",
+      "query": "?offset=20&limit=20"
+    },
+    {
+      "method": "GET",
+      "path": "/news",
+      "query": "?offset=0&limit=20&keyword=%EA%B2%80%EC%A6%9D"
+    },
+    {
+      "method": "GET",
+      "path": "/news",
+      "query": "?offset=20&limit=20"
+    },
+    {
+      "method": "GET",
+      "path": "/news",
+      "query": "?offset=380&limit=20"
+    },
+    {
+      "method": "GET",
+      "path": "/news",
+      "query": "?offset=0&limit=20"
+    },
+    {
+      "method": "GET",
+      "path": "/news",
+      "query": "?offset=0&limit=20"
+    },
+    {
+      "method": "GET",
+      "path": "/news",
+      "query": "?offset=20&limit=20"
+    },
+    {
+      "method": "GET",
+      "path": "/map/articles",
+      "query": "?offset=0&limit=100"
+    },
+    {
+      "method": "GET",
+      "path": "/news",
+      "query": "?offset=0&limit=20"
+    },
+    {
+      "method": "GET",
+      "path": "/news",
+      "query": "?offset=20&limit=20"
+    },
+    {
+      "method": "GET",
+      "path": "/news/0000000000000000000000000000000000000000000000000000000000000013",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/news/0000000000000000000000000000000000000000000000000000000000000014",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/news/0000000000000000000000000000000000000000000000000000000000000015",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/news/0000000000000000000000000000000000000000000000000000000000000017",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/news/0000000000000000000000000000000000000000000000000000000000000016",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/news/0000000000000000000000000000000000000000000000000000000000000018",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/news/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/news",
+      "query": "?offset=0&limit=20&keyword=%EA%B2%80%EC%A6%9D"
+    },
+    {
+      "method": "GET",
+      "path": "/news/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/news/bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/news/0000000000000000000000000000000000000000000000000000000000000001",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/news/0000000000000000000000000000000000000000000000000000000000000003",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/news/0000000000000000000000000000000000000000000000000000000000000004",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/news/0000000000000000000000000000000000000000000000000000000000000005",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/news/0000000000000000000000000000000000000000000000000000000000000006",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/news/0000000000000000000000000000000000000000000000000000000000000007",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/news/0000000000000000000000000000000000000000000000000000000000000008",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/news",
+      "query": "?offset=0&limit=20"
+    },
+    {
+      "method": "GET",
+      "path": "/news",
+      "query": "?offset=0&limit=20"
+    },
+    {
+      "method": "GET",
+      "path": "/news/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/news/bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/news/0000000000000000000000000000000000000000000000000000000000000001",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/news/0000000000000000000000000000000000000000000000000000000000000003",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/news/0000000000000000000000000000000000000000000000000000000000000004",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/news/0000000000000000000000000000000000000000000000000000000000000005",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/news/0000000000000000000000000000000000000000000000000000000000000006",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/map/articles",
+      "query": "?offset=0&limit=100"
+    },
+    {
+      "method": "GET",
+      "path": "/news",
+      "query": "?offset=20&limit=20"
+    },
+    {
+      "method": "GET",
+      "path": "/news/0000000000000000000000000000000000000000000000000000000000000013",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/news/0000000000000000000000000000000000000000000000000000000000000014",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/news/0000000000000000000000000000000000000000000000000000000000000015",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/news/0000000000000000000000000000000000000000000000000000000000000016",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/news/0000000000000000000000000000000000000000000000000000000000000017",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/news/0000000000000000000000000000000000000000000000000000000000000018",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/news/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/news",
+      "query": "?offset=0&limit=20&keyword=%EA%B2%80%EC%A6%9D"
+    },
+    {
+      "method": "GET",
+      "path": "/news/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/news/bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/news/0000000000000000000000000000000000000000000000000000000000000001",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/news/0000000000000000000000000000000000000000000000000000000000000003",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/news/0000000000000000000000000000000000000000000000000000000000000004",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/news/0000000000000000000000000000000000000000000000000000000000000005",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/news/0000000000000000000000000000000000000000000000000000000000000006",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/news/0000000000000000000000000000000000000000000000000000000000000007",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/news/0000000000000000000000000000000000000000000000000000000000000008",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/news",
+      "query": "?offset=0&limit=20"
+    },
+    {
+      "method": "GET",
+      "path": "/news",
+      "query": "?offset=0&limit=20"
+    },
+    {
+      "method": "GET",
+      "path": "/news/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/news/bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/news/0000000000000000000000000000000000000000000000000000000000000001",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/news/0000000000000000000000000000000000000000000000000000000000000003",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/news/0000000000000000000000000000000000000000000000000000000000000004",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/news/0000000000000000000000000000000000000000000000000000000000000005",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/news/0000000000000000000000000000000000000000000000000000000000000006",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/news/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/news/ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "query": ""
+    }
+  ],
+  "pageErrors": [],
+  "externalPosts": [],
+  "blockedExternalPosts": [
+    "https://kr-col-ext.nelo.navercorp.com/_store",
+    "https://kr-col-ext.nelo.navercorp.com/_store"
+  ],
+  "sdkPostAttempts": [
+    "https://kr-col-ext.nelo.navercorp.com/_store",
+    "https://kr-col-ext.nelo.navercorp.com/_store"
+  ],
+  "sourceHead": "0fd1e07e5fcc03ee547b2f49f64f51b6baeb78e7",
+  "sourceFiles": {
+    "src/app/about/page.tsx": "f6842b805bff45042aa21a5d9d59be5e19b62dad306f34ada0b742311c07fcf0",
+    "src/app/incidents/[id]/load-detail.ts": "5168ce0f9b2515cf626c595476fd5fbcb36176b040f81f4a052b0feacba4dd2d",
+    "src/components/layout/service-intro.tsx": "8ba2f89dd4eb91e9b9f36a1c9607aedab4b09c4907d494c096e39b5e06dcc461",
+    "next.config.ts": "439762b86dae5112740a27ebdc5e8faa516d8016b028fd1ebf0a2ffff1c6fd21",
+    "public/article-detail-close.svg": "8fd6738f1811cbc7cd6812c2f8a29bb6450e26b4943d0aa639c4de335e73b12e",
+    "public/brand/README.md": "230ccc64a7186e0e69c7ea5e354d9d02e6934b72811d7cd0daf042f165d969b1",
+    "public/brand/hyunghyung.svg": "b0aaf7afa88fb1c8c3d18d9e123c0fa2e369832cd6b6ce7b9a592f3bbf745807",
+    "public/filters/README.md": "31e2cab58171ad31d246b71aa0fa6978b5d89ac5735cea2c185ef6b738b77003",
+    "public/filters/filter-active.svg": "1523065c3a27c188b129cef6c0734e103e54fc9a8e3b580aeba4eb323119b1fe",
+    "public/filters/filter.svg": "460876468f52ef24ea046af38bed1533aa3974a61e39fac132096240cfc1893b",
+    "public/fonts/Inter-LICENSE.txt": "262481e844521b326f5ecd053e59b98c8b2da78c8ee1bdbb6e8174305e54935a",
+    "public/fonts/InterVariable.woff2": "693b77d4f32ee9b8bfc995589b5fad5e99adf2832738661f5402f9978429a8e3",
+    "public/fonts/Pretendard-LICENSE.txt": "d31ddd9f2bed32fd7e302a205cf2380ba0de6529152d239ef99cfb6f261bfc04",
+    "public/fonts/PretendardVariable.woff2": "9599f12fd42fc0bce1cd50b47a0c022e108d7aa64dd0d1bb0ed44f3282d900b4",
+    "public/fonts/README.md": "3b9c6a0e03fda6d431e4889928aae74a46d4146038b760eeeec464bba153d34f",
+    "public/map/article-marker.svg": "45fa5ca26ae9c59efc7bdb94a225a05f2e3f9285b245cc9291669c355919592c",
+    "public/map/article-selected.svg": "7f16f86e31cb820a84a0cfabed7b1f64c5ff92b3e5b5b14b0fde7b6eae1f6713",
+    "public/map/sheet-close.svg": "7ef2144d763f299791aec99726139ee41952db742f24f1ade67ff31d072846b0",
+    "public/naver-map-crosshair.svg": "0bacaa436db2ded07aabf8eb08db463830530038514b87c7d4ead720c3eae01a",
+    "public/naver-map-location.svg": "03e961fd21d0ace21908d3826db342317e7ddfb961c7a413ee430308c39d793d",
+    "public/navigation/README.md": "2bce225d1152ced7caa1768f15d9cbb5827801dfff467a1736ef563ac08daa50",
+    "public/navigation/map-pin.svg": "1e8fcbeddefcd2d8d210119f8287835d18fe4b324e1b57f96784884d3095900c",
+    "public/og/site.png": "8a2552d73cc267bffca0b81859c852df0b6d9c7192fb79c834b032fc0469bfee",
+    "src/app/archive/page.tsx": "c92d77440961ae1ea835f2d93474b7b3373521d9a9f2dc374c8fe0d37b748dac",
+    "src/app/error.tsx": "fba8710da25eac6d8b8e8284c8ce4d2511508434c1487270a5418388bd99c996",
+    "src/app/global-error.tsx": "a05321f53f37d2a05d25bbdc60ccf522e1aa0b6870a7f932cfe1accc1be4acae",
+    "src/app/globals.css": "f01e1ba7f4bd9a7bc8afdb0e7e9e412f21e1f75431ab5145283e21432140163d",
+    "src/app/incidents/[id]/detail-image.tsx": "ea9579c871d5283b6a32c7a009a54e8a5c57c89c10bca22f05f3b7af8bde0000",
+    "src/app/incidents/[id]/detail-navigation.tsx": "55bdc2a9b347af847517a2f126c8061db5ca6d5b7ac23b2ba4ce988a2705fce9",
+    "src/app/incidents/[id]/detail-share.tsx": "0ac88b724803837c127e6b6dd1b2c940fa4902b849c5860f8dfaf5b9becb642c",
+    "src/app/incidents/[id]/loading.tsx": "8cd8ec72dd694ff9e166dc640fdedfb85b8b26fc45ce8ae9fea9181ce9dcc179",
+    "src/app/incidents/[id]/not-found.tsx": "82d221ee9bed4beaa956b4fde77e81256eeeb107049a4f6bef23f7c5ee0f7752",
+    "src/app/incidents/[id]/page.tsx": "70755ead487b10182356bcb8188f133bedabe1ef07170b3a5c28398b5b42d420",
+    "src/app/incidents/loading.tsx": "5df97a2d72cb0c7a3958cb310ac0d3ebe7492b25f2ab974730e83200d8e09dc6",
+    "src/app/incidents/page.tsx": "98ecb1222614a2ed1e05b96cbd2269ed0db59285f1bff884cd656777df498775",
+    "src/app/layout.tsx": "0747e3da45b8ccc461ffb660108175599a44bffeb6c395484dbd9e88581ee3dd",
+    "src/app/not-found.tsx": "7a4c423b753743f87b5d6d0523a75426234904a822028c661ab9e4353efe05d6",
+    "src/app/page.tsx": "fd4e689d68ab1ed308d5405790945c9c2846e587045d7393f07362f2100fb24e",
+    "src/app/report/layout.tsx": "e0724f792c078a142dc3cc63e3ce73c0e0c83ce4cb64032ffc3ab7cf5af60023",
+    "src/app/report/page.tsx": "f786fffd28cffd8d959af771377edc10e242283521b915027506eb2212e63843",
+    "src/app/robots.ts": "47640d77f5b928ce15dd234b63b21d1f1c4627a557d2f0e04037094321fdb285",
+    "src/app/search/keyword-link-status.tsx": "22dfd047c5a606c88581bc9738eb3484ab4d0f3f024881cd285c29dd6df67861",
+    "src/app/search/loading.tsx": "7a71ba8c8e5bd2c219f51a1266005fbcd865c92a72eb9a1ec36d4c80fcf39b5a",
+    "src/app/search/page.tsx": "3d69d6092fa91e375f37458eb5218a548c41929e9f8105041f7fd4d43af039d2",
+    "src/app/site-metadata.ts": "7458f44da1de8d9d40ad25d966a67348fe68fc01fbc2d0291de861aadbd75d5e",
+    "src/app/sitemap.ts": "e4754fbf8d61dc69d5df15253eff1594e0fb9dec80fbac3b6dc0b79cc0addb75",
+    "src/components/errors/feature-error-boundary/feature-error-boundary.tsx": "b90f746bb51ccf79c9e8c3163ebf260f3287efd43a0eaeeb67b4b207b2734530",
+    "src/components/errors/model/feature-error.ts": "3e0c1972ba4801c7fe8f501539d70759233ed38d7007594351a24e124c0598c6",
+    "src/components/feedback/article-skeleton.tsx": "5db8a5634591fa4eab62e01a636190ad2dc0101669c8f90b5b30a3dfb8c584a5",
+    "src/components/feedback/loading-spinner.tsx": "18b106682e75b5397babca379def0fa9409f84d6e602a9de0d9e7afa554bcd5f",
+    "src/components/layout/app-shell/app-shell.tsx": "18bb5ac305dce253fb0b802d5ede4c188947d086ae69fbbcde467dc86630762f",
+    "src/components/layout/article-filters/article-filters.tsx": "0576ab137d292d129aedf94700c47e0970a15480e290e27607718ffb16df505d",
+    "src/components/layout/bottom-navigation/bottom-navigation.tsx": "4a3fac113df6397c4fb4eb4c6262ed0a042a84d41fae5cd2aa05473a7fa3a499",
+    "src/components/layout/brand/brand.tsx": "7519729a5600667fdc55aeba1fd3aeb57e2854ba95c2b02c133c2b347baee307",
+    "src/components/layout/foundation-panel/foundation-panel.tsx": "37b90e4cf1a167888a42f3023e091c6eae83b9fd8212945789f64ac640197006",
+    "src/components/layout/search-header/search-header.tsx": "879eebcb66e7188a9472a03036a91f004df5eff8ee3bad6ce6f91d86bcd5dddd",
+    "src/features/article-list/api/fetch-articles.ts": "4403038a3ea38aea6fffac74664d6dd8bb40f004f0f084883d10094e8e2cdedb",
+    "src/features/article-list/api/load-article-page.ts": "7c1c84a485fbaa9983ea2e783f232addc0088b966e54c8192ce6f99b55ead163",
+    "src/features/article-list/model/article-presentation.ts": "b0996f267aa1d0a9fbab031f0a3d550cfdeebabfc7583da8d2c194b840d4d154",
+    "src/features/article-list/model/article.types.ts": "f730d23eeb63d3319ad7036378ee32480d0ef1c9a5ea619575c37bfddaa1461f",
+    "src/features/article-list/ui/article-card/article-card.tsx": "2626f34f22e94c083b1b0508743302e4ed6a7bd9151f227516feb380a2452f7f",
+    "src/features/article-list/ui/article-image/article-image.tsx": "07e69001a4adb26a9ecbad7e1d039674a147a54ebe50c423f7896fb70b51623a",
+    "src/features/article-list/ui/article-list/article-list.tsx": "c08449a9932d6bf0b61018ce3d8c0cb18346ea3da36165feecb1eea8d4ee0dbb",
+    "src/features/article-list/ui/article-list/paginated-article-list.tsx": "5bac11cc75dd9bc61d0b5fbb5555f01b49baddb9e34e366ee46b3bf53141dc79",
+    "src/features/article-list/ui/article-list/use-article-tail.ts": "cb1edb01ce994d64e8078e22d3635c8636ce62d73379eab92914f66731ca40a8",
+    "src/features/incident-list/ui/incident-list/incident-list.module.css": "d24d985b9862b7afbc520355b6407cda609690ac59384012c285f6f84c0f92cb",
+    "src/features/incident-list/ui/incident-list/incident-list.tsx": "31c3e9da374334c530e7666e7a65bb2e5ac5ab562b4581a0606524b50a566e0f",
+    "src/features/incidents/model/filter-incidents.ts": "a2886785b522d6863563e23a30b2f2a0cf02f2514b7362d93b8ce830544f1dd2",
+    "src/features/incidents/model/labels.ts": "d91e2f411af6e191156a557f3cea5f2a503dc5a927a723e798f847134f04b0ff",
+    "src/features/incidents/model/types.ts": "a48f8a9d95a215adac0f11f78ecc7481739fd20de80051f33448ad5f747800a8",
+    "src/features/map/api/fetch-map-articles.ts": "45627227b1786af2ee25a9cf561d83788afb1a55c8be080969217c4a468cbf57",
+    "src/features/map/model/map-article.types.ts": "ee39d6195f8a370f56971d6ac11c5313038c4062205a1f471f43282d3820421f",
+    "src/features/map/model/map-carousel-articles.ts": "4cec90c08443ad673c9295051d8cd7c61036850b632d13c17e962e3ea309b8d4",
+    "src/features/map/model/map-display-groups.ts": "fc806a6cf20cfca6634a689c9b2688912fa0ad386a7847346eaacbd0731e413c",
+    "src/features/map/model/map-period-filter.ts": "d53b9376f938cb843670995b1d65bb9d9fd234f49d70c5da3e27ee41db9855c2",
+    "src/features/map/model/map-region-groups.ts": "d4bf8aa75924387b5eb99880a7c7a7d4a389b0c6f3f64fdd2495626e039116a3",
+    "src/features/map/model/map-viewport.ts": "e00a9b697af9d528e3240abab7298b80ba352318380e18f4b1e9619a8513c8dc",
+    "src/features/map/ui/map-all-filters/map-all-filters.tsx": "5a0a47c724cd8aec92088d01cbb465993f04d4273e042edfb11d16697c71b9d8",
+    "src/features/map/ui/map-article-carousel/map-article-carousel.tsx": "3ab4bfc6e7838eb98f148369591cf605679545d276c4f628c315ca959d295b4b",
+    "src/features/map/ui/map-carousel-card/map-carousel-card.tsx": "dcd256e8e394beeafdc7a7421e547c982e67630f1f23010f8f0e7217980a5dc9",
+    "src/features/map/ui/map-carousel-image/map-carousel-image.tsx": "c6d7209ed8927fdf276871b112a500a44059302fbb36b2da11189c1eb691417a",
+    "src/features/map/ui/map-home/map-article-marker.ts": "c9f3b7671fe4f988f45ac454471e583da9c71193b7f4f5513dc0cc777f485b70",
+    "src/features/map/ui/map-home/map-article-sheet.tsx": "589359e3e669170be38e261c1b450af2c6d4929abce04fb41f6bdcbcdeb8fc1a",
+    "src/features/map/ui/map-home/map-home.tsx": "bcb8209851e5a0747d14fb3e35985499588fd956912ec5ac791346c354756f6f",
+    "src/features/map/ui/map-home/map-setup-notice.tsx": "c4c7b146ca3124d4f31d373ffae35808b05be8ee37825bf82e38796e0b3217f9",
+    "src/features/map/ui/map-period-filter/map-period-filter.tsx": "bf8ee0b58083e83afe7fb4ed20453736670b5ec79ae90423b1855c9f733eed96",
+    "src/features/map/ui/map-unavailable-filter/map-unavailable-filter.tsx": "276d5429452b87f1fdf29dba4be8b9f4efeca402239ddf451acbd676713e1a4a",
+    "src/features/search/api/load-search-page.tsx": "6f1a45e3a28fbd2b2b6c05c23c848eb3674f10b74a254670118916cca54763bf",
+    "src/features/search/ui/recent-searches/recent-searches.tsx": "c45af88a269848fda97d0ce6c69bcd44754d1cf8b9bfe591908001572def82ec",
+    "src/features/search/ui/search-result-card/search-result-card.tsx": "ca7fa7357536a6d43831d2516b1013fa6e8d5f80b82294a2b1bb2203a2e28d96",
+    "src/features/search/ui/search-results/search-results.tsx": "57621f3095e513d79711c0a627a6a26016844ad8c058f94b2820d91f188d210d"
+  }
+}
