@@ -160,68 +160,6 @@ test('articleDetailFailureStates', async () => {
   }
 });
 
-test('articleDetailSafePresentation', async () => {
-  for (const imageStatus of [
-    'disabled',
-    'pending',
-    'generating',
-    'failed',
-    'unknown',
-  ]) {
-    fetchMock.mockResolvedValueOnce(
-      Response.json({ ...item, image_status: imageStatus }),
-    );
-    const view = await detailMarkup();
-    expect(view.querySelector('img')).toBeNull();
-    expect(view.textContent).toContain('이미지 없음');
-    expect(view.textContent).not.toContain('AI 생성 이미지');
-  }
-  for (const imageUrl of [
-    null,
-    'https://other.invalid/image.jpg',
-    '//other.invalid/image.jpg',
-    `/images/${'b'.repeat(64)}.jpg`,
-  ]) {
-    fetchMock.mockResolvedValueOnce(
-      Response.json({
-        ...item,
-        image_url: imageUrl,
-        article: {
-          ...item.article,
-          title: '<b>안내</b> &lt;script&gt;alert(1)&lt;/script&gt;',
-          description: '&quot;확인&quot; <img src=x onerror=alert(1)>',
-          originallink: 'javascript:alert(1)',
-          pubDate: 'invalid-date',
-        },
-      }),
-    );
-    const view = await detailMarkup();
-    expect(view.querySelector('h1')?.textContent).toBe(
-      '안내 <script>alert(1)</script>',
-    );
-    expect(view.textContent).toContain('"확인"');
-    expect(view.querySelector('script, img, b, time')).toBeNull();
-    expect(
-      view.querySelector('a[href="https://portal.example.invalid/article"]'),
-    ).not.toBeNull();
-    expect(view.querySelector('a[href^="javascript:"]')).toBeNull();
-    expect(view.textContent).toContain('발행 시각 미확인');
-  }
-  fetchMock.mockResolvedValueOnce(
-    Response.json({
-      ...item,
-      article: {
-        ...item.article,
-        originallink: '//unsafe.invalid',
-        link: 'data:text/html,unsafe',
-      },
-    }),
-  );
-  const view = await detailMarkup();
-  expect(view.textContent).toContain('원문 링크 없음');
-  expect(view.querySelector('a[href^="//"], a[href^="data:"]')).toBeNull();
-});
-
 test('articleDetailTimeout', async () => {
   let signal: AbortSignal | null | undefined;
   fetchMock.mockImplementationOnce((_input, init) => {
@@ -428,4 +366,70 @@ test('articleDetailRouteBoundaries', async () => {
   expect(view.querySelector('a[href="/incidents"]')).not.toBeNull();
   expect(view.querySelector('[aria-busy="true"]')).toBeNull();
   expect(fetchMock).not.toHaveBeenCalled();
+});
+
+test('articleDetailSafePresentation', async () => {
+  for (const imageStatus of [
+    'disabled',
+    'pending',
+    'generating',
+    'failed',
+    'unknown',
+  ]) {
+    fetchMock.mockResolvedValueOnce(
+      Response.json({ ...item, image_status: imageStatus }),
+    );
+    const view = await detailMarkup();
+    expect(view.querySelector('img')).toBeNull();
+    expect(view.textContent).toContain('이미지 없음');
+    expect(view.textContent).not.toContain('AI 생성 이미지');
+  }
+  for (const imageUrl of [
+    null,
+    'https://other.invalid/image.jpg',
+    '//other.invalid/image.jpg',
+    `/images/${'b'.repeat(64)}.jpg`,
+  ]) {
+    fetchMock.mockResolvedValueOnce(
+      Response.json({
+        ...item,
+        image_url: imageUrl,
+        article: {
+          ...item.article,
+          title: '<b>안내</b> &lt;script&gt;alert(1)&lt;/script&gt;',
+          description: '&quot;확인&quot; <img src=x onerror=alert(1)>',
+          originallink: 'javascript:alert(1)',
+          pubDate: 'invalid-date',
+        },
+      }),
+    );
+    const view = await detailMarkup();
+    expect(view.querySelector('h1')?.textContent).toBe(
+      '안내 <script>alert(1)</script>',
+    );
+    expect(view.textContent).toContain('"확인"');
+    expect(
+      view.querySelector(
+        'script:not([type="application/ld+json"]), img, b, time',
+      ),
+    ).toBeNull();
+    expect(
+      view.querySelector('a[href="https://portal.example.invalid/article"]'),
+    ).not.toBeNull();
+    expect(view.querySelector('a[href^="javascript:"]')).toBeNull();
+    expect(view.textContent).toContain('발행 시각 미확인');
+  }
+  fetchMock.mockResolvedValueOnce(
+    Response.json({
+      ...item,
+      article: {
+        ...item.article,
+        originallink: '//unsafe.invalid',
+        link: 'data:text/html,unsafe',
+      },
+    }),
+  );
+  const view = await detailMarkup();
+  expect(view.textContent).toContain('원문 링크 없음');
+  expect(view.querySelector('a[href^="//"], a[href^="data:"]')).toBeNull();
 });

@@ -1,0 +1,126 @@
+import {createServer} from 'node:http';
+import {spawn,execFileSync} from 'node:child_process';
+import {createRequire} from 'node:module';
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import {createHash} from 'node:crypto';
+const wt=process.env.SEO_APP;
+if(!wt)throw new Error('SEO_APP required');
+const require=createRequire(path.join(wt,'package.json'));
+const {chromium}=require('playwright-core');
+const {JSDOM}=require('jsdom');
+const out='/tmp/hyunghyung-seo-qa';
+await fs.mkdir(out,{recursive:true});
+const report={checks:[],screens:[],requests:[],pageErrors:[],externalPosts:[],blockedExternalPosts:[],sdkPostAttempts:[],sourceHead:null};
+report.sourceHead=execFileSync('git',['rev-parse','HEAD'],{cwd:wt,encoding:'utf8'}).trim();
+report.sourceFiles={};
+const tracked=execFileSync('git',['ls-files','-z','--cached','--others','--exclude-standard'],{cwd:wt,encoding:'utf8'}).split('\u0000').filter(Boolean);
+for(const name of tracked){if((name.startsWith('src/')&&!name.includes('.test.')&&!name.startsWith('src/test-support/'))||name.startsWith('public/')||name==='next.config.ts'){report.sourceFiles[name]=createHash('sha256').update(await fs.readFile(path.join(wt,name))).digest('hex');}}
+const assert=(condition,name,data={})=>{report.checks.push({name,passed:Boolean(condition),...data});if(!condition)console.error('FAIL',name,JSON.stringify(data));};
+const idA='a'.repeat(64),idB='b'.repeat(64),idLong='c'.repeat(64),idError='d'.repeat(64),idUnsafe='e'.repeat(64),idMissing='f'.repeat(64);
+const makeItem=(id,title='검증 기사 · 서울 도로 점검')=>({collection_id:'local-seo-qa',article_id:id,image_status:'disabled',image_url:null,article:{title,description:'검색과 공유 검증용 기사 요약입니다. 실제 사건 정보가 아닙니다.',pubDate:'2026-10-10T09:00:00+09:00',originallink:'https://publisher.example.invalid/story/'+id,link:'https://portal.example.invalid/story/'+id}});
+const a=makeItem(idA,'검증 <b>기사</b> · 서울 도로 점검 &amp; 안내');
+const b=makeItem(idB,'검증 기사 · 부산 교통 안내');
+const long=makeItem(idLong,'  검증 제목  ·\n 공백 정리  ');long.article.description=('긴 검증 요약입니다. 실제 사건이 아닌 수집 메타데이터 표시 검증입니다.\n').repeat(40);
+const unsafe=makeItem(idUnsafe,'검증 &lt;/script&gt;&lt;img src=x onerror=alert(1)&gt;');
+unsafe.article.description='이스케이프 확인 &lt;/script&gt;&lt;script&gt;alert(1)&lt;/script&gt;';
+unsafe.article.pubDate='2026-02-31T00:00:00Z';
+unsafe.article.originallink='javascript:alert(1)';unsafe.article.link='data:text/html,unsafe';
+const rows=[a,b,...Array.from({length:39},(_,i)=>makeItem((i+1).toString(16).padStart(64,'0'),'검증 기사 '+(i+1)))];rows[3]=rows[2];
+const counts=new Map();let mode='ok';
+const upstream=createServer((req,res)=>{
+ const u=new URL(req.url,'http://127.0.0.1:41037');report.requests.push({method:req.method,path:u.pathname,query:u.search});
+ if(req.method!=='GET'){res.writeHead(405).end();return;}
+ counts.set(u.pathname,(counts.get(u.pathname)??0)+1);
+ res.setHeader('Content-Type','application/json; charset=utf-8');
+ if(u.pathname==='/news'){if(mode==='fail-list'){res.writeHead(503).end(JSON.stringify({error:'PRIVATE_ERROR'}));return;}const offset=Number(u.searchParams.get('offset')??0),limit=Number(u.searchParams.get('limit')??20);const data=rows.filter(x=>!u.searchParams.get('keyword')||x.article.title.includes(u.searchParams.get('keyword')));res.end(JSON.stringify({total:data.length,items:data.slice(offset,offset+limit)}));return;}
+ if(u.pathname==='/map/articles'){res.end(JSON.stringify({total:0,items:[]}));return;}
+ if(u.pathname.startsWith('/news/')){const id=u.pathname.slice(6);if(id===idError){res.writeHead(503).end(JSON.stringify({error:'PRIVATE_ERROR'}));return;}const item=id===idA?a:id===idB?b:id===idLong?long:id===idUnsafe?unsafe:undefined;if(!item){res.writeHead(404).end('{}');return;}res.end(JSON.stringify(item));return;}
+ res.writeHead(404).end('{}');
+});
+await new Promise(r=>upstream.listen(41037,'127.0.0.1',r));
+const log=await fs.open(path.join(out,'server.log'),'w');
+const app=spawn(path.join(wt,'node_modules/.bin/next'),['start','--port','3000'],{cwd:wt,env:{...process.env,NEWS_API_BASE_URL:'http://127.0.0.1:41037',NEXT_PUBLIC_NAVER_MAP_CLIENT_ID:'3p2jip9u35',NEXT_PUBLIC_REPORT_API_BASE_URL:'https://reports.example.invalid'},stdio:['ignore',log.fd,log.fd]});
+let browser;
+const root='http://localhost:3000',origin='https://hyunghyung.vercel.app';
+const verification='IcxmSOOduOPPwcV3PD9YDBJp3EpnuujvxkfxK7ObCyU';
+function doc(html){return new JSDOM(html).window.document;}
+function info(d){return{title:d.title,description:d.querySelector('meta[name="description"]')?.content,canonical:d.querySelector('link[rel="canonical"]')?.href,ogTitle:d.querySelector('meta[property="og:title"]')?.content,ogUrl:d.querySelector('meta[property="og:url"]')?.content,ogImage:d.querySelector('meta[property="og:image"]')?.content,ogLocale:d.querySelector('meta[property="og:locale"]')?.content,ogSite:d.querySelector('meta[property="og:site_name"]')?.content,twitter:d.querySelector('meta[name="twitter:card"]')?.content,robots:d.querySelector('meta[name="robots"]')?.content};}
+async function get(url,ua='Mozilla/5.0 Chrome/143.0.0.0 Safari/537.36'){
+ const r=await fetch(root+url,{headers:{'User-Agent':ua},redirect:'manual'});const html=await r.text();return{status:r.status,type:r.headers.get('content-type'),html,d:doc(html),headers:Object.fromEntries(r.headers)};
+}
+try{
+ for(let i=0;i<80;i++){try{await fetch(root);break;}catch{await new Promise(r=>setTimeout(r,250));}}
+ for(const [name,ua] of [['browser','Mozilla/5.0 Chrome/143.0.0.0 Safari/537.36'],['google','Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)'],['facebook','facebookexternalhit/1.1'],['twitter','Twitterbot/1.0'],['kakao','kakaotalk-scrap/1.0']]){
+  const before=counts.get('/news/'+idA)??0;const r=await get('/incidents/'+idA+'?utm_source=qa#summary',ua);const m=info(r.d);const head=info({title:r.d.head.querySelector('title')?.textContent,querySelector:(s)=>r.d.head.querySelector(s)});
+  const delta=(counts.get('/news/'+idA)??0)-before;
+  await fs.writeFile(path.join(out,'detail-'+name+'.html'),r.html);
+  assert(r.status===200,name+' detail200',{status:r.status});
+  assert(m.title.includes('검증 기사 · 서울 도로 점검 & 안내')&&m.title.includes('흉흉 · 내 주변의 사건 사고'),name+' article title',{meta:m});
+  assert(m.canonical===origin+'/incidents/'+idA&&m.ogUrl===m.canonical,name+' clean production canonical',{meta:m});
+  assert(m.ogTitle?.includes('검증 기사')&&m.ogImage===origin+'/og/site.png'&&m.twitter==='summary_large_image',name+' preview fields',{meta:m});
+  assert(m.ogLocale==='ko_KR'&&m.ogSite==='흉흉',name+' Korean brand preview identity',{meta:m});
+  if(['facebook','twitter','kakao'].includes(name))assert(Boolean(r.d.head.querySelector('meta[property="og:title"]'))&&Boolean(r.d.head.querySelector('meta[property="og:image"]')),name+' preview present in raw head',{head});
+  assert(delta===1,name+' one request-scoped detail fetch',{delta});
+  const json=Array.from(r.d.querySelectorAll('script[type="application/ld+json"]')).map(n=>JSON.parse(n.textContent));
+  assert(JSON.stringify(json).includes('WebPage')&&JSON.stringify(json).includes('publisher.example.invalid'),name+' visible source citation');
+ }
+ const bResult=await get('/incidents/'+idB,'facebookexternalhit/1.1');assert(bResult.d.title.includes('부산 교통 안내')&&!bResult.d.title.includes('서울 도로'), 'separate article request isolation');
+ const longResult=await get('/incidents/'+idLong,'facebookexternalhit/1.1');const longMeta=info(longResult.d);assert(longMeta.title.startsWith('검증 제목 · 공백 정리')&&longMeta.description?.length<=160&&!longMeta.description.includes('\n'),'concise normalized real summary',{meta:longMeta});
+ const error=await get('/incidents/'+idError,'facebookexternalhit/1.1');assert(/noindex/.test(info(error.d).robots??'')&&!error.html.includes('PRIVATE_ERROR'),'temporary error noindex no leaked error',{status:error.status,meta:info(error.d)});
+ const missing=await get('/incidents/'+idMissing,'facebookexternalhit/1.1');assert([200,404].includes(missing.status)&&/noindex/.test(info(missing.d).robots??'')&&!missing.d.querySelector('script[type="application/ld+json"]'),'missing article notFound noindex; streamed200 or nonstream404',{status:missing.status,meta:info(missing.d),reference:'https://nextjs.org/docs/app/api-reference/file-conventions/not-found'});await fs.writeFile(path.join(out,'missing-detail.html'),missing.html);
+ assert(Boolean(missing.d.querySelector('template[data-dgst="NEXT_HTTP_ERROR_FALLBACK;404"]'))||missing.d.body.textContent.includes('기사를 찾을 수 없어요'),'missing article server signals the notFound boundary');
+ const bad=await get('/incidents/invalid','facebookexternalhit/1.1');assert([200,404].includes(bad.status)&&/noindex/.test(info(bad.d).robots??'')&&bad.d.body.textContent.includes('기사를 찾을 수 없어요')&&!bad.d.querySelector('script[type="application/ld+json"]'),'invalid ID notFound noindex without article metadata',{status:bad.status});
+ const unmatched=await get('/this-seo-qa-route-does-not-exist','facebookexternalhit/1.1');assert(unmatched.status===404,'unmatched global route HTTP404',{status:unmatched.status});
+ const injected=await get('/incidents/'+idUnsafe,'facebookexternalhit/1.1');let parsed=[];let validJSON=true;try{parsed=Array.from(injected.d.querySelectorAll('script[type="application/ld+json"]')).map(n=>JSON.parse(n.textContent));}catch{validJSON=false;}
+ assert(validJSON&&!injected.d.querySelector('img[onerror]')&&!JSON.stringify(parsed).match(/datePublished|javascript:|data:text/),'JSON-LD escape and absent invalid dates/source');
+ for(const route of ['/','/incidents','/about','/archive','/archive?page=2','/search?q=검증','/report']){
+  const r=await get(route,'facebookexternalhit/1.1');const m=info(r.d);report.checks.push({name:'route metadata '+route,passed:r.status===200,status:r.status,meta:m});
+  const tags=r.d.head.querySelectorAll('meta[name="google-site-verification"]');assert(tags.length===1&&tags[0].content===verification,'Google ownership tag exactly once in head '+route,{count:tags.length});
+  if(route.startsWith('/search')||route==='/report')assert(/noindex/.test(m.robots??''),'non-content noindex '+route,{meta:m});
+  if(route==='/about')assert(r.d.body.textContent.includes('지역 대표')&&r.d.body.textContent.includes('AI 생성'),'service answers server rendered');
+  if(route==='/archive?page=2')assert(m.canonical===origin+'/archive?page=2'&&Boolean(r.d.querySelector('a[href="/archive"]'))&&Boolean(r.d.querySelector('a[href="/archive?page=3"]')),'archive2 canonical and real pagination');
+ }
+ const invalidArchive=await get('/archive?page=0','facebookexternalhit/1.1');assert(invalidArchive.status===404,'invalid archive page404',{status:invalidArchive.status});
+ const archiveBefore=counts.get('/news')??0;const repeatedArchive=await get('/archive?page=2&page=3','facebookexternalhit/1.1');assert(repeatedArchive.status===200&&info(repeatedArchive.d).canonical===origin+'/archive?page=2','archive duplicate query uses first value',{status:repeatedArchive.status,meta:info(repeatedArchive.d)});assert((counts.get('/news')??0)-archiveBefore===1,'archive metadata and body share one request-scoped fetch');
+ const emptyArchive=await get('/archive?page=20','facebookexternalhit/1.1');assert(/noindex/.test(info(emptyArchive.d).robots??'')&&!emptyArchive.d.querySelector('a[href="/archive?page=21"]'),'empty archive noindex no next');
+ const robots=await get('/robots.txt');assert(robots.status===200&&robots.html.includes('Sitemap: '+origin+'/sitemap.xml'),'robots200 sitemap absolute',{type:robots.type,text:robots.html});
+ const beforeList=counts.get('/news')??0;const sitemap=await get('/sitemap.xml');const n=(counts.get('/news')??0)-beforeList;
+ assert(sitemap.status===200&&/xml/.test(sitemap.type??'')&&sitemap.html.includes(origin+'/incidents/'+idA)&&!sitemap.html.includes('<lastmod>'),'sitemap canonical recent IDs',{count:n,type:sitemap.type});
+ assert(n<=1,'sitemap single bounded request',{count:n});
+ mode='fail-list';const failedSitemap=await get('/sitemap.xml');assert(failedSitemap.status===200&&failedSitemap.html.includes(origin+'/about')&&!failedSitemap.html.includes('/incidents/'+idA),'sitemap static fallback on outage');
+ const failedArchive=await get('/archive?page=2','facebookexternalhit/1.1');assert(/noindex/.test(info(failedArchive.d).robots??'')&&Boolean(failedArchive.d.querySelector('[role="alert"]')),'archive error noindex retry');
+ mode='ok';
+ const image=await fetch(root+'/og/site.png');const img=Buffer.from(await image.arrayBuffer());assert(image.status===200&&image.headers.get('content-type')?.includes('image/png')&&img.readUInt32BE(16)===1200&&img.readUInt32BE(20)===630,'share PNG200 1200x630');
+ browser=await chromium.launch({channel:'chrome',headless:true});
+ const context=await browser.newContext({viewport:{width:393,height:852},deviceScaleFactor:1,reducedMotion:'reduce'});
+ await context.route('**/*',async route=>{const request=route.request();const url=new URL(request.url());if(request.method()==='POST'&&!/^(localhost|127\.0\.0\.1)$/.test(url.hostname)){report.blockedExternalPosts.push(request.url());if(url.hostname==='kr-col-ext.nelo.navercorp.com')report.sdkPostAttempts.push(request.url());else report.externalPosts.push(request.url());await route.abort();return;}await route.continue();});
+ await context.addInitScript(()=>{window.__seoCopies=[];Object.defineProperty(navigator,'share',{value:undefined,configurable:true});Object.defineProperty(navigator,'clipboard',{value:{writeText:async text=>{window.__seoCopies.push(text);}},configurable:true});});
+ const page=await context.newPage();
+ page.on('pageerror',e=>report.pageErrors.push(e.message));
+ for(const width of [393,320]){
+  await page.setViewportSize({width,height:852});
+  for(const [name,url] of [['home','/'],['about','/about'],['archive','/archive?page=2'],['detail','/incidents/'+idA],['search','/search?q=검증'],['list','/incidents']]){
+   await page.goto(root+url);await page.waitForTimeout(400);
+   const geometry=await page.evaluate(()=>({width:innerWidth,scrollWidth:document.documentElement.scrollWidth,main:document.querySelector('main')?.getBoundingClientRect().toJSON(),title:document.title,headOG:document.head.querySelector('meta[property="og:title"]')?.content,headCanonical:document.head.querySelector('link[rel="canonical"]')?.href}));
+   assert(geometry.scrollWidth<=width,name+' no horizontal overflow '+width,{geometry});
+   const file=name+'-'+width+'.png';await page.screenshot({path:path.join(out,file),fullPage:name==='about'||name==='archive'});report.screens.push(file);
+   if(name==='home'){const mapBox=await page.locator('section[aria-label="주변 지도"]').first().boundingBox();assert(mapBox&&Math.abs(mapBox.height-852)<=1,'home map remains one viewport '+width,{mapBox});const aboutLink=page.locator('a[href="/about"]').first();assert(await aboutLink.count()>0,'home has visible service link '+width);await aboutLink.scrollIntoViewIfNeeded({timeout:5000});const linkBox=await aboutLink.boundingBox();assert(linkBox&&linkBox.width>=24&&linkBox.height>=16,'home service link is readable not hidden '+width,{linkBox});await page.screenshot({path:path.join(out,'home-intro-'+width+'.png')});report.screens.push('home-intro-'+width+'.png');}
+  }
+ }
+ await page.goto(root+'/incidents/'+idA+'?utm_source=browser');await page.getByRole('button',{name:'기사 공유하기'}).click();
+ const copied=await page.evaluate(()=>window.__seoCopies);assert(copied[0]===root+'/incidents/'+idA,'share copy clean current-origin URL',{copied});
+ await page.goto(root+'/incidents/'+idMissing);await page.getByRole('heading',{name:'기사를 찾을 수 없어요'}).waitFor();assert(await page.locator('a[href="/incidents"]').count()>0,'hydrated notFound preserves article-specific recovery link');await page.screenshot({path:path.join(out,'missing-detail-320.png')});report.screens.push('missing-detail-320.png');
+ assert(report.pageErrors.length===0,'no browser page errors',{errors:report.pageErrors});
+ assert(report.externalPosts.length===0,'no application external POST; SDK telemetry intercepted',{posts:report.externalPosts,blockedSDK:report.sdkPostAttempts});
+ await context.close();
+}finally{
+ if(browser)await browser.close();
+ app.kill('SIGTERM');await new Promise(r=>{app.once('exit',r);setTimeout(r,3000);});
+ await new Promise(r=>upstream.close(r));await log.close();
+ await fs.writeFile(path.join(out,'report.json'),JSON.stringify(report,null,2));
+ const failed=report.checks.filter(x=>!x.passed);
+ console.log(JSON.stringify({checks:report.checks.length,failed:failed.length,failures:failed,screens:report.screens},null,2));
+ if(failed.length)process.exitCode=1;
+}
+

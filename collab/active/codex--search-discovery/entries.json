@@ -1,0 +1,9 @@
+[
+  "searchDiscoveryUsesProductionBrandAndRouteMetadata",
+  "articleMetadataMatchesSummaryAndEscapesStructuredCitation",
+  "articleMetadataErrorsAreNotIndexableArticles",
+  "crawlEndpointsListCanonicalRecentArticlesWithBoundedRequests",
+  "serverArchiveLinksOlderRawPagesWithoutReplacingInfiniteScroll",
+  "serviceAnswersAreVisibleAndReachableWithoutMapJavaScript",
+  "articleDetailSafePresentation"
+]

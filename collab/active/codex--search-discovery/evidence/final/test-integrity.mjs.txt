@@ -1,0 +1,37 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import {createRequire} from 'node:module';
+import {createHash} from 'node:crypto';
+import {execFileSync} from 'node:child_process';
+const wt=process.env.SEO_APP;
+if(!wt)throw Error('SEO_APP required');
+const require=createRequire(path.join(wt,'package.json'));
+const ts=require('typescript');
+const hash=s=>createHash('sha256').update(s).digest('hex');
+const read=n=>fs.readFileSync(path.join(wt,n),'utf8');
+const dir='collab/active/codex--search-discovery/';
+const baseline=JSON.parse(read(dir+'baseline-test-hashes.json'));
+const problems=[];let unchanged=0;
+for(const [name,sha] of Object.entries(baseline)){
+ if(name==='src/app/incidents/article-detail.test.ts')continue;
+ if(hash(fs.readFileSync(path.join(wt,name)))!==sha)problems.push('Original test file changed: '+name);else unchanged++;
+}
+function cases(text){
+ const sf=ts.createSourceFile('proof.ts',text,ts.ScriptTarget.Latest,true);
+ const result=new Map();
+ function visit(n){if(ts.isCallExpression(n)&&ts.isIdentifier(n.expression)&&n.expression.text==='test'&&ts.isStringLiteral(n.arguments[0]))result.set(n.arguments[0].text,n.getText(sf));ts.forEachChild(n,visit);}
+ visit(sf);return result;
+}
+const expected=cases(read(dir+'proposed-tests/article-detail.test.ts.txt'));
+const actual=cases(read('src/app/incidents/article-detail.test.ts'));
+for(const [name,body] of expected){if(actual.get(name)!==body)problems.push('Approved detail case differs: '+name);}
+if(expected.size!==actual.size)problems.push('Unexpected detail case count');
+const planned=cases(read(dir+'lint-fix-source.txt'));
+const implemented=cases(read('src/app/search-discovery.test.ts'));
+for(const [name,body] of planned){if(implemented.get(name)!==body)problems.push('Approved new case differs: '+name);}
+if(planned.size!==implemented.size)problems.push('Unexpected new case count');
+const png=hash(fs.readFileSync(path.join(wt,'public/og/site.png')));
+if(png!==hash(fs.readFileSync(path.join(wt,dir+'proposed-assets/share-card.png'))))problems.push('PNG differs from approved image');
+const report={head:execFileSync('git',['rev-parse','HEAD'],{cwd:wt,encoding:'utf8'}).trim(),unchangedOriginalTestFiles:unchanged,approvedDetailCases:expected.size,approvedNewCases:planned.size,brandPngSha256:png,problems};
+fs.writeFileSync('/tmp/hyunghyung-seo-integrity.json',JSON.stringify(report,null,2));
+console.log(JSON.stringify(report,null,2));if(problems.length)process.exitCode=1;

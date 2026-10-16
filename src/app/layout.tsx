@@ -2,14 +2,38 @@ import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 
 import { AppShell } from '@/components/layout/app-shell/app-shell';
+
+import {
+  siteDescription,
+  siteImage,
+  siteName,
+  siteOrigin,
+  siteTitle,
+} from './site-metadata';
 import './globals.css';
 
 export const metadata: Metadata = {
+  metadataBase: new URL(siteOrigin),
+  verification: { google: 'IcxmSOOduOPPwcV3PD9YDBJp3EpnuujvxkfxK7ObCyU' },
   title: {
-    default: '흉흉 · 사건사고 지도',
-    template: '%s · 흉흉',
+    default: siteTitle,
+    template: `%s · ${siteTitle}`,
   },
-  description: '지도에서 사건사고를 살펴보고 진행 상황을 확인하는 서비스',
+  description: siteDescription,
+  openGraph: {
+    type: 'website',
+    siteName,
+    locale: 'ko_KR',
+    title: siteTitle,
+    description: siteDescription,
+    images: [siteImage],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: siteTitle,
+    description: siteDescription,
+    images: [siteImage],
+  },
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {

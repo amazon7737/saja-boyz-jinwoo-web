@@ -1,71 +1,43 @@
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
+import type { Metadata } from 'next';
 
-import type { ArticleCollectionItem } from '@/features/article-list/model/article.types';
+import { pageMetadata, siteOrigin } from '@/app/site-metadata';
 import {
   articleText,
+  articleTitle,
+  articleDescription,
   publicationDate,
   publicationText,
   safeSourceUrl,
 } from '@/features/article-list/model/article-presentation';
 
+import { loadDetail } from './load-detail';
 import { DetailShare } from './detail-share';
 import { DetailImage } from './detail-image';
 import { DetailNavigation } from './detail-navigation';
 
 export const dynamic = 'force-dynamic';
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return value !== null && typeof value === 'object' && !Array.isArray(value);
-}
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
 
-function isDetailItem(
-  value: unknown,
-  id: string,
-): value is ArticleCollectionItem {
-  if (!isRecord(value) || !isRecord(value.article)) return false;
+  const result = await loadDetail(id);
 
-  return (
-    value.article_id === id &&
-    typeof value.article.title === 'string' &&
-    typeof value.article.description === 'string' &&
-    typeof value.article.pubDate === 'string' &&
-    typeof value.article.originallink === 'string' &&
-    typeof value.article.link === 'string' &&
-    typeof value.image_status === 'string' &&
-    (value.image_url === null || typeof value.image_url === 'string')
-  );
-}
-
-async function fetchDetail(id: string) {
-  try {
-    const base = new URL(process.env.NEWS_API_BASE_URL ?? '');
-
-    if (
-      (base.protocol !== 'http:' && base.protocol !== 'https:') ||
-      base.username ||
-      base.password
-    ) {
-      return { status: 'error' } as const;
-    }
-
-    const url = new URL(`/news/${id}`, base);
-    const response = await fetch(url, {
-      method: 'GET',
-      cache: 'no-store',
-      signal: AbortSignal.timeout(5000),
-    });
-
-    if (response.status === 404) return { status: 'not-found' } as const;
-    if (!response.ok) return { status: 'error' } as const;
-    const item: unknown = await response.json();
-
-    if (!isDetailItem(item, id)) return { status: 'error' } as const;
-
-    return { status: 'success', item, apiOrigin: url.origin } as const;
-  } catch {
-    return { status: 'error' } as const;
+  if (result.status === 'error') {
+    return {
+      title: '기사를 불러오지 못했어요',
+      robots: { index: false, follow: true },
+    };
   }
+
+  const title = articleTitle(result.item.article.title);
+  const description = articleDescription(result.item.article.description);
+
+  return pageMetadata(title, description, `/incidents/${id}`);
 }
 
 export default async function IncidentDetailPage({
@@ -75,10 +47,7 @@ export default async function IncidentDetailPage({
 }) {
   const { id } = await params;
 
-  if (!/^[a-f0-9]{64}$/.test(id)) notFound();
-  const result = await fetchDetail(id);
-
-  if (result.status === 'not-found') notFound();
+  const result = await loadDetail(id);
 
   if (result.status === 'error') {
     return (
@@ -102,6 +71,26 @@ export default async function IncidentDetailPage({
   const publishedAt = publicationDate(article.pubDate);
   const sourceUrl =
     safeSourceUrl(article.originallink) ?? safeSourceUrl(article.link);
+  const structuredData = {
+    '@context': 'https://schema.org',
+    '@type': 'WebPage',
+    url: `${siteOrigin}/incidents/${id}`,
+    name: articleTitle(article.title),
+    description: articleDescription(article.description),
+    inLanguage: 'ko',
+    ...(sourceUrl
+      ? {
+          citation: {
+            '@type': 'CreativeWork',
+            name: articleTitle(article.title),
+            url: sourceUrl,
+            ...(!Number.isNaN(publishedAt.getTime())
+              ? { datePublished: publishedAt.toISOString() }
+              : {}),
+          },
+        }
+      : {}),
+  };
   const imageUrl =
     item.image_status === 'ready' &&
     item.image_url === `/images/${item.article_id}.jpg`
@@ -110,10 +99,16 @@ export default async function IncidentDetailPage({
 
   return (
     <article className="flex min-h-[calc(100dvh_-_env(safe-area-inset-top)_-_env(safe-area-inset-bottom))] min-w-0 flex-col gap-4 bg-surface px-4 pb-6 text-text">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(structuredData).replace(/</g, '\\u003c'),
+        }}
+      />
       <DetailNavigation />
       <div className="flex flex-col gap-2">
         <h1 className="m-0 text-[22px]/[30px] font-extrabold [overflow-wrap:anywhere]">
-          {articleText(article.title)}
+          {articleTitle(article.title)}
         </h1>
         <p className="m-0 text-[12px]/4 text-muted">
           {Number.isNaN(publishedAt.getTime()) ? (
@@ -145,7 +140,7 @@ export default async function IncidentDetailPage({
           {articleText(article.description)}
         </p>
       </section>
-      <DetailShare id={id} title={articleText(article.title)} />
+      <DetailShare id={id} title={articleTitle(article.title)} />
     </article>
   );
 }

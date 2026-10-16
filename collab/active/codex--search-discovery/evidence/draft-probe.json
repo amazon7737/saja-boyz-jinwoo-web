@@ -1,0 +1,67 @@
+{
+  "kind": "draft-probe-not-acceptance",
+  "source_base": "24c0662",
+  "executed_tests": 14,
+  "passed": 8,
+  "failed": 6,
+  "tests": [
+    {
+      "name": "searchDiscoveryUsesProductionBrandAndRouteMetadata",
+      "status": "failed"
+    },
+    {
+      "name": "articleMetadataMatchesSummaryAndEscapesStructuredCitation",
+      "status": "failed"
+    },
+    {
+      "name": "articleMetadataErrorsAreNotIndexableArticles",
+      "status": "failed"
+    },
+    {
+      "name": "crawlEndpointsListCanonicalRecentArticlesWithBoundedRequests",
+      "status": "failed"
+    },
+    {
+      "name": "serverArchiveLinksOlderRawPagesWithoutReplacingInfiniteScroll",
+      "status": "failed"
+    },
+    {
+      "name": "serviceAnswersAreVisibleAndReachableWithoutMapJavaScript",
+      "status": "failed"
+    },
+    {
+      "name": "articleDetailRequestAndContent",
+      "status": "passed"
+    },
+    {
+      "name": "articleDetailFailureStates",
+      "status": "passed"
+    },
+    {
+      "name": "articleDetailSafePresentation",
+      "status": "passed"
+    },
+    {
+      "name": "articleDetailTimeout",
+      "status": "passed"
+    },
+    {
+      "name": "articleDetailImageFailure",
+      "status": "passed"
+    },
+    {
+      "name": "articleDetailShareUrl",
+      "status": "passed"
+    },
+    {
+      "name": "articleDetailLinksFromListAndSearch",
+      "status": "passed"
+    },
+    {
+      "name": "articleDetailRouteBoundaries",
+      "status": "passed"
+    }
+  ],
+  "typecheck_exit": 0,
+  "source_implementation_changed": false
+}
