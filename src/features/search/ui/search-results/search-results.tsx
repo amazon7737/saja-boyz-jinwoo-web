@@ -2,6 +2,7 @@
 
 import { Fragment, useCallback, useEffect, useRef, useState } from 'react';
 
+import { ArticleSkeleton } from '@/components/feedback/article-skeleton';
 import { useArticleTail } from '@/features/article-list/ui/article-list/use-article-tail';
 
 import { loadSearchPage } from '../../api/load-search-page';
@@ -33,6 +34,7 @@ export function SearchResults({
   );
   const [pending, setPending] = useState(false);
   const [failed, setFailed] = useState(false);
+  const [retrying, setRetrying] = useState(false);
   const inFlight = useRef(false);
   const active = useRef(true);
 
@@ -44,35 +46,43 @@ export function SearchResults({
     };
   }, []);
 
-  const loadMore = useCallback(async () => {
-    if (!active.current || inFlight.current || !hasMore) return;
-    inFlight.current = true;
-    setPending(true);
-    setFailed(false);
+  const loadMore = useCallback(
+    async (manual = false) => {
+      if (!active.current || inFlight.current || !hasMore) return;
+      inFlight.current = true;
+      setPending(true);
+      setFailed(false);
+      setRetrying(manual);
 
-    try {
-      const page = await loadSearchPage(keyword, offset);
+      try {
+        const page = await loadSearchPage(keyword, offset);
 
-      if (!active.current) return;
+        if (!active.current) return;
 
-      if (!page) {
-        setFailed(true);
+        if (!page) {
+          setFailed(true);
 
-        return;
+          return;
+        }
+
+        const nextOffset = offset + page.received;
+
+        setCards((previous) => uniqueCards([...previous, ...page.cards]));
+        setOffset(nextOffset);
+        setHasMore(page.received > 0 && nextOffset < page.total);
+      } catch {
+        if (active.current) setFailed(true);
+      } finally {
+        inFlight.current = false;
+
+        if (active.current) {
+          setPending(false);
+          setRetrying(false);
+        }
       }
-
-      const nextOffset = offset + page.received;
-
-      setCards((previous) => uniqueCards([...previous, ...page.cards]));
-      setOffset(nextOffset);
-      setHasMore(page.received > 0 && nextOffset < page.total);
-    } catch {
-      if (active.current) setFailed(true);
-    } finally {
-      inFlight.current = false;
-      if (active.current) setPending(false);
-    }
-  }, [hasMore, keyword, offset]);
+    },
+    [hasMore, keyword, offset],
+  );
 
   const tail = useArticleTail(hasMore && !pending && !failed, loadMore);
 
@@ -87,23 +97,24 @@ export function SearchResults({
           검색 결과가 없어요
         </p>
       ) : (
-        <div className="flex flex-col gap-2 pb-2">
+        <div className="flex flex-col gap-3 pb-3">
           {cards.map(({ id, content }) => (
             <Fragment key={id}>{content}</Fragment>
           ))}
         </div>
       )}
       {pending && (
-        <p role="status" aria-busy="true" className="text-muted">
-          추가 기사를 불러오는 중이에요
-        </p>
+        <ArticleSkeleton
+          label="추가 기사를 불러오는 중이에요"
+          variant="search"
+        />
       )}
       {failed && <p role="alert">추가 기사를 불러오지 못했어요</p>}
-      {hasMore && failed && (
+      {hasMore && (failed || retrying) && (
         <button
           type="button"
           disabled={pending}
-          onClick={loadMore}
+          onClick={() => loadMore(true)}
           className="ui-control rounded-lg border border-solid border-border bg-surface px-3 py-2 text-brand disabled:opacity-50"
         >
           다시 시도

@@ -40,16 +40,16 @@ export function SearchResultCard({
     safeSourceUrl(article.originallink) ?? safeSourceUrl(article.link);
 
   return (
-    <article className="flex min-w-0 flex-col gap-2 rounded-card border border-solid border-border bg-surface p-3 shadow-[0_4px_8px_rgb(0_0_0/5%)]">
-      <h2 className="m-0 line-clamp-1 text-[14px]/[17px] font-bold text-text [overflow-wrap:anywhere]">
+    <article className="ui-card-enter flex min-w-0 flex-col gap-2 rounded-card border border-solid border-border bg-surface p-3 shadow-[0_4px_8px_rgb(0_0_0/5%)]">
+      <h2 className="m-0 line-clamp-1 text-[14px]/5 font-bold text-text [overflow-wrap:anywhere]">
         <Link className="ui-link" href={`/incidents/${article_id}`}>
           {highlightedText(articleText(article.title), keyword)}
         </Link>
       </h2>
-      <p className="m-0 line-clamp-1 text-[11px]/[13px] text-muted [overflow-wrap:anywhere]">
+      <p className="m-0 line-clamp-1 text-[12px]/[18px] text-muted [overflow-wrap:anywhere]">
         {highlightedText(articleText(article.description), keyword)}
       </p>
-      <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 text-[11px]/[13px] text-muted">
+      <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 text-[11px]/4 text-muted">
         <p className="m-0">
           {Number.isNaN(publishedAt.getTime()) ? (
             '발행 시각 미확인'

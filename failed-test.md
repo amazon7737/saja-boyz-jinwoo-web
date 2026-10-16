@@ -954,7 +954,7 @@ vi.mock('next/link', async (importOriginal) => ({
 }));
 ```
 
-- [ ] loadingFeedbackUsesDecorativeSkeletonsAndCompactAccessibleSpinners — 신규 회귀
+- [x] loadingFeedbackUsesDecorativeSkeletonsAndCompactAccessibleSpinners — 신규 회귀
 ```ts
 test('loadingFeedbackUsesDecorativeSkeletonsAndCompactAccessibleSpinners', () => {
   for (const [Component, label] of [
