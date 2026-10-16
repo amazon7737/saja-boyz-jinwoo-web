@@ -4,11 +4,14 @@ import Link from 'next/link';
 import { PaginatedArticleList } from '@/features/article-list/ui/article-list/paginated-article-list';
 import { fetchArticleList } from '@/features/article-list/api/fetch-articles';
 
-import { siteOrigin } from '../site-metadata';
+import { pageMetadata } from '../site-metadata';
 
 export const metadata: Metadata = {
-  title: '사건 사고 기사 목록',
-  alternates: { canonical: `${siteOrigin}/incidents` },
+  ...pageMetadata(
+    '사건 사고 기사 목록',
+    '수집된 사건 사고 기사의 요약과 원문을 목록에서 확인하세요.',
+    '/incidents',
+  ),
 };
 
 // Read runtime configuration on every request, including configuration errors.
@@ -20,6 +23,14 @@ export default async function IncidentsPage() {
   return (
     <section aria-label="사건 목록">
       <h1 className="sr-only">사건 목록</h1>
+      <div className="flex flex-wrap gap-4 py-4 text-sm">
+        <Link href="/archive" className="ui-link text-brand underline">
+          기사 아카이브
+        </Link>
+        <Link href="/about" className="ui-link text-brand underline">
+          서비스 안내
+        </Link>
+      </div>
       {result ? (
         <PaginatedArticleList initialPage={result} />
       ) : (

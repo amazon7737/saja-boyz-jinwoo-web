@@ -6,7 +6,7 @@ import { cache } from 'react';
 import { fetchArticleList } from '@/features/article-list/api/fetch-articles';
 import { ArticleList } from '@/features/article-list/ui/article-list/article-list';
 
-import { siteOrigin } from '../site-metadata';
+import { pageMetadata } from '../site-metadata';
 
 export const dynamic = 'force-dynamic';
 
@@ -21,7 +21,8 @@ function archivePath(page: number) {
 }
 
 async function archivePage(searchParams: ArchiveProps['searchParams']) {
-  const { page: input = '1' } = await searchParams;
+  const { page: raw = '1' } = await searchParams;
+  const input = Array.isArray(raw) ? raw[0] : raw;
 
   if (typeof input !== 'string' || !/^[1-9]\d*$/.test(input)) notFound();
   const page = Number(input);
@@ -43,8 +44,11 @@ export async function generateMetadata({
   const result = await fetchArchive(offset);
 
   return {
-    title: `기사 아카이브 · ${page}페이지`,
-    alternates: { canonical: `${siteOrigin}${archivePath(page)}` },
+    ...pageMetadata(
+      `기사 아카이브 · ${page}페이지`,
+      '수집된 사건 사고 기사를 페이지별로 살펴보세요.',
+      archivePath(page),
+    ),
     ...(!result || result.items.length === 0
       ? { robots: { index: false, follow: true } }
       : {}),

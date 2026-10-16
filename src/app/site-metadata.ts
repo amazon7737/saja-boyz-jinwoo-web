@@ -1,3 +1,5 @@
+import type { Metadata } from 'next';
+
 export const siteOrigin = 'https://hyunghyung.vercel.app';
 
 export const siteName = '흉흉';
@@ -13,3 +15,32 @@ export const siteImage = {
   height: 630,
   alt: siteTitle,
 };
+
+export function pageMetadata(
+  title: string,
+  description: string,
+  path: string,
+): Metadata {
+  const url = `${siteOrigin}${path}`;
+
+  return {
+    title,
+    description,
+    alternates: { canonical: url },
+    openGraph: {
+      type: 'website',
+      siteName,
+      locale: 'ko_KR',
+      title,
+      description,
+      url,
+      images: [siteImage],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: [siteImage],
+    },
+  };
+}

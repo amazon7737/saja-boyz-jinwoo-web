@@ -4,6 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
+import { ServiceIntro } from '@/components/layout/service-intro';
 import { LoadingSpinner } from '@/components/feedback/loading-spinner';
 import { articleText } from '@/features/article-list/model/article-presentation';
 
@@ -607,159 +608,163 @@ export function MapHome({
   }
 
   return (
-    <section aria-label="주변 지도" className="relative">
-      <div
-        role="group"
-        aria-label="기사 필터"
-        className="absolute top-[calc(68px_+_env(safe-area-inset-top))] right-4 left-4 z-20 flex h-[30px] items-start gap-1.5"
-      >
-        <MapAllFilters value={period} onChange={applyPeriod} />
-        <MapPeriodFilter value={period} onChange={applyPeriod} />
-        <MapUnavailableFilter kind="category" />
-        <MapUnavailableFilter kind="status" />
-      </div>
-      <div ref={canvas} className="h-dvh overflow-hidden" />
-      <div
-        ref={controlClearance}
-        aria-hidden="true"
-        className={`pointer-events-none invisible absolute bottom-0 w-0 ${
-          ready && selectedArticles.length > 0 && articles
-            ? 'h-[max(calc(84px_+_env(safe-area-inset-bottom)),calc(65dvh_+_8px))]'
-            : 'h-[calc(84px_+_env(safe-area-inset-bottom))]'
-        }`}
-      />
-      <div
-        ref={carouselOverlay}
-        className="pointer-events-none absolute right-0 bottom-0 left-0 pb-[calc(86px_+_env(safe-area-inset-bottom))]"
-      >
-        <div className="pointer-events-auto relative">
-          <button
-            type="button"
-            aria-label="내 위치"
-            aria-busy={locating}
-            disabled={!ready || locating}
-            onClick={() => locate.current?.()}
-            className="ui-control absolute right-4 -top-[58px] flex size-11 items-center justify-center rounded-full border-0 bg-white p-0 shadow-floating disabled:opacity-50"
-          >
-            {locating ? (
-              <span className="size-5" role="status" aria-busy="true">
-                <LoadingSpinner />
-                <span className="sr-only">내 위치를 확인하는 중입니다.</span>
-              </span>
-            ) : (
-              <Image
-                src="/naver-map-crosshair.svg"
-                alt=""
-                width={20}
-                height={20}
-              />
-            )}
-          </button>
-          {ready && articles && articles.items.length > 0 && (
-            <MapArticleCarousel articles={filteredArticles!} />
-          )}
-        </div>
-      </div>
-      {ready && articles !== undefined && !articles?.items.length && (
+    <>
+      <section aria-label="주변 지도" className="relative">
         <div
-          role="status"
-          className="absolute top-[calc(112px_+_env(safe-area-inset-top))] right-4 left-4 rounded-2xl bg-floating p-3 text-sm text-muted shadow-floating"
+          role="group"
+          aria-label="기사 필터"
+          className="absolute top-[calc(68px_+_env(safe-area-inset-top))] right-4 left-4 z-20 flex h-[30px] items-start gap-1.5"
         >
-          {articles === null ? (
-            <>
-              <p>
-                기사 위치를 불러오지 못했습니다. 지도는 계속 사용할 수 있습니다.
-              </p>
-              <button
-                type="button"
-                onClick={() => window.location.reload()}
-                className="mt-2 inline-block underline"
-              >
-                기사 위치 다시 불러오기
-              </button>
-            </>
-          ) : (
-            <>
-              <p>아직 위치가 확인된 기사가 없습니다.</p>
-              <Link href="/incidents" className="mt-2 inline-block underline">
-                전체 기사 목록 보기
-              </Link>
-            </>
-          )}
+          <MapAllFilters value={period} onChange={applyPeriod} />
+          <MapPeriodFilter value={period} onChange={applyPeriod} />
+          <MapUnavailableFilter kind="category" />
+          <MapUnavailableFilter kind="status" />
         </div>
-      )}
-      {ready && Boolean(articles?.items.length) && (
-        <div className="absolute top-[calc(112px_+_env(safe-area-inset-top))] left-4 flex items-center gap-2 rounded-xl bg-floating px-3 py-1.5 shadow-floating">
-          <div className="flex items-center text-muted">
-            {articles!.items.some(
-              (item) => item.location.precision === 'region',
-            ) && (
-              <a
-                href="https://www.data.go.kr/data/15084084/openapi.do"
-                className="flex items-center text-[11px]/[16px] underline"
-              >
-                지역 좌표: 기상청
-              </a>
+        <div ref={canvas} className="h-dvh overflow-hidden" />
+        <div
+          ref={controlClearance}
+          aria-hidden="true"
+          className={`pointer-events-none invisible absolute bottom-0 w-0 ${
+            ready && selectedArticles.length > 0 && articles
+              ? 'h-[max(calc(84px_+_env(safe-area-inset-bottom)),calc(65dvh_+_8px))]'
+              : 'h-[calc(84px_+_env(safe-area-inset-bottom))]'
+          }`}
+        />
+        <div
+          ref={carouselOverlay}
+          className="pointer-events-none absolute right-0 bottom-0 left-0 pb-[calc(86px_+_env(safe-area-inset-bottom))]"
+        >
+          <div className="pointer-events-auto relative">
+            <button
+              type="button"
+              aria-label="내 위치"
+              aria-busy={locating}
+              disabled={!ready || locating}
+              onClick={() => locate.current?.()}
+              className="ui-control absolute right-4 -top-[58px] flex size-11 items-center justify-center rounded-full border-0 bg-white p-0 shadow-floating disabled:opacity-50"
+            >
+              {locating ? (
+                <span className="size-5" role="status" aria-busy="true">
+                  <LoadingSpinner />
+                  <span className="sr-only">내 위치를 확인하는 중입니다.</span>
+                </span>
+              ) : (
+                <Image
+                  src="/naver-map-crosshair.svg"
+                  alt=""
+                  width={20}
+                  height={20}
+                />
+              )}
+            </button>
+            {ready && articles && articles.items.length > 0 && (
+              <MapArticleCarousel articles={filteredArticles!} />
             )}
           </div>
-          <button
-            type="button"
-            onClick={() => fitArticles.current?.()}
-            className="flex items-center justify-center rounded-lg border-0 bg-transparent px-2 py-1 text-[11px]/[16px] text-text"
-          >
-            기사 위치 보기
-          </button>
         </div>
-      )}
-      {ready && selectedArticles.length > 0 && articles && (
-        <MapArticleSheet
-          items={selectedArticles}
-          apiOrigin={articles.apiOrigin}
-          onClose={() => {
-            clearSelection.current?.(true);
-            setSelectedArticles([]);
-          }}
-        />
-      )}
-      {locationError && (
-        <p
-          role="status"
-          className="absolute top-[calc(112px_+_env(safe-area-inset-top))] right-4 left-4 rounded-2xl bg-floating p-4 shadow-floating"
-        >
-          {locationError}
-        </p>
-      )}
-      {failed && (
-        <div
-          role="alert"
-          className="absolute top-[calc(112px_+_env(safe-area-inset-top))] right-4 left-4 rounded-2xl bg-floating p-4 shadow-floating"
-        >
-          <p>지도를 불러오지 못했습니다. 다시 시도해 주세요.</p>
-          <button
-            type="button"
-            onClick={() => {
-              setFailed(false);
-              setReady(false);
-              setAttempt((value) => value + 1);
+        {ready && articles !== undefined && !articles?.items.length && (
+          <div
+            role="status"
+            className="absolute top-[calc(112px_+_env(safe-area-inset-top))] right-4 left-4 rounded-2xl bg-floating p-3 text-sm text-muted shadow-floating"
+          >
+            {articles === null ? (
+              <>
+                <p>
+                  기사 위치를 불러오지 못했습니다. 지도는 계속 사용할 수
+                  있습니다.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => window.location.reload()}
+                  className="mt-2 inline-block underline"
+                >
+                  기사 위치 다시 불러오기
+                </button>
+              </>
+            ) : (
+              <>
+                <p>아직 위치가 확인된 기사가 없습니다.</p>
+                <Link href="/incidents" className="mt-2 inline-block underline">
+                  전체 기사 목록 보기
+                </Link>
+              </>
+            )}
+          </div>
+        )}
+        {ready && Boolean(articles?.items.length) && (
+          <div className="absolute top-[calc(112px_+_env(safe-area-inset-top))] left-4 flex items-center gap-2 rounded-xl bg-floating px-3 py-1.5 shadow-floating">
+            <div className="flex items-center text-muted">
+              {articles!.items.some(
+                (item) => item.location.precision === 'region',
+              ) && (
+                <a
+                  href="https://www.data.go.kr/data/15084084/openapi.do"
+                  className="flex items-center text-[11px]/[16px] underline"
+                >
+                  지역 좌표: 기상청
+                </a>
+              )}
+            </div>
+            <button
+              type="button"
+              onClick={() => fitArticles.current?.()}
+              className="flex items-center justify-center rounded-lg border-0 bg-transparent px-2 py-1 text-[11px]/[16px] text-text"
+            >
+              기사 위치 보기
+            </button>
+          </div>
+        )}
+        {ready && selectedArticles.length > 0 && articles && (
+          <MapArticleSheet
+            items={selectedArticles}
+            apiOrigin={articles.apiOrigin}
+            onClose={() => {
+              clearSelection.current?.(true);
+              setSelectedArticles([]);
             }}
-            className="rounded-lg border border-border px-4 py-2"
+          />
+        )}
+        {locationError && (
+          <p
+            role="status"
+            className="absolute top-[calc(112px_+_env(safe-area-inset-top))] right-4 left-4 rounded-2xl bg-floating p-4 shadow-floating"
           >
-            다시 시도
-          </button>
-        </div>
-      )}
-      {!ready && !failed && (
-        <div
-          role="status"
-          aria-busy="true"
-          className="absolute top-[calc(112px_+_env(safe-area-inset-top))] right-4 left-4 rounded-2xl bg-floating p-4 shadow-floating"
-        >
-          <span className="block size-5 text-muted">
-            <LoadingSpinner />
-          </span>
-          <span className="sr-only">지도를 불러오는 중입니다.</span>
-        </div>
-      )}
-    </section>
+            {locationError}
+          </p>
+        )}
+        {failed && (
+          <div
+            role="alert"
+            className="absolute top-[calc(112px_+_env(safe-area-inset-top))] right-4 left-4 rounded-2xl bg-floating p-4 shadow-floating"
+          >
+            <p>지도를 불러오지 못했습니다. 다시 시도해 주세요.</p>
+            <button
+              type="button"
+              onClick={() => {
+                setFailed(false);
+                setReady(false);
+                setAttempt((value) => value + 1);
+              }}
+              className="rounded-lg border border-border px-4 py-2"
+            >
+              다시 시도
+            </button>
+          </div>
+        )}
+        {!ready && !failed && (
+          <div
+            role="status"
+            aria-busy="true"
+            className="absolute top-[calc(112px_+_env(safe-area-inset-top))] right-4 left-4 rounded-2xl bg-floating p-4 shadow-floating"
+          >
+            <span className="block size-5 text-muted">
+              <LoadingSpinner />
+            </span>
+            <span className="sr-only">지도를 불러오는 중입니다.</span>
+          </div>
+        )}
+      </section>
+      <ServiceIntro />
+    </>
   );
 }

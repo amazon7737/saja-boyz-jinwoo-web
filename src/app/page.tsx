@@ -4,10 +4,11 @@ import { fetchMapArticles } from '@/features/map/api/fetch-map-articles';
 import { MapHome } from '@/features/map/ui/map-home/map-home';
 import { MapSetupNotice } from '@/features/map/ui/map-home/map-setup-notice';
 
-import { siteOrigin } from './site-metadata';
+import { pageMetadata, siteTitle, siteDescription } from './site-metadata';
 
 export const metadata: Metadata = {
-  alternates: { canonical: `${siteOrigin}/` },
+  ...pageMetadata(siteTitle, siteDescription, '/'),
+  title: { absolute: siteTitle },
 };
 
 export default async function HomePage() {

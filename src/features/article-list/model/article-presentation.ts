@@ -131,3 +131,18 @@ export function publicationText(date: Date) {
 
   return `${parts.year}-${parts.month}-${parts.day} ${parts.hour}:${parts.minute} KST`;
 }
+
+export function articleTitle(value: string) {
+  return articleText(value).replace(/\s+/g, ' ').trim();
+}
+
+export function articleDescription(value: string) {
+  const text = articleTitle(value);
+  const points = Array.from(text);
+
+  if (points.length <= 160) return text;
+  const prefix = points.slice(0, 159).join('');
+  const boundary = prefix.lastIndexOf(' ');
+
+  return `${(boundary >= 120 ? prefix.slice(0, boundary) : prefix).trimEnd()}…`;
+}
