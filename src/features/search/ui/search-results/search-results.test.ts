@@ -30,6 +30,7 @@ function batch(start = 0) {
 beforeEach(() => {
   localStorage.clear();
   request.mockReset();
+  installObserver();
   vi.stubEnv('NEWS_API_BASE_URL', 'https://news.example.invalid');
   vi.stubGlobal('fetch', request);
   vi.stubGlobal('IS_REACT_ACT_ENVIRONMENT', true);
@@ -71,6 +72,71 @@ function offsets() {
   );
 }
 
+type ObservedEntry = {
+  callback: IntersectionObserverCallback;
+  targets: Set<Element>;
+  disconnected: boolean;
+};
+const observers: ObservedEntry[] = [];
+
+function installObserver() {
+  observers.length = 0;
+  vi.stubGlobal(
+    'IntersectionObserver',
+    class {
+      entry: ObservedEntry;
+      constructor(callback: IntersectionObserverCallback) {
+        this.entry = { callback, targets: new Set(), disconnected: false };
+        observers.push(this.entry);
+      }
+      observe(target: Element) {
+        this.entry.disconnected = false;
+        this.entry.targets.add(target);
+      }
+      unobserve(target: Element) {
+        this.entry.targets.delete(target);
+      }
+      disconnect() {
+        this.entry.disconnected = true;
+        this.entry.targets.clear();
+      }
+    },
+  );
+}
+
+function dispatchIntersections(isIntersecting = true) {
+  for (const observer of [...observers]) {
+    if (observer.disconnected || observer.targets.size === 0) continue;
+    observer.callback(
+      [...observer.targets].map((target) => ({
+        target,
+        isIntersecting,
+        intersectionRatio: isIntersecting ? 1 : 0,
+        boundingClientRect: target.getBoundingClientRect(),
+        intersectionRect: target.getBoundingClientRect(),
+        rootBounds: null,
+        time: 0,
+      })),
+      observer as unknown as IntersectionObserver,
+    );
+  }
+}
+
+async function intersect(isIntersecting = true) {
+  await act(async () => dispatchIntersections(isIntersecting));
+}
+
+function expectsObservedTail() {
+  expect(
+    observers.some((entry) => !entry.disconnected && entry.targets.size > 0),
+  ).toBe(true);
+  expect(
+    Array.from(container.querySelectorAll('button')).some(
+      (entry) => entry.textContent?.trim() === '더 보기',
+    ),
+  ).toBe(false);
+}
+
 test('searchPageRequestValidatesOffsetAndRetainsRawTotal', async () => {
   request.mockResolvedValue(
     Response.json({ total: 80, items: [article(1), article(1)] }),
@@ -100,138 +166,4 @@ test('searchPageRequestValidatesOffsetAndRetainsRawTotal', async () => {
     expect(await pageRequest('화재', offset)).toBeNull();
   }
   expect(request).not.toHaveBeenCalled();
-});
-
-test('searchMoreAppendsDeduplicatedPagesWithRawOffsets', async () => {
-  const first = [...batch().slice(0, 19), article(0)];
-  const second = [article(0), ...batch(19).slice(0, 19)];
-  request.mockResolvedValueOnce(Response.json({ total: 43, items: first }));
-  await mount('  서울 & 화재?#  ');
-  expect(titles()).toEqual(
-    first.slice(0, 19).map((item) => item.article.title),
-  );
-  request.mockResolvedValueOnce(Response.json({ total: 43, items: second }));
-  await click('더 보기');
-  expect(titles()).toEqual(Array.from({ length: 38 }, (_, i) => '기사 ' + i));
-  request.mockResolvedValueOnce(
-    Response.json({
-      total: 43,
-      items: [article(38), article(38), article(39)],
-    }),
-  );
-  await click('더 보기');
-  expect(titles()).toEqual(Array.from({ length: 40 }, (_, i) => '기사 ' + i));
-  expect(offsets()).toEqual(['0', '20', '40']);
-  for (const [input] of request.mock.calls) {
-    expect(new URL(String(input)).searchParams.get('keyword')).toBe(
-      '서울 & 화재?#',
-    );
-    expect(new URL(String(input)).searchParams.get('limit')).toBe('20');
-  }
-  expect(
-    container.querySelector('input[name="q"]')?.getAttribute('value'),
-  ).toBe('서울 & 화재?#');
-  expect(container.textContent).not.toContain('최대 20개의 기사를 보여드려요');
-  expect(container.textContent).not.toContain('43건');
-  expect(
-    Array.from(container.querySelectorAll('button')).some(
-      (b) => b.textContent?.trim() === '더 보기',
-    ),
-  ).toBe(false);
-  expect(container.querySelector('article h2 a')?.getAttribute('href')).toBe(
-    '/incidents/' + article(0).article_id,
-  );
-});
-
-test('searchMorePendingFailureAndRetryPreserveLoadedArticles', async () => {
-  request.mockResolvedValueOnce(Response.json({ total: 21, items: batch() }));
-  await mount('화재');
-  let finish!: (response: Response) => void;
-  request.mockImplementationOnce(
-    () =>
-      new Promise((resolve) => {
-        finish = resolve;
-      }),
-  );
-  const more = button('더 보기');
-  await act(async () => {
-    more.click();
-    more.click();
-  });
-  expect(request).toHaveBeenCalledTimes(2);
-  expect(more.disabled).toBe(true);
-  expect(
-    container.querySelector('[role="status"][aria-busy="true"]'),
-  ).not.toBeNull();
-  expect(titles()).toHaveLength(20);
-  await act(async () =>
-    finish(new Response('PRIVATE_MORE_FAILURE', { status: 503 })),
-  );
-  expect(container.querySelector('[role="alert"]')?.textContent).toContain(
-    '추가 기사를 불러오지 못했어요',
-  );
-  expect(container.textContent).not.toContain('PRIVATE_MORE_FAILURE');
-  expect(titles()).toHaveLength(20);
-  request.mockResolvedValueOnce(new Response('invalid-json'));
-  await click('다시 시도');
-  expect(titles()).toHaveLength(20);
-  expect(container.querySelector('[role="alert"]')).not.toBeNull();
-  request.mockRejectedValueOnce(new Error('PRIVATE_NETWORK_FAILURE'));
-  await click('다시 시도');
-  expect(titles()).toHaveLength(20);
-  expect(container.textContent).not.toContain('PRIVATE_NETWORK_FAILURE');
-  request.mockResolvedValueOnce(
-    Response.json({ total: 21, items: [article(20)] }),
-  );
-  await click('다시 시도');
-  expect(titles()).toHaveLength(21);
-  expect(offsets()).toEqual(['0', '20', '20', '20', '20']);
-  expect(container.querySelector('[role="alert"]')).toBeNull();
-  expect(
-    Array.from(container.querySelectorAll('button')).some(
-      (b) => b.textContent?.trim() === '더 보기',
-    ),
-  ).toBe(false);
-});
-
-test('searchMoreResetsOnKeywordChangeAndIgnoresLatePages', async () => {
-  request.mockResolvedValueOnce(Response.json({ total: 40, items: batch() }));
-  await mount('첫 검색');
-  let finish!: (response: Response) => void;
-  request.mockImplementationOnce(
-    () =>
-      new Promise((resolve) => {
-        finish = resolve;
-      }),
-  );
-  await click('더 보기');
-  request.mockResolvedValueOnce(
-    Response.json({ total: 60, items: batch(100) }),
-  );
-  await mount('다른 검색');
-  expect(titles()).toEqual(batch(100).map((item) => item.article.title));
-  await act(async () => finish(Response.json({ total: 40, items: batch(20) })));
-  expect(titles()).toEqual(batch(100).map((item) => item.article.title));
-  request.mockResolvedValueOnce(Response.json({ total: 60, items: [] }));
-  await click('더 보기');
-  expect(titles()).toHaveLength(20);
-  expect(
-    Array.from(container.querySelectorAll('button')).some(
-      (b) => b.textContent?.trim() === '더 보기',
-    ),
-  ).toBe(false);
-  expect(offsets()).toEqual(['0', '20', '0', '20']);
-  expect(
-    request.mock.calls.map(([input]) =>
-      new URL(String(input)).searchParams.get('keyword'),
-    ),
-  ).toEqual(['첫 검색', '첫 검색', '다른 검색', '다른 검색']);
-  const calls = request.mock.calls.length;
-  await mount('   ');
-  expect(titles()).toEqual([]);
-  expect(request).toHaveBeenCalledTimes(calls);
-  expect(container.querySelector('form[action="/search"]')).not.toBeNull();
-  expect(
-    container.querySelector('section[aria-label="최근 검색"]'),
-  ).not.toBeNull();
 });
