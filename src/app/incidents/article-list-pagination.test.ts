@@ -323,3 +323,27 @@ test('articleListMoreStopsOnEmptyPageAndDoesNotOfferFinishedLists', async () => 
   expect(offsets()).toEqual(['0', '20', '0', '0']);
   expect(request).toHaveBeenCalledTimes(4);
 });
+
+test('articleInfiniteScrollFallbackLoadsNearViewportAndCleansUp', async () => {
+  vi.stubGlobal('IntersectionObserver', undefined);
+  request.mockResolvedValueOnce(Response.json({ total: 21, items: batch() }));
+  request.mockResolvedValueOnce(
+    Response.json({ total: 21, items: [article(20)] }),
+  );
+  await mount();
+  await act(async () => {
+    window.dispatchEvent(new Event('scroll'));
+    window.dispatchEvent(new Event('resize'));
+  });
+  expect(titles()).toHaveLength(21);
+  expect(offsets()).toEqual(['0', '20']);
+  expect(container.querySelector('button')).toBeNull();
+
+  await act(async () => root.render(null));
+  const calls = request.mock.calls.length;
+  await act(async () => {
+    window.dispatchEvent(new Event('scroll'));
+    window.dispatchEvent(new Event('resize'));
+  });
+  expect(request).toHaveBeenCalledTimes(calls);
+});
