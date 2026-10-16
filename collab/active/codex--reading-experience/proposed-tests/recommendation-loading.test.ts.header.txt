@@ -1,0 +1,48 @@
+// file: src/app/search/recommendation-loading.test.ts
+import { execFile, spawn, type ChildProcess } from 'node:child_process';
+import { once } from 'node:events';
+import { cp, mkdtemp, rm, symlink } from 'node:fs/promises';
+import { createServer, type Server } from 'node:http';
+import type { AddressInfo } from 'node:net';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { promisify } from 'node:util';
+import { chromium, type Browser } from 'playwright-core';
+import { expect, test } from 'vitest';
+
+const execute = promisify(execFile);
+const wait = (ms: number) =>
+  new Promise<void>((resolve) => setTimeout(resolve, ms));
+
+async function listen(server: Server) {
+  await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
+  return (server.address() as AddressInfo).port;
+}
+
+async function stop(child?: ChildProcess) {
+  if (!child || child.exitCode !== null || child.signalCode !== null) return;
+  const exited = once(child, 'exit');
+  child.kill('SIGTERM');
+  await Promise.race([exited, wait(2000)]);
+  if (child.exitCode === null && child.signalCode === null) {
+    child.kill('SIGKILL');
+    await exited;
+  }
+}
+
+async function ready(origin: string, app: ChildProcess, output: () => string) {
+  for (let attempt = 0; attempt < 100; attempt++) {
+    if (app.exitCode !== null) throw new Error(output());
+    try {
+      const response = await fetch(origin + '/search', {
+        signal: AbortSignal.timeout(1000),
+      });
+      await response.body?.cancel();
+      if (response.ok) return;
+    } catch {
+      // Wait only for the owned local Next server to start.
+    }
+    await wait(100);
+  }
+  throw new Error('Next server did not start: ' + output());
+}

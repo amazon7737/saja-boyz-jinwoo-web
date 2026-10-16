@@ -4,7 +4,7 @@ owner: easter721
 started: 2026-10-16
 status: active
 goal: feat(ux): 간격·로딩 피드백과 기사 무한 스크롤 개선
-next: 전 화면 간격·로딩·페이지네이션 감사 및 정확한 Sobaya 명세·회귀 테스트 초안 준비
+next: 정확 명세·신규2개·기존7개 테스트 이관 사용자 승인 대기; 승인 후 Sobaya 구현·검증·PR
 base: dev
 ---
 
