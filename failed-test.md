@@ -748,7 +748,7 @@ async function ready(origin: string, app: ChildProcess, output: () => string) {
 }
 ```
 
-- [ ] recommendedKeywordShowsPendingUntilResultsArrive — 기존 회귀 이관
+- [x] recommendedKeywordShowsPendingUntilResultsArrive — 기존 회귀 이관
 ```ts
 test('recommendedKeywordShowsPendingUntilResultsArrive', async () => {
   let releaseResponse!: () => void;
