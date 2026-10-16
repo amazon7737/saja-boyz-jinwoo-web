@@ -1,7 +1,15 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 
 import { PaginatedArticleList } from '@/features/article-list/ui/article-list/paginated-article-list';
 import { fetchArticleList } from '@/features/article-list/api/fetch-articles';
+
+import { siteOrigin } from '../site-metadata';
+
+export const metadata: Metadata = {
+  title: '사건 사고 기사 목록',
+  alternates: { canonical: `${siteOrigin}/incidents` },
+};
 
 // Read runtime configuration on every request, including configuration errors.
 export const dynamic = 'force-dynamic';

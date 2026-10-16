@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 
 import { loadSearchPage } from '@/features/search/api/load-search-page';
@@ -5,6 +6,12 @@ import { SearchResults } from '@/features/search/ui/search-results/search-result
 import { RecentSearches } from '@/features/search/ui/recent-searches/recent-searches';
 
 import { KeywordLinkStatus } from './keyword-link-status';
+
+export const metadata: Metadata = {
+  title: '기사 검색',
+  description: '키워드로 사건 사고 기사를 검색하세요.',
+  robots: { index: false, follow: true },
+};
 
 const suggestedKeywords = [
   { keyword: '대형화재', symbol: '🔥' },

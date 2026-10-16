@@ -1,6 +1,8 @@
 #!/bin/bash
 set -euo pipefail
-task_dir="$SOBAYA_TASK_DIR"
+task_dir=$(mktemp -d)
+trap 'rm -rf "$task_dir"' EXIT
+cat > "$task_dir/prompt.txt"
 if [ "$SOBAYA_ROLE" = implement ]; then
 cat >> "$task_dir/prompt.txt" <<'CONTEXT'
 Implement ONLY this app's approved spec and current exact entry. Do not edit AGENTS, tests, approved support/fixtures, spec, failed-test, package/lockfiles or harness. No commits/publish. Source only. Use existing UI styles/API contracts.
@@ -8,6 +10,7 @@ Feature: production origin https://hyunghyung.vercel.app and brand 흉흉 · 내
 JSON-LD WebPage citation CreativeWork only; safe source URL and valid source publicationDate, no claimed original reporting/author/publisher/Event/geo/modifieddate/NewsArticle. Escape less-than in JSON. Root WebSite identifies true brand/url only. Visible /about explains representative coordinates vs exact sites, publication date vs occurrence, AI imagery and sources. Home map stays dvh and overlays intact; add compact visible intro below map and links also when SDK is unconfigured. Keep HomePage current direct MapHome props compatibility. Existing map APIs/observers/viewport/filters/report/infinite-scroll behavior stay intact.
 robots + recent sitemap: four public static URLs and at most first20 raw rows from existing API, dedup IDs, no fabricated lastModified, bounded one5s request, static fallback during outage. /archive?page=N is a separate real linked server archive with20raw offsets and prev/next; preserve /incidents infinite scroll, no more button reintroduced. Validate positive safe integer page and offset; empty/error no next; noindex invalid content; first canonical /archive and others self canonical. total is duplicate raw row count not unique incidents. New acquisitions can shift offsets; don't claim stable snapshot. No extra deps, framework or nonexistent API.
 Write actual docs/search-discovery.md with Search Console submission and post-release checks plus bounded-sitemap and cursor limitations; user manages registration. No verification token, analytics, fabricated SEO ranking promises or llms.txt cargo cult.
+Shared-link detail: current pinned Next HTML_LIMITED_BOT_UA_RE defaults omit kakaotalk-scrap. Preserve default bot matching when extending HTML-limited handling for Kakao, do not disable streaming globally. Verify raw head for facebookexternalhit/Twitterbot/kakaotalk-scrap later. This is already required by approved spec, not a changed test.
 Known sandbox limitation: worker cannot bind local sockets needed for Next integration suite/default Turbopack build. Do NOT run full suite or build in worker. Run relevant focused jsdom/node source tests and format/lint on changed implementation only. Parent Sobaya runner runs UNCHANGED full suite and hygiene; coordinator runs default pnpm build, typecheck and production-browser/social-bot HTTP QA. Never modify tests to avoid sandbox failures. Return done only when current implementation and focused checks are coherent, accurately describe remaining coordinator checks.
 CONTEXT
 fi
