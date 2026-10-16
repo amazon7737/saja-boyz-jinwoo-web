@@ -649,7 +649,7 @@ test('searchMorePendingFailureAndRetryPreserveLoadedArticles', async () => {
 });
 ```
 
-- [ ] searchMoreResetsOnKeywordChangeAndIgnoresLatePages — 기존 회귀 이관
+- [x] searchMoreResetsOnKeywordChangeAndIgnoresLatePages — 기존 회귀 이관
 ```ts
 test('searchMoreResetsOnKeywordChangeAndIgnoresLatePages', async () => {
   request.mockResolvedValueOnce(Response.json({ total: 40, items: batch() }));
