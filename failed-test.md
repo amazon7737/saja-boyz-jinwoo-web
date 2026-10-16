@@ -94,7 +94,7 @@ afterEach(() => {
 });
 ```
 
-- [ ] searchDiscoveryUsesProductionBrandAndRouteMetadata — 명세의 실제 공개 동작 검증
+- [x] searchDiscoveryUsesProductionBrandAndRouteMetadata — 명세의 실제 공개 동작 검증
 
 ```ts
 test('searchDiscoveryUsesProductionBrandAndRouteMetadata', async () => {
