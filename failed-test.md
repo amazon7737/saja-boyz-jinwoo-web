@@ -469,7 +469,7 @@ async function detailMarkup() {
 }
 ```
 
-- [ ] articleDetailSafePresentation — 기존 보안 검증 유지, 실행 스크립트 차단과 JSON-LD 정보 구분
+- [x] articleDetailSafePresentation — 기존 보안 검증 유지, 실행 스크립트 차단과 JSON-LD 정보 구분
 
 ```ts
 test('articleDetailSafePresentation', async () => {
