@@ -208,3 +208,61 @@ test('searchMoreAppendsDeduplicatedPagesWithRawOffsets', async () => {
     '/incidents/' + article(0).article_id,
   );
 });
+
+test('searchMorePendingFailureAndRetryPreserveLoadedArticles', async () => {
+  request.mockResolvedValueOnce(Response.json({ total: 21, items: batch() }));
+  await mount('화재');
+  let finish!: (response: Response) => void;
+  request.mockImplementationOnce(
+    () =>
+      new Promise((resolve) => {
+        finish = resolve;
+      }),
+  );
+  await intersect(false);
+  expect(request).toHaveBeenCalledTimes(1);
+  await act(async () => {
+    dispatchIntersections();
+    dispatchIntersections();
+  });
+  expect(request).toHaveBeenCalledTimes(2);
+  expect(
+    container.querySelector('[role="status"][aria-busy="true"]'),
+  ).not.toBeNull();
+  expect(
+    container.querySelector('[role="status"][aria-busy="true"]'),
+  ).not.toBeNull();
+  expect(titles()).toHaveLength(20);
+  await act(async () =>
+    finish(new Response('PRIVATE_MORE_FAILURE', { status: 503 })),
+  );
+  expect(container.querySelector('[role="alert"]')?.textContent).toContain(
+    '추가 기사를 불러오지 못했어요',
+  );
+  expect(container.textContent).not.toContain('PRIVATE_MORE_FAILURE');
+  expect(titles()).toHaveLength(20);
+  const failedCalls = request.mock.calls.length;
+  await intersect();
+  await intersect();
+  expect(request).toHaveBeenCalledTimes(failedCalls);
+  request.mockResolvedValueOnce(new Response('invalid-json'));
+  await click('다시 시도');
+  expect(titles()).toHaveLength(20);
+  expect(container.querySelector('[role="alert"]')).not.toBeNull();
+  request.mockRejectedValueOnce(new Error('PRIVATE_NETWORK_FAILURE'));
+  await click('다시 시도');
+  expect(titles()).toHaveLength(20);
+  expect(container.textContent).not.toContain('PRIVATE_NETWORK_FAILURE');
+  request.mockResolvedValueOnce(
+    Response.json({ total: 21, items: [article(20)] }),
+  );
+  await click('다시 시도');
+  expect(titles()).toHaveLength(21);
+  expect(offsets()).toEqual(['0', '20', '20', '20', '20']);
+  expect(container.querySelector('[role="alert"]')).toBeNull();
+  expect(
+    Array.from(container.querySelectorAll('button')).some(
+      (b) => b.textContent?.trim() === '더 보기',
+    ),
+  ).toBe(false);
+});
