@@ -1,6 +1,9 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import type { Metadata } from 'next';
+import { cache } from 'react';
 
+import { siteImage, siteOrigin } from '@/app/site-metadata';
 import type { ArticleCollectionItem } from '@/features/article-list/model/article.types';
 import {
   articleText,
@@ -37,7 +40,7 @@ function isDetailItem(
   );
 }
 
-async function fetchDetail(id: string) {
+const fetchDetail = cache(async (id: string) => {
   try {
     const base = new URL(process.env.NEWS_API_BASE_URL ?? '');
 
@@ -66,6 +69,49 @@ async function fetchDetail(id: string) {
   } catch {
     return { status: 'error' } as const;
   }
+});
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+
+  if (!/^[a-f0-9]{64}$/.test(id)) notFound();
+  const result = await fetchDetail(id);
+
+  if (result.status === 'not-found') notFound();
+
+  if (result.status === 'error') {
+    return {
+      title: '기사를 불러오지 못했어요',
+      robots: { index: false, follow: true },
+    };
+  }
+
+  const title = articleText(result.item.article.title);
+  const description = articleText(result.item.article.description);
+  const url = `${siteOrigin}/incidents/${id}`;
+
+  return {
+    title,
+    description,
+    alternates: { canonical: url },
+    openGraph: {
+      type: 'website',
+      title,
+      description,
+      url,
+      images: [siteImage],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: [siteImage],
+    },
+  };
 }
 
 export default async function IncidentDetailPage({
@@ -102,6 +148,21 @@ export default async function IncidentDetailPage({
   const publishedAt = publicationDate(article.pubDate);
   const sourceUrl =
     safeSourceUrl(article.originallink) ?? safeSourceUrl(article.link);
+  const structuredData = {
+    '@context': 'https://schema.org',
+    '@type': 'WebPage',
+    url: `${siteOrigin}/incidents/${id}`,
+    name: articleText(article.title),
+    description: articleText(article.description),
+    citation: {
+      '@type': 'CreativeWork',
+      name: articleText(article.title),
+      ...(sourceUrl ? { url: sourceUrl } : {}),
+      ...(!Number.isNaN(publishedAt.getTime())
+        ? { datePublished: publishedAt.toISOString() }
+        : {}),
+    },
+  };
   const imageUrl =
     item.image_status === 'ready' &&
     item.image_url === `/images/${item.article_id}.jpg`
@@ -110,6 +171,12 @@ export default async function IncidentDetailPage({
 
   return (
     <article className="flex min-h-[calc(100dvh_-_env(safe-area-inset-top)_-_env(safe-area-inset-bottom))] min-w-0 flex-col gap-4 bg-surface px-4 pb-6 text-text">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(structuredData).replace(/</g, '\\u003c'),
+        }}
+      />
       <DetailNavigation />
       <div className="flex flex-col gap-2">
         <h1 className="m-0 text-[22px]/[30px] font-extrabold [overflow-wrap:anywhere]">

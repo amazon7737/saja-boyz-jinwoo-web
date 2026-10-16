@@ -118,3 +118,67 @@ test('searchDiscoveryUsesProductionBrandAndRouteMetadata', async () => {
     });
   }
 });
+
+test('articleMetadataMatchesSummaryAndEscapesStructuredCitation', async () => {
+  const fixture = item();
+  fixture.article.description =
+    '도로 점검 &lt;/script&gt;&lt;img src=x onerror=alert(1)&gt; 안내';
+  request.mockImplementation(async () => Response.json(fixture));
+  const info = await metadata('./incidents/[id]/page.tsx');
+  expect(info.title).toBe('교통 안내 & 점검');
+  expect(info.description).toBe(
+    '도로 점검 </script><img src=x onerror=alert(1)> 안내',
+  );
+  expect(info.alternates?.canonical).toBe(origin + '/incidents/' + id);
+  expect(info.openGraph).toMatchObject({
+    title: '교통 안내 & 점검',
+    url: origin + '/incidents/' + id,
+  });
+  expect(info.twitter).toMatchObject({
+    card: 'summary_large_image',
+    title: '교통 안내 & 점검',
+  });
+  expect(JSON.stringify(info.openGraph)).not.toContain(apiOrigin + '/images/');
+  expect(JSON.stringify(info)).not.toContain('publisher:');
+  const routeModule = await load('./incidents/[id]/page.tsx');
+  const container = view(await (routeModule.default as Route)(props()));
+  expect(container.querySelector('h1')?.textContent).toBe(info.title);
+  expect(
+    container.querySelector('section[aria-label="기사 요약"]')?.textContent,
+  ).toContain(info.description);
+  const nodes = graphs(container);
+  const page = nodes.find((node) => node['@type'] === 'WebPage');
+  assert(page);
+  expect(page.url).toBe(origin + '/incidents/' + id);
+  expect(page.name).toBe(info.title);
+  expect(page.description).toBe(info.description);
+  expect(page.citation).toMatchObject({
+    '@type': 'CreativeWork',
+    name: '교통 안내 & 점검',
+    url: fixture.article.originallink,
+    datePublished: '2026-10-10T00:00:00.000Z',
+  });
+  expect(
+    container.querySelector(
+      'script:not([type="application/ld+json"]), img[onerror]',
+    ),
+  ).toBeNull();
+  expect(
+    container.querySelectorAll('script[type="application/ld+json"]'),
+  ).toHaveLength(1);
+  expect(
+    container.querySelector('script[type="application/ld+json"]')?.textContent,
+  ).not.toContain('</script>');
+  expect(JSON.stringify(nodes)).not.toMatch(
+    /"author"|"publisher"|"geo"|"startDate"|"dateModified"|"NewsArticle"/,
+  );
+  const invalid = item();
+  invalid.article.pubDate = '2026-02-31T00:00:00Z';
+  invalid.article.originallink = 'javascript:alert(1)';
+  invalid.article.link = 'data:text/html,unsafe';
+  request.mockImplementation(async () => Response.json(invalid));
+  const safe = view(await (routeModule.default as Route)(props()));
+  expect(JSON.stringify(graphs(safe))).not.toMatch(
+    /javascript:|data:text|2026-02-31|datePublished/,
+  );
+});
