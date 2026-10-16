@@ -356,7 +356,7 @@ test('serverArchiveLinksOlderRawPagesWithoutReplacingInfiniteScroll', async () =
 });
 ```
 
-- [ ] serviceAnswersAreVisibleAndReachableWithoutMapJavaScript — 명세의 실제 공개 동작 검증
+- [x] serviceAnswersAreVisibleAndReachableWithoutMapJavaScript — 명세의 실제 공개 동작 검증
 
 ```ts
 test('serviceAnswersAreVisibleAndReachableWithoutMapJavaScript', async () => {

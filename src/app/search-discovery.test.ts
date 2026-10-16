@@ -327,3 +327,34 @@ test('serverArchiveLinksOlderRawPagesWithoutReplacingInfiniteScroll', async () =
   expect(failed.querySelector('[role="alert"]')).not.toBeNull();
   expect(failed.querySelector('a[href="/archive?page=2"]')).not.toBeNull();
 });
+
+test('serviceAnswersAreVisibleAndReachableWithoutMapJavaScript', async () => {
+  const routeModule = await load('./about/page.tsx');
+  const container = view(await (routeModule.default as Route)(props()));
+  expect(container.querySelector('h1')?.textContent).toContain('흉흉');
+  for (const text of [
+    '내 주변의 사건 사고',
+    '기사 발행',
+    '발생 시각',
+    '지역 대표',
+    '정확한',
+    'AI 생성',
+    '원문',
+  ])
+    expect(container.textContent).toContain(text);
+  expect(container.querySelector('a[href="/incidents"]')).not.toBeNull();
+  expect(container.querySelector('a[href="/archive"]')).not.toBeNull();
+  expect(await metadata('./about/page.tsx')).toMatchObject({
+    alternates: { canonical: origin + '/about' },
+  });
+  const list = await load('./incidents/page.tsx');
+  request.mockResolvedValueOnce(Response.json({ total: 0, items: [] }));
+  const listView = view(await (list.default as Route)(props()));
+  expect(listView.querySelector('a[href="/archive"]')).not.toBeNull();
+  expect(listView.querySelector('a[href="/about"]')).not.toBeNull();
+  const home = await load('./page.tsx');
+  vi.stubEnv('NEXT_PUBLIC_NAVER_MAP_CLIENT_ID', '');
+  const homeView = view(await (home.default as Route)(props()));
+  expect(homeView.querySelector('a[href="/about"]')).not.toBeNull();
+  expect(homeView.querySelector('a[href="/incidents"]')).not.toBeNull();
+});

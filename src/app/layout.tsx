@@ -14,6 +14,7 @@ import './globals.css';
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteOrigin),
+  verification: { google: 'IcxmSOOduOPPwcV3PD9YDBJp3EpnuujvxkfxK7ObCyU' },
   title: {
     default: siteTitle,
     template: `%s · ${siteTitle}`,
