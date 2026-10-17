@@ -189,7 +189,7 @@ function geolocation(value: unknown) {
 }
 ```
 
-- [ ] mapFirstVisitLocatesAutomaticallyAndPreservesReturnViewport — 첫 진입에서 SDK 전 위치 요청 1회·StrictMode 중복 방지·최초 중심·마커·복귀 뷰포트·수동 재조회·저장소 미사용
+- [x] mapFirstVisitLocatesAutomaticallyAndPreservesReturnViewport — 첫 진입에서 SDK 전 위치 요청 1회·StrictMode 중복 방지·최초 중심·마커·복귀 뷰포트·수동 재조회·저장소 미사용
 
 ```ts
 test('mapFirstVisitLocatesAutomaticallyAndPreservesReturnViewport', async () => {

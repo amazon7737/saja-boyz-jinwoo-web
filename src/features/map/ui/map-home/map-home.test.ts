@@ -254,3 +254,55 @@ test('mapSdkTimeoutAndAuthenticationFailureAreVisible', async () => {
     container.querySelector('[role="status"][aria-busy="true"]'),
   ).toBeNull();
 });
+
+test('mapFirstVisitLocatesAutomaticallyAndPreservesReturnViewport', async () => {
+  const successes: PositionCallback[] = [];
+  const request = vi.fn<Geolocation['getCurrentPosition']>((success) => {
+    successes.push(success);
+  });
+  geolocation({ getCurrentPosition: request });
+  const storage = vi.spyOn(Storage.prototype, 'setItem');
+  await mount('map-test-id', true);
+  const initialId = oldId;
+  expect(request).toHaveBeenCalledTimes(1);
+  expect(request.mock.calls[0]?.[2]).toMatchObject({ timeout: 10_000 });
+  expect(Reflect.get(window, 'naver')).toBeUndefined();
+  await act(async () =>
+    successes[0]({
+      coords: { latitude: 37.5, longitude: 127.1, accuracy: 10 },
+    } as GeolocationPosition),
+  );
+  const fixture = await loaded();
+  expect(fixture.created).toHaveBeenCalledTimes(1);
+  const options = fixture.created.mock.calls[0][1];
+  expect(options.center.lat()).toBe(37.5);
+  expect(options.center.lng()).toBe(127.1);
+  expect(options.zoom).toBe(12);
+  expect(fixture.markers).toHaveBeenCalled();
+  expect(button('내 위치').disabled).toBe(false);
+  await act(async () =>
+    fixture.pan({ latitude: 35.1796, longitude: 129.0756, zoom: 15 }),
+  );
+  await act(async () => root.unmount());
+  container.remove();
+  await mount('map-test-id', true);
+  oldId = initialId;
+  expect(request).toHaveBeenCalledTimes(1);
+  const restored = fixture.created.mock.calls.at(-1)![1];
+  expect(restored.center.lat()).toBe(35.1796);
+  expect(restored.center.lng()).toBe(129.0756);
+  expect(restored.zoom).toBe(15);
+  await act(async () => button('내 위치').click());
+  expect(request).toHaveBeenCalledTimes(2);
+  expect(button('내 위치').disabled).toBe(true);
+  await act(async () => button('내 위치').click());
+  expect(request).toHaveBeenCalledTimes(2);
+  await act(async () =>
+    successes[1]({
+      coords: { latitude: 37.6, longitude: 127.2, accuracy: 10 },
+    } as GeolocationPosition),
+  );
+  expect(fixture.centers).toContainEqual([37.6, 127.2]);
+  expect(button('내 위치').disabled).toBe(false);
+  expect(storage).not.toHaveBeenCalled();
+});
