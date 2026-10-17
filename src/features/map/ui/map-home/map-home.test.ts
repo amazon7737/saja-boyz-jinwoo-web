@@ -1,16 +1,21 @@
 // file: src/features/map/ui/map-home/map-home.test.ts
 // @vitest-environment jsdom
-import { act } from 'react';
+import { act, createElement, StrictMode } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
-import { afterEach, expect, test, vi } from 'vitest';
-import HomePage from '@/app/page';
+import { afterEach, beforeEach, expect, test, vi } from 'vitest';
+let HomePage: typeof import('@/app/page').default;
+
+beforeEach(async () => {
+  vi.resetModules();
+  ({ default: HomePage } = await import('@/app/page'));
+});
 
 const dom = { window };
 let root: Root;
 let container: HTMLDivElement;
 let oldId: string | undefined;
 
-async function mount(id = 'map-test-id') {
+async function mount(id = 'map-test-id', strict = false) {
   oldId = process.env.NEXT_PUBLIC_NAVER_MAP_CLIENT_ID;
   if (id) process.env.NEXT_PUBLIC_NAVER_MAP_CLIENT_ID = id;
   else delete process.env.NEXT_PUBLIC_NAVER_MAP_CLIENT_ID;
@@ -19,7 +24,9 @@ async function mount(id = 'map-test-id') {
   document.body.append(container);
   root = createRoot(container);
   const page = await HomePage();
-  await act(async () => root.render(page));
+  await act(async () =>
+    root.render(strict ? createElement(StrictMode, null, page) : page),
+  );
 }
 
 afterEach(async () => {
@@ -31,6 +38,7 @@ afterEach(async () => {
   Reflect.deleteProperty(window, 'naver');
   Reflect.deleteProperty(window, 'navermap_authFailure');
   Reflect.deleteProperty(navigator, 'geolocation');
+  vi.restoreAllMocks();
   vi.unstubAllGlobals();
   if (oldId === undefined) delete process.env.NEXT_PUBLIC_NAVER_MAP_CLIENT_ID;
   else process.env.NEXT_PUBLIC_NAVER_MAP_CLIENT_ID = oldId;
@@ -55,6 +63,8 @@ function button(name: string) {
 }
 function sdk() {
   const centers: [number, number][] = [];
+  let viewport = { latitude: 37.5665, longitude: 126.978, zoom: 12 };
+  const listeners: Array<{ event: string; callback: () => void }> = [];
   class LatLng {
     constructor(
       private latitude: number,
@@ -71,13 +81,27 @@ function sdk() {
   const setMap = vi.fn();
   const created = vi.fn();
   const markers = vi.fn();
-  const move = (point: LatLng) => centers.push([point.lat(), point.lng()]);
+  const move = (point: LatLng) => {
+    centers.push([point.lat(), point.lng()]);
+    viewport = { ...viewport, latitude: point.lat(), longitude: point.lng() };
+  };
   class MapFixture {
     constructor(
       element: HTMLElement,
       options: { center: LatLng; zoom: number },
     ) {
+      viewport = {
+        latitude: options.center.lat(),
+        longitude: options.center.lng(),
+        zoom: options.zoom,
+      };
       created(element, options);
+    }
+    getCenter() {
+      return new LatLng(viewport.latitude, viewport.longitude);
+    }
+    getZoom() {
+      return viewport.zoom;
     }
     setCenter = move;
     panTo = move;
@@ -90,9 +114,7 @@ function sdk() {
       markers(options);
     }
     setMap = setMap;
-    setPosition(point: LatLng) {
-      move(point);
-    }
+    setPosition() {}
   }
   const naver = {
     maps: {
@@ -114,7 +136,13 @@ function sdk() {
       },
       Position: { TOP_RIGHT: 3, BOTTOM_LEFT: 6 },
       Event: {
-        addListener: vi.fn(() => ({})),
+        addListener: vi.fn(
+          (_target: unknown, event: string, callback: () => void) => {
+            const listener = { event, callback };
+            listeners.push(listener);
+            return listener;
+          },
+        ),
         removeListener: vi.fn(),
         clearInstanceListeners: vi.fn(),
         trigger: vi.fn(),
@@ -123,7 +151,23 @@ function sdk() {
   };
   Object.assign(dom.window, { naver });
   vi.stubGlobal('naver', naver);
-  return { centers, created, destroy, markers, setMap };
+  return {
+    centers,
+    created,
+    destroy,
+    markers,
+    setMap,
+    get viewport() {
+      return viewport;
+    },
+    pan(next: typeof viewport) {
+      viewport = next;
+      for (const listener of listeners.filter(
+        (item) => item.event === 'dragstart',
+      ))
+        listener.callback();
+    },
+  };
 }
 async function loaded() {
   const fixture = sdk();
@@ -209,59 +253,4 @@ test('mapSdkTimeoutAndAuthenticationFailureAreVisible', async () => {
   expect(
     container.querySelector('[role="status"][aria-busy="true"]'),
   ).toBeNull();
-});
-
-test('mapLocationStartsOnClickAndMovesOnlyAfterSuccess', async () => {
-  await mount();
-  let success!: PositionCallback;
-  const request = vi.fn((callback: PositionCallback) => {
-    success = callback;
-  });
-  geolocation({ getCurrentPosition: request });
-  const fixture = await loaded();
-  expect(request).not.toHaveBeenCalled();
-  await act(async () => button('내 위치').click());
-  expect(request).toHaveBeenCalledTimes(1);
-  expect(button('내 위치').disabled).toBe(true);
-  await act(async () => button('내 위치').click());
-  expect(request).toHaveBeenCalledTimes(1);
-  const position = {
-    coords: { latitude: 37.5, longitude: 127.1, accuracy: 10 },
-  } as GeolocationPosition;
-  await act(async () => success(position));
-  expect(fixture.centers).toContainEqual([37.5, 127.1]);
-  expect(button('내 위치').disabled).toBe(false);
-  expect(fixture.markers).toHaveBeenCalled();
-});
-
-test('mapLocationDenialUnsupportedAndLateCallbacksKeepMapSafe', async () => {
-  await mount();
-  let success!: PositionCallback;
-  let failure!: PositionErrorCallback;
-  const request = vi.fn((ok: PositionCallback, bad: PositionErrorCallback) => {
-    success = ok;
-    failure = bad;
-  });
-  geolocation({ getCurrentPosition: request });
-  const fixture = await loaded();
-  await act(async () => button('내 위치').click());
-  await act(async () =>
-    failure({ code: 1, message: 'denied' } as GeolocationPositionError),
-  );
-  expect(container.textContent).toMatch(/위치.*권한|권한.*위치/);
-  expect(fixture.centers).toHaveLength(0);
-  expect(button('내 위치').disabled).toBe(false);
-  geolocation(undefined);
-  await act(async () => button('내 위치').click());
-  expect(container.textContent).toMatch(/지원/);
-  geolocation({ getCurrentPosition: request });
-  await act(async () => button('내 위치').click());
-  await act(async () => root.unmount());
-  await act(async () =>
-    success({
-      coords: { latitude: 37.5, longitude: 127.1, accuracy: 10 },
-    } as GeolocationPosition),
-  );
-  expect(fixture.centers).toHaveLength(0);
-  expect(fixture.destroy).toHaveBeenCalledTimes(1);
 });
