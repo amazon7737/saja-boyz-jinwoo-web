@@ -1,0 +1,12 @@
+{
+  "spec-proposal.md": "af2690e84f328f9b2a592714682deda573f83a38c0f29d2920b6d99903ebac1d",
+  "failed-test-proposal.md": "956f3cb645382854a19d67ac4c1f92438ea878a929582309ebe67fb3486ee755",
+  "existing-test-changes-proposal.md": "08760c810a989d23b9f2706e43064085c7c28120eacc01ae9a79fd501a16d8f3",
+  "existing-test-changes.diff": "fd066467fd13d805f3ce5f3fc3dfc357103f2cccf66fee496780d25fda20849b",
+  "proposed-tests/map-home.test.ts.txt": "2efcc0865c5177d190a48ffbce87ad346655e2e4585dcde496c6383a16782348",
+  "proposed-tests/map-home.header.txt": "12063f829253c55d365d1cabcdae9e3f5d043ee2c4930afc158e3d93a9c0c023",
+  "proposed-tests/map-home.baseline.txt": "fcd42a4c32c95b5f0657b9830ef8e62e4827e720c61a55f81383609887a50cf8",
+  "proposed-assets/icon.svg": "2f77f035dfac18c1f50c3c677d8aa8c6668ce1cb8caf1a6066e3159da56bba7a",
+  "proposed-assets/favicon.ico": "5b49509823e8de599dc232743d2ad81e89b8e7455a36cac2ceff871a687c4222",
+  "proposed-assets/apple-icon.png": "e238db3c29542df675692436177521c9b2d9320b730e89215ae6919bc2e0a349"
+}

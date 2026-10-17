@@ -1,0 +1,75 @@
+{
+  "checks": [
+    {
+      "name": "native granted first center before SDK",
+      "passed": true,
+      "data": {
+        "calls": 1,
+        "maps": [
+          {
+            "lat": 35.1796,
+            "lng": 129.0756,
+            "zoom": 12
+          }
+        ]
+      }
+    },
+    {
+      "name": "return viewport without extra location request",
+      "passed": true,
+      "data": {
+        "calls": 1,
+        "lat": 37.1,
+        "zoom": 15
+      }
+    },
+    {
+      "name": "mobile no overflow",
+      "passed": true
+    },
+    {
+      "name": "icon metadata links",
+      "passed": true
+    },
+    {
+      "name": "Google verification unchanged",
+      "passed": true
+    },
+    {
+      "name": "asset /favicon.ico",
+      "passed": true
+    },
+    {
+      "name": "ICO three sizes",
+      "passed": true
+    },
+    {
+      "name": "asset /icon.svg",
+      "passed": true
+    },
+    {
+      "name": "asset /apple-icon.png",
+      "passed": true
+    },
+    {
+      "name": "Apple 180px",
+      "passed": true
+    },
+    {
+      "name": "native denial keeps manual retry enabled",
+      "passed": true
+    },
+    {
+      "name": "denial and empty notice do not overlap",
+      "passed": true
+    },
+    {
+      "name": "denial notice no overlap: failed",
+      "passed": true
+    },
+    {
+      "name": "denial notice no overlap: populated",
+      "passed": true
+    }
+  ]
+}
