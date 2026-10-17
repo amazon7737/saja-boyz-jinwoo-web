@@ -26,6 +26,7 @@ import {
 } from '../../model/map-display-groups';
 import {
   captureMapViewport,
+  hasMapViewport,
   restoreMapViewport,
 } from '../../model/map-viewport';
 
@@ -84,6 +85,56 @@ type NaverMaps = {
   ) => MapInstance;
 };
 
+type LocationResult =
+  { latitude: number; longitude: number } | { error: string };
+
+function requestLocation(): Promise<LocationResult> {
+  return new Promise((resolve) => {
+    if (!navigator.geolocation) {
+      resolve({ error: '이 브라우저는 위치 확인을 지원하지 않습니다.' });
+
+      return;
+    }
+
+    const reject = (error?: GeolocationPositionError) =>
+      resolve({
+        error:
+          error?.code === 1
+            ? '위치 권한이 거부되었습니다. 브라우저 설정에서 위치 권한을 허용해 주세요.'
+            : error?.code === 3
+              ? '위치 확인 시간이 초과되었습니다. 다시 시도해 주세요.'
+              : '위치를 확인하지 못했습니다. 다시 시도해 주세요.',
+      });
+
+    try {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+
+          if (
+            !Number.isFinite(latitude) ||
+            !Number.isFinite(longitude) ||
+            latitude < -90 ||
+            latitude > 90 ||
+            longitude < -180 ||
+            longitude > 180
+          ) {
+            reject();
+
+            return;
+          }
+
+          resolve({ latitude, longitude });
+        },
+        reject,
+        { timeout: 10_000 },
+      );
+    } catch {
+      reject();
+    }
+  });
+}
+
 export function MapHome({
   clientId,
   articles,
@@ -117,6 +168,10 @@ export function MapHome({
   const clearSelection = useRef<((restoreFocus?: boolean) => void) | null>(
     null,
   );
+  const automaticLocation = useRef<{
+    started: boolean;
+    request?: Promise<LocationResult>;
+  }>({ started: false });
   const locate = useRef<(() => void) | null>(null);
   const [locating, setLocating] = useState(false);
   const [locationError, setLocationError] = useState('');
@@ -144,7 +199,68 @@ export function MapHome({
       }
     };
     let pending = false;
-    let requestId = 0;
+    let automaticCancelled = false;
+    let location: { latitude: number; longitude: number } | undefined;
+    const showLocation = (recenter: boolean) => {
+      const maps = (window as Window & { naver?: { maps: NaverMaps } }).naver
+        ?.maps;
+
+      if (!map || !maps || !location || disposed || loadFailed) return;
+      const point = new maps.LatLng(location.latitude, location.longitude);
+
+      marker?.setMap(null);
+      marker = new maps.Marker({
+        map,
+        position: point,
+        icon: {
+          url: '/naver-map-location.svg',
+          size: new maps.Size(24, 24),
+          anchor: new maps.Point(12, 12),
+        },
+      });
+      if (recenter) map.setCenter(point);
+    };
+    const receiveLocation = (
+      request: Promise<LocationResult>,
+      automatic: boolean,
+    ) => {
+      pending = true;
+      setLocating(true);
+      setLocationError('');
+      void request.then((result) => {
+        if (disposed || loadFailed) return;
+        pending = false;
+        setLocating(false);
+
+        if ('error' in result) {
+          setLocationError(result.error);
+
+          return;
+        }
+
+        if (automatic && automaticCancelled) return;
+        location = result;
+        showLocation(true);
+      });
+    };
+
+    locate.current = () => {
+      if (disposed || loadFailed || !map || pending) return;
+      receiveLocation(requestLocation(), false);
+    };
+
+    if (!automaticLocation.current.started) {
+      automaticLocation.current.started = true;
+
+      if (!hasMapViewport(clientId)) {
+        automaticLocation.current.request = requestLocation();
+      }
+    }
+
+    if (automaticLocation.current.request) {
+      receiveLocation(automaticLocation.current.request, true);
+    }
+
     let observer: ResizeObserver | undefined;
     let refreshDisplay: (() => void) | undefined;
     const controlListeners: unknown[] = [];
@@ -234,9 +350,22 @@ export function MapHome({
 
       if (disposed || loadFailed || map || !canvas.current || !maps) return;
       map = new maps.Map(canvas.current, {
-        center: new maps.LatLng(viewport.latitude, viewport.longitude),
+        center: new maps.LatLng(
+          location?.latitude ?? viewport.latitude,
+          location?.longitude ?? viewport.longitude,
+        ),
         zoom: viewport.zoom,
       });
+
+      showLocation(false);
+
+      if (pending && automaticLocation.current.request && maps.Event) {
+        controlListeners.push(
+          maps.Event.addListener(map, 'dragstart', () => {
+            automaticCancelled = true;
+          }),
+        );
+      }
 
       // The SDK creates native control collections during map initialization.
       // Wait for init, then let its layout finish before positioning them.
@@ -433,71 +562,6 @@ export function MapHome({
 
       window.addEventListener('resize', resize);
 
-      locate.current = () => {
-        if (disposed || loadFailed || !map || pending) return;
-        setLocationError('');
-
-        if (!navigator.geolocation) {
-          setLocationError('이 브라우저는 위치 확인을 지원하지 않습니다.');
-
-          return;
-        }
-
-        const currentRequest = ++requestId;
-
-        pending = true;
-        setLocating(true);
-        const activeMap = map;
-        const isActive = () =>
-          !disposed &&
-          !loadFailed &&
-          map === activeMap &&
-          currentRequest === requestId &&
-          pending;
-        const reject = (error?: GeolocationPositionError) => {
-          if (!isActive()) return;
-          pending = false;
-          setLocating(false);
-          setLocationError(
-            error?.code === 1
-              ? '위치 권한이 거부되었습니다. 브라우저 설정에서 위치 권한을 허용해 주세요.'
-              : error?.code === 3
-                ? '위치 확인 시간이 초과되었습니다. 다시 시도해 주세요.'
-                : '위치를 확인하지 못했습니다. 다시 시도해 주세요.',
-          );
-        };
-
-        try {
-          navigator.geolocation.getCurrentPosition(
-            (position) => {
-              if (!isActive()) return;
-              const point = new maps.LatLng(
-                position.coords.latitude,
-                position.coords.longitude,
-              );
-
-              marker?.setMap(null);
-              marker = new maps.Marker({
-                map: activeMap,
-                position: point,
-                icon: {
-                  url: '/naver-map-location.svg',
-                  size: new maps.Size(24, 24),
-                  anchor: new maps.Point(12, 12),
-                },
-              });
-              activeMap.setCenter(point);
-              pending = false;
-              setLocating(false);
-            },
-            reject,
-            { timeout: 10_000 },
-          );
-        } catch {
-          reject();
-        }
-      };
-
       clearTimeout(timeout);
       setReady(true);
     };
@@ -527,11 +591,21 @@ export function MapHome({
       script = document.createElement('script');
       script.src = url.href;
       script.async = true;
+      const loadingScript = script;
+
+      script.addEventListener(
+        'load',
+        () => {
+          loadingScript.dataset.naverMapLoaded = 'true';
+        },
+        { once: true },
+      );
     }
 
     const fail = () => {
       if (disposed || loadFailed) return;
       loadFailed = true;
+      automaticLocation.current.request = undefined;
       clearTimeout(timeout);
       locate.current = null;
       fitArticles.current = null;
@@ -559,8 +633,9 @@ export function MapHome({
     script.addEventListener('load', initialize);
     script.addEventListener('error', fail);
     if (!existing) document.head.append(script);
-    // A previous home visit may already have loaded the SDK.
-    if (existing) queueMicrotask(initialize);
+    // StrictMode can reuse a pending script while an older SDK global remains.
+    // Only a completed load on this script allows immediate SDK reuse.
+    if (script.dataset.naverMapLoaded === 'true') queueMicrotask(initialize);
 
     return () => {
       disposed = true;
@@ -662,58 +737,104 @@ export function MapHome({
             )}
           </div>
         </div>
-        {ready && articles !== undefined && !articles?.items.length && (
-          <div
-            role="status"
-            className="absolute top-[calc(112px_+_env(safe-area-inset-top))] right-4 left-4 rounded-2xl bg-floating p-3 text-sm text-muted shadow-floating"
-          >
-            {articles === null ? (
-              <>
-                <p>
-                  기사 위치를 불러오지 못했습니다. 지도는 계속 사용할 수
-                  있습니다.
-                </p>
-                <button
-                  type="button"
-                  onClick={() => window.location.reload()}
-                  className="mt-2 inline-block underline"
-                >
-                  기사 위치 다시 불러오기
-                </button>
-              </>
-            ) : (
-              <>
-                <p>아직 위치가 확인된 기사가 없습니다.</p>
-                <Link href="/incidents" className="mt-2 inline-block underline">
-                  전체 기사 목록 보기
-                </Link>
-              </>
-            )}
-          </div>
-        )}
-        {ready && Boolean(articles?.items.length) && (
-          <div className="absolute top-[calc(112px_+_env(safe-area-inset-top))] left-4 flex items-center gap-2 rounded-xl bg-floating px-3 py-1.5 shadow-floating">
-            <div className="flex items-center text-muted">
-              {articles!.items.some(
-                (item) => item.location.precision === 'region',
-              ) && (
-                <a
-                  href="https://www.data.go.kr/data/15084084/openapi.do"
-                  className="flex items-center text-[11px]/[16px] underline"
-                >
-                  지역 좌표: 기상청
-                </a>
+        <div
+          className={`pointer-events-none absolute top-[calc(112px_+_env(safe-area-inset-top))] right-4 left-4 flex flex-col gap-2 [&>div]:pointer-events-auto [&>p]:pointer-events-auto ${locationError ? '[&>*]:bg-white' : '[&>*]:bg-floating'}`}
+        >
+          {locationError && (
+            <p
+              role="status"
+              className="rounded-2xl bg-inherit p-4 shadow-floating"
+            >
+              {locationError}
+            </p>
+          )}
+          {ready && articles !== undefined && !articles?.items.length && (
+            <div
+              role="status"
+              className="rounded-2xl bg-inherit p-3 text-sm text-muted shadow-floating"
+            >
+              {articles === null ? (
+                <>
+                  <p>
+                    기사 위치를 불러오지 못했습니다. 지도는 계속 사용할 수
+                    있습니다.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => window.location.reload()}
+                    className="mt-2 inline-block underline"
+                  >
+                    기사 위치 다시 불러오기
+                  </button>
+                </>
+              ) : (
+                <>
+                  <p>아직 위치가 확인된 기사가 없습니다.</p>
+                  <Link
+                    href="/incidents"
+                    className="mt-2 inline-block underline"
+                  >
+                    전체 기사 목록 보기
+                  </Link>
+                </>
               )}
             </div>
-            <button
-              type="button"
-              onClick={() => fitArticles.current?.()}
-              className="flex items-center justify-center rounded-lg border-0 bg-transparent px-2 py-1 text-[11px]/[16px] text-text"
+          )}
+          {ready && Boolean(articles?.items.length) && (
+            <div className="self-start flex items-center gap-2 rounded-xl bg-inherit px-3 py-1.5 shadow-floating">
+              <div className="flex items-center text-muted">
+                {articles!.items.some(
+                  (item) => item.location.precision === 'region',
+                ) && (
+                  <a
+                    href="https://www.data.go.kr/data/15084084/openapi.do"
+                    className="flex items-center text-[11px]/[16px] underline"
+                  >
+                    지역 좌표: 기상청
+                  </a>
+                )}
+              </div>
+              <button
+                type="button"
+                onClick={() => fitArticles.current?.()}
+                className="flex items-center justify-center rounded-lg border-0 bg-transparent px-2 py-1 text-[11px]/[16px] text-text"
+              >
+                기사 위치 보기
+              </button>
+            </div>
+          )}
+          {failed && (
+            <div
+              role="alert"
+              className="rounded-2xl bg-inherit p-4 shadow-floating"
             >
-              기사 위치 보기
-            </button>
-          </div>
-        )}
+              <p>지도를 불러오지 못했습니다. 다시 시도해 주세요.</p>
+              <button
+                type="button"
+                onClick={() => {
+                  setFailed(false);
+                  setReady(false);
+                  setAttempt((value) => value + 1);
+                }}
+                className="rounded-lg border border-border px-4 py-2"
+              >
+                다시 시도
+              </button>
+            </div>
+          )}
+          {!ready && !failed && (
+            <div
+              role="status"
+              aria-busy="true"
+              className="rounded-2xl bg-inherit p-4 shadow-floating"
+            >
+              <span className="block size-5 text-muted">
+                <LoadingSpinner />
+              </span>
+              <span className="sr-only">지도를 불러오는 중입니다.</span>
+            </div>
+          )}
+        </div>
         {ready && selectedArticles.length > 0 && articles && (
           <MapArticleSheet
             items={selectedArticles}
@@ -723,45 +844,6 @@ export function MapHome({
               setSelectedArticles([]);
             }}
           />
-        )}
-        {locationError && (
-          <p
-            role="status"
-            className="absolute top-[calc(112px_+_env(safe-area-inset-top))] right-4 left-4 rounded-2xl bg-floating p-4 shadow-floating"
-          >
-            {locationError}
-          </p>
-        )}
-        {failed && (
-          <div
-            role="alert"
-            className="absolute top-[calc(112px_+_env(safe-area-inset-top))] right-4 left-4 rounded-2xl bg-floating p-4 shadow-floating"
-          >
-            <p>지도를 불러오지 못했습니다. 다시 시도해 주세요.</p>
-            <button
-              type="button"
-              onClick={() => {
-                setFailed(false);
-                setReady(false);
-                setAttempt((value) => value + 1);
-              }}
-              className="rounded-lg border border-border px-4 py-2"
-            >
-              다시 시도
-            </button>
-          </div>
-        )}
-        {!ready && !failed && (
-          <div
-            role="status"
-            aria-busy="true"
-            className="absolute top-[calc(112px_+_env(safe-area-inset-top))] right-4 left-4 rounded-2xl bg-floating p-4 shadow-floating"
-          >
-            <span className="block size-5 text-muted">
-              <LoadingSpinner />
-            </span>
-            <span className="sr-only">지도를 불러오는 중입니다.</span>
-          </div>
         )}
       </section>
       <ServiceIntro />

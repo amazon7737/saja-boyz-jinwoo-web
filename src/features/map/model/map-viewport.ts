@@ -18,6 +18,10 @@ const defaultViewport: MapViewport = {
 let activeClientId: string | undefined;
 let snapshot: MapViewport | undefined;
 
+export function hasMapViewport(clientId: string): boolean {
+  return activeClientId === clientId && snapshot !== undefined;
+}
+
 export function restoreMapViewport(clientId: string): MapViewport {
   if (activeClientId !== clientId) {
     activeClientId = clientId;

@@ -1,0 +1,18 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import {createRequire} from 'node:module';
+import {createHash} from 'node:crypto';
+const wt=process.env.BRAND_APP;const require=createRequire(path.join(wt,'package.json'));const ts=require('typescript');
+const dir=path.join(wt,'collab/active/codex--brand-location');
+const hashes=JSON.parse(fs.readFileSync(path.join(dir,'baseline-test-hashes.json')));
+const target='src/features/map/ui/map-home/map-home.test.ts';
+for(const [name,hash] of Object.entries(hashes)){if(name===target)continue;if(createHash('sha256').update(fs.readFileSync(path.join(wt,name))).digest('hex')!==hash)throw Error('Changed prior test '+name);}
+const text=fs.readFileSync(path.join(wt,target),'utf8');const ast=ts.createSourceFile(target,text,ts.ScriptTarget.Latest,true);
+const bodies={};for(const node of ast.statements){if(ts.isExpressionStatement(node)&&ts.isCallExpression(node.expression)&&node.expression.expression.getText(ast)==='test'){const name=node.expression.arguments[0].text;bodies[name]=node.getText(ast);}}
+const expected=JSON.parse(fs.readFileSync(path.join(dir,'proposed-tests/map-home.bodies.json')));
+if(Object.keys(bodies).length!==6)throw Error('Final map test count '+Object.keys(bodies).length);
+for(const [name,body] of Object.entries(expected))if(bodies[name]!==body)throw Error('Approved body differs: '+name);
+for(const name of ['icon.svg','favicon.ico','apple-icon.png'])if(!fs.readFileSync(path.join(wt,'src/app',name)).equals(fs.readFileSync(path.join(dir,'proposed-assets',name))))throw Error('Asset mismatch '+name);
+const source=JSON.parse(fs.readFileSync('/tmp/brand-location-browser/source-hashes.json'));
+for(const [name,hash] of Object.entries(source))if(createHash('sha256').update(fs.readFileSync(path.join(wt,name))).digest('hex')!==hash)throw Error('Source changed after browser QA '+name);
+console.log(JSON.stringify({otherTestFilesUnchanged:Object.keys(hashes).length-1,exactMapTestBodies:6,exactApprovedAssets:3,browserSourceUnchanged:true}));
