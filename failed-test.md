@@ -245,7 +245,7 @@ test('mapFirstVisitLocatesAutomaticallyAndPreservesReturnViewport', async () => 
 });
 ```
 
-- [ ] mapAutomaticLocationFailureRetryAndStaleCallbacksStaySafe — 늦은 자동 위치와 사용자 이동·권한 거부·미지원·시간 초과·비정상 좌표·SDK 실패/재시도·해제 후 응답 안전성
+- [x] mapAutomaticLocationFailureRetryAndStaleCallbacksStaySafe — 늦은 자동 위치와 사용자 이동·권한 거부·미지원·시간 초과·비정상 좌표·SDK 실패/재시도·해제 후 응답 안전성
 
 ```ts
 test('mapAutomaticLocationFailureRetryAndStaleCallbacksStaySafe', async () => {

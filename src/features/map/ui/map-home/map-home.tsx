@@ -591,6 +591,15 @@ export function MapHome({
       script = document.createElement('script');
       script.src = url.href;
       script.async = true;
+      const loadingScript = script;
+
+      script.addEventListener(
+        'load',
+        () => {
+          loadingScript.dataset.naverMapLoaded = 'true';
+        },
+        { once: true },
+      );
     }
 
     const fail = () => {
@@ -624,8 +633,9 @@ export function MapHome({
     script.addEventListener('load', initialize);
     script.addEventListener('error', fail);
     if (!existing) document.head.append(script);
-    // A previous home visit may already have loaded the SDK.
-    if (existing) queueMicrotask(initialize);
+    // StrictMode can reuse a pending script while an older SDK global remains.
+    // Only a completed load on this script allows immediate SDK reuse.
+    if (script.dataset.naverMapLoaded === 'true') queueMicrotask(initialize);
 
     return () => {
       disposed = true;

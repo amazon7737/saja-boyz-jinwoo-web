@@ -306,3 +306,87 @@ test('mapFirstVisitLocatesAutomaticallyAndPreservesReturnViewport', async () => 
   expect(button('내 위치').disabled).toBe(false);
   expect(storage).not.toHaveBeenCalled();
 });
+
+test('mapAutomaticLocationFailureRetryAndStaleCallbacksStaySafe', async () => {
+  const successes: PositionCallback[] = [];
+  const failures: PositionErrorCallback[] = [];
+  const request = vi.fn(
+    (success: PositionCallback, failure: PositionErrorCallback) => {
+      successes.push(success);
+      failures.push(failure);
+    },
+  );
+  geolocation({ getCurrentPosition: request });
+  await mount('map-test-id', true);
+  expect(request).toHaveBeenCalledTimes(1);
+  const fixture = await loaded();
+  expect(button('내 위치').disabled).toBe(true);
+  await act(async () =>
+    fixture.pan({ latitude: 35.1796, longitude: 129.0756, zoom: 15 }),
+  );
+  await act(async () =>
+    successes[0]({
+      coords: { latitude: 37.5, longitude: 127.1, accuracy: 10 },
+    } as GeolocationPosition),
+  );
+  expect(fixture.centers).toHaveLength(0);
+  expect(fixture.viewport).toEqual({
+    latitude: 35.1796,
+    longitude: 129.0756,
+    zoom: 15,
+  });
+  expect(button('내 위치').disabled).toBe(false);
+  await act(async () => button('내 위치').click());
+  expect(request).toHaveBeenCalledTimes(2);
+  await act(async () =>
+    failures[1]({ code: 1, message: 'denied' } as GeolocationPositionError),
+  );
+  expect(container.textContent).toMatch(/위치.*권한|권한.*위치/);
+  expect(fixture.centers).toHaveLength(0);
+  expect(button('내 위치').disabled).toBe(false);
+  geolocation(undefined);
+  await act(async () => button('내 위치').click());
+  expect(container.textContent).toMatch(/지원/);
+  geolocation({ getCurrentPosition: request });
+  await act(async () => button('내 위치').click());
+  expect(request).toHaveBeenCalledTimes(3);
+  await act(async () =>
+    failures[2]({ code: 3, message: 'timeout' } as GeolocationPositionError),
+  );
+  expect(container.textContent).toMatch(/시간.*초과/);
+  expect(button('내 위치').disabled).toBe(false);
+  await act(async () => button('내 위치').click());
+  expect(request).toHaveBeenCalledTimes(4);
+  await act(async () =>
+    successes[3]({
+      coords: { latitude: Number.NaN, longitude: 181, accuracy: 10 },
+    } as GeolocationPosition),
+  );
+  expect(fixture.centers).toHaveLength(0);
+  expect(button('내 위치').disabled).toBe(false);
+  expect(container.textContent).toMatch(/위치.*확인|위치.*유효/);
+  await act(async () => button('내 위치').click());
+  expect(request).toHaveBeenCalledTimes(5);
+  const authenticationFailure = Reflect.get(window, 'navermap_authFailure');
+  await act(async () => authenticationFailure());
+  await act(async () =>
+    successes[4]({
+      coords: { latitude: 37.5, longitude: 127.1, accuracy: 10 },
+    } as GeolocationPosition),
+  );
+  expect(fixture.centers).toHaveLength(0);
+  expect(fixture.destroy).toHaveBeenCalledTimes(1);
+  await act(async () => button('다시 시도').click());
+  const recovered = await loaded();
+  expect(request).toHaveBeenCalledTimes(5);
+  await act(async () => button('내 위치').click());
+  expect(request).toHaveBeenCalledTimes(6);
+  await act(async () => root.unmount());
+  await act(async () =>
+    successes[5]({
+      coords: { latitude: 37.5, longitude: 127.1, accuracy: 10 },
+    } as GeolocationPosition),
+  );
+  expect(recovered.centers).toHaveLength(0);
+  expect(recovered.destroy).toHaveBeenCalledTimes(1);
+});
