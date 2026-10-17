@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48">
+  <title>흉흉</title>
+  <rect width="48" height="48" rx="10" fill="#fff"/>
+  <g transform="translate(2 0)" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M33.3 13.7a16 16 0 1 0 3.7 17.8" stroke="#0f172a" stroke-width="3.2"/>
+    <path d="M29.7 17.1a10 10 0 1 0 2.3 10.8" stroke="#e8192c" stroke-opacity=".28" stroke-width="3.2"/>
+    <path d="M22 24l11.3-10.3" stroke="#e8192c" stroke-width="2.6"/>
+    <circle cx="33.3" cy="13.7" r="3.2" fill="#e8192c"/>
+    <circle cx="22" cy="24" r="4.5" fill="#e8192c"/>
+  </g>
+</svg>
