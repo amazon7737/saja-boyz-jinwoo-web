@@ -1,0 +1,59 @@
+import {createServer} from 'node:http';
+import {spawn} from 'node:child_process';
+import {createRequire} from 'node:module';
+import fs from 'node:fs/promises';
+import path from 'node:path';
+const wt=process.env.BRAND_APP;
+const require=createRequire(path.join(wt,'package.json'));
+const {chromium}=require('playwright-core');
+const out='/tmp/brand-location-browser';await fs.mkdir(out,{recursive:true});
+const checks=[];const check=(ok,name,data)=>{checks.push({name,passed:!!ok,data});if(!ok)throw Error(name+JSON.stringify(data));};
+let mode='empty';
+const item={article_id:'a'.repeat(64),collection_id:'qa',image_status:'disabled',image_url:null,article:{title:'검증용 부산 안내',description:'검증용 부산 안내입니다.',originallink:'https://example.invalid/qa',link:'https://example.invalid/qa',pubDate:'2026-10-17T09:00:00+09:00'},location_status:'resolved',location_reason:null,location:{latitude:35.1796,longitude:129.0756,label:'부산광역시',precision:'region',evidence:{field:'title',text:'부산'}}};
+const api=createServer((req,res)=>{res.setHeader('content-type','application/json');if(mode==='failed'&&req.url.startsWith('/map/articles')){res.writeHead(503).end('{}');return;}const items=mode==='populated'&&req.url.startsWith('/map/articles')?[item]:[];res.end(JSON.stringify({total:items.length,items}));});
+await new Promise(r=>api.listen(41038,'127.0.0.1',r));
+const log=await fs.open(out+'/server.log','w');
+const app=spawn(path.join(wt,'node_modules/.bin/next'),['start','--port','3000'],{cwd:wt,env:{...process.env,NEWS_API_BASE_URL:'http://127.0.0.1:41038'},stdio:['ignore',log.fd,log.fd]});
+let browser;
+try{
+for(let i=0;i<80;i++){try{await fetch('http://localhost:3000');break;}catch{await new Promise(r=>setTimeout(r,250));}}
+browser=await chromium.launch({executablePath:'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',headless:true});
+const context=await browser.newContext({viewport:{width:393,height:852},geolocation:{latitude:35.1796,longitude:129.0756},permissions:['geolocation']});
+await context.addInitScript(()=>{window.__geoCalls=0;window.__geoSuccess=0;window.__maps=[];const native=navigator.geolocation.getCurrentPosition.bind(navigator.geolocation);navigator.geolocation.getCurrentPosition=(s,e,o)=>{window.__geoCalls++;native(p=>{window.__geoSuccess++;s(p);},e,o);};});
+const page=await context.newPage();
+await page.route('**/*',async route=>{
+if(route.request().method()==='POST')return route.abort();
+if(route.request().url().includes('oapi.map.naver.com/openapi/v3/maps.js')){
+await page.waitForFunction(()=>window.__geoSuccess>0,null,{timeout:8000});
+const response=await route.fetch();const body=await response.text();
+return route.fulfill({response,body:body+'\n;(()=>{const M=naver.maps.Map;naver.maps.Map=new Proxy(M,{construct(T,args){const m=Reflect.construct(T,args,T);window.__map=m;window.__maps.push({lat:args[1].center.lat(),lng:args[1].center.lng(),zoom:args[1].zoom});return m;}});})();'});
+}return route.continue();});
+await page.goto('http://localhost:3000');await page.waitForFunction(()=>window.__map,null,{timeout:30000});
+const initial=await page.evaluate(()=>({calls:window.__geoCalls,maps:window.__maps}));
+check(initial.calls===1&&Math.abs(initial.maps[0].lat-35.1796)<0.0001&&Math.abs(initial.maps[0].lng-129.0756)<0.0001,'native granted first center before SDK',initial);
+await page.evaluate(()=>{window.__map.setCenter(new naver.maps.LatLng(37.1,127.2));window.__map.setZoom(15,false);naver.maps.Event.trigger(window.__map,'dragstart');});
+await page.locator('a[href="/incidents"]').first().click();await page.waitForURL('**/incidents');
+await page.locator('a[href="/"]').first().click();await page.waitForURL('http://localhost:3000/');await page.waitForTimeout(500);
+const restored=await page.evaluate(()=>({calls:window.__geoCalls,lat:window.__map.getCenter().lat(),zoom:window.__map.getZoom()}));
+check(restored.calls===1&&Math.abs(restored.lat-37.1)<0.001&&restored.zoom===15,'return viewport without extra location request',restored);
+await page.screenshot({path:out+'/map-granted.png'});
+check(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'mobile no overflow');
+const head=await page.locator('head').innerHTML();
+check(head.includes('apple-touch-icon')&&head.includes('/icon.svg')&&head.includes('/favicon.ico'),'icon metadata links');
+check((head.match(/google-site-verification/g)||[]).length===1&&head.includes('IcxmSOOduOPPwcV3PD9YDBJp3EpnuujvxkfxK7ObCyU'),'Google verification unchanged');
+for(const [url,type] of [['/favicon.ico','image'],['/icon.svg','image/svg+xml'],['/apple-icon.png','image/png']]){
+const r=await fetch('http://localhost:3000'+url);check(r.status===200&&r.headers.get('content-type').includes(type),'asset '+url);
+const b=Buffer.from(await r.arrayBuffer());if(url.endsWith('.ico'))check(b.readUInt16LE(4)===3,'ICO three sizes');if(url.endsWith('.png'))check(b.readUInt32BE(16)===180&&b.readUInt32BE(20)===180,'Apple 180px');}
+await context.close();
+const denied=await browser.newContext({viewport:{width:393,height:852}});await denied.grantPermissions([],{origin:'http://localhost:3000'});
+const dp=await denied.newPage();await dp.route('**/*',r=>r.request().method()==='POST'?r.abort():r.continue());await dp.goto('http://localhost:3000');
+await dp.getByText(/위치.*권한|권한.*위치/).first().waitFor({timeout:20000});
+await dp.waitForFunction(()=>document.querySelector('button[aria-label="내 위치"]')?.disabled===false,null,{timeout:20000});
+check(await dp.getByRole('button',{name:/내 위치/}).isEnabled(),'native denial keeps manual retry enabled');
+const overlaps=()=>{const nodes=[...document.querySelectorAll('section [role="status"],section a[href="https://www.data.go.kr/data/15084084/openapi.do"]')].filter(e=>e.getBoundingClientRect().height>2);return nodes.flatMap((a,i)=>nodes.slice(i+1).filter(b=>{const x=a.getBoundingClientRect(),y=b.getBoundingClientRect();return Math.min(x.right,y.right)>Math.max(x.left,y.left)&&Math.min(x.bottom,y.bottom)>Math.max(x.top,y.top);}).map(b=>[a.textContent,b.textContent]));};
+check((await dp.evaluate(overlaps)).length===0,'denial and empty notice do not overlap');
+await dp.screenshot({path:out+'/map-denied.png'});
+for(const value of ['failed','populated']){mode=value;await dp.reload();await dp.waitForFunction(()=>document.querySelector('button[aria-label="내 위치"]')?.disabled===false,null,{timeout:20000});check((await dp.evaluate(overlaps)).length===0,'denial notice no overlap: '+value);await dp.screenshot({path:out+'/map-denied-'+value+'.png'});}
+await denied.close();
+}finally{await fs.writeFile(out+'/report.json',JSON.stringify({checks},null,2));await browser?.close();app.kill('SIGTERM');await new Promise(r=>api.close(r));await log.close();}
+console.log(JSON.stringify({passed:checks.length,out}));

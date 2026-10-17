@@ -2,9 +2,9 @@
 branch: codex/brand-location
 owner: easter721
 started: 2026-10-17
-status: active
+status: done
 goal: feat(map): 브랜드 아이콘과 첫 진입 내 위치 자동 이동 적용
-next: src/app 아이콘·메타데이터, 지도 첫 진입 위치 요청·뷰포트 복원과 회귀 테스트
+next: dev PR 리뷰·머지 대기
 base: dev
 ---
 
