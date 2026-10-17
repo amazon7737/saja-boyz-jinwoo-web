@@ -2,9 +2,9 @@
 branch: codex/pr38-main-ancestry
 owner: amazon
 started: 2026-10-17
-status: active
+status: done
 goal: chore(release): PR38 충돌 해소를 위한 main 이력 연결
-next: main 이력을 연결하고 dev 제품 트리 보존 검증 후 통합 PR 하나 게시
+next: 통합 PR의 필수 CI와 독립 승인 후 merge commit으로 dev에 반영
 base: dev
 ---
 
