@@ -2,9 +2,9 @@
 branch: codex/list-inline-detail
 owner: amazon
 started: 2026-11-01
-status: active
+status: done
 goal: feat(article): 목록 프레임 안에서 기사 상세 렌더링
-next: 상세 라우트 호스트·표시 프레임·목록 복귀 검증
+next: dev 대상 PR 검토 및 머지
 base: dev
 ---
 
