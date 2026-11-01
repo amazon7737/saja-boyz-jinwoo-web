@@ -2,9 +2,9 @@
 branch: codex/hot-incidents-heading
 owner: amazon
 started: 2026-11-01
-status: active
+status: done
 goal: fix(map): 최근 보도 기사 제목을 지금 핫한 사건으로 변경
-next: 지도 기사 캐러셀 제목 문구
+next: dev 대상 PR 검토 및 머지
 base: dev
 ---
 
