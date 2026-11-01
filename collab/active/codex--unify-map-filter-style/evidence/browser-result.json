@@ -1,0 +1,232 @@
+{
+  "passed": true,
+  "checks": [
+    {
+      "width": 320,
+      "label": "기간",
+      "panel": {
+        "background": "rgb(255, 255, 255)",
+        "border": "1px solid rgb(226, 232, 240)",
+        "radius": "12px",
+        "padding": "6px",
+        "shadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0.07) 0px 8px 24px 0px"
+      },
+      "selected": {
+        "background": "oklab(0.593308 0.209201 0.098094 / 0.05)",
+        "color": "rgb(232, 25, 44)",
+        "radius": "8px",
+        "padding": "8px 12px",
+        "fontSize": "12px",
+        "fontWeight": "600",
+        "lineHeight": "16px"
+      },
+      "box": {
+        "left": 64,
+        "right": 208,
+        "width": 144
+      }
+    },
+    {
+      "width": 320,
+      "label": "카테고리",
+      "panel": {
+        "background": "rgb(255, 255, 255)",
+        "border": "1px solid rgb(226, 232, 240)",
+        "radius": "12px",
+        "padding": "6px",
+        "shadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0.07) 0px 8px 24px 0px"
+      },
+      "selected": {
+        "background": "oklab(0.593308 0.209201 0.098094 / 0.05)",
+        "color": "rgb(232, 25, 44)",
+        "radius": "8px",
+        "padding": "8px 12px",
+        "fontSize": "12px",
+        "fontWeight": "600",
+        "lineHeight": "16px"
+      },
+      "box": {
+        "left": 130,
+        "right": 274,
+        "width": 144
+      }
+    },
+    {
+      "width": 320,
+      "label": "상태",
+      "panel": {
+        "background": "rgb(255, 255, 255)",
+        "border": "1px solid rgb(226, 232, 240)",
+        "radius": "12px",
+        "padding": "6px",
+        "shadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0.07) 0px 8px 24px 0px"
+      },
+      "selected": {
+        "background": "oklab(0.593308 0.209201 0.098094 / 0.05)",
+        "color": "rgb(232, 25, 44)",
+        "radius": "8px",
+        "padding": "8px 12px",
+        "fontSize": "12px",
+        "fontWeight": "600",
+        "lineHeight": "16px"
+      },
+      "box": {
+        "left": 144,
+        "right": 288,
+        "width": 144
+      }
+    },
+    {
+      "width": 393,
+      "label": "기간",
+      "panel": {
+        "background": "rgb(255, 255, 255)",
+        "border": "1px solid rgb(226, 232, 240)",
+        "radius": "12px",
+        "padding": "6px",
+        "shadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0.07) 0px 8px 24px 0px"
+      },
+      "selected": {
+        "background": "oklab(0.593308 0.209201 0.098094 / 0.05)",
+        "color": "rgb(232, 25, 44)",
+        "radius": "8px",
+        "padding": "8px 12px",
+        "fontSize": "12px",
+        "fontWeight": "600",
+        "lineHeight": "16px"
+      },
+      "box": {
+        "left": 64,
+        "right": 208,
+        "width": 144
+      }
+    },
+    {
+      "width": 393,
+      "label": "카테고리",
+      "panel": {
+        "background": "rgb(255, 255, 255)",
+        "border": "1px solid rgb(226, 232, 240)",
+        "radius": "12px",
+        "padding": "6px",
+        "shadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0.07) 0px 8px 24px 0px"
+      },
+      "selected": {
+        "background": "oklab(0.593308 0.209201 0.098094 / 0.05)",
+        "color": "rgb(232, 25, 44)",
+        "radius": "8px",
+        "padding": "8px 12px",
+        "fontSize": "12px",
+        "fontWeight": "600",
+        "lineHeight": "16px"
+      },
+      "box": {
+        "left": 130,
+        "right": 274,
+        "width": 144
+      }
+    },
+    {
+      "width": 393,
+      "label": "상태",
+      "panel": {
+        "background": "rgb(255, 255, 255)",
+        "border": "1px solid rgb(226, 232, 240)",
+        "radius": "12px",
+        "padding": "6px",
+        "shadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0.07) 0px 8px 24px 0px"
+      },
+      "selected": {
+        "background": "oklab(0.593308 0.209201 0.098094 / 0.05)",
+        "color": "rgb(232, 25, 44)",
+        "radius": "8px",
+        "padding": "8px 12px",
+        "fontSize": "12px",
+        "fontWeight": "600",
+        "lineHeight": "16px"
+      },
+      "box": {
+        "left": 217,
+        "right": 361,
+        "width": 144
+      }
+    },
+    {
+      "width": 1440,
+      "label": "기간",
+      "panel": {
+        "background": "rgb(255, 255, 255)",
+        "border": "1px solid rgb(226, 232, 240)",
+        "radius": "12px",
+        "padding": "6px",
+        "shadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0.07) 0px 8px 24px 0px"
+      },
+      "selected": {
+        "background": "oklab(0.593308 0.209201 0.098094 / 0.05)",
+        "color": "rgb(232, 25, 44)",
+        "radius": "8px",
+        "padding": "8px 12px",
+        "fontSize": "12px",
+        "fontWeight": "600",
+        "lineHeight": "16px"
+      },
+      "box": {
+        "left": 464,
+        "right": 608,
+        "width": 144
+      }
+    },
+    {
+      "width": 1440,
+      "label": "카테고리",
+      "panel": {
+        "background": "rgb(255, 255, 255)",
+        "border": "1px solid rgb(226, 232, 240)",
+        "radius": "12px",
+        "padding": "6px",
+        "shadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0.07) 0px 8px 24px 0px"
+      },
+      "selected": {
+        "background": "oklab(0.593308 0.209201 0.098094 / 0.05)",
+        "color": "rgb(232, 25, 44)",
+        "radius": "8px",
+        "padding": "8px 12px",
+        "fontSize": "12px",
+        "fontWeight": "600",
+        "lineHeight": "16px"
+      },
+      "box": {
+        "left": 530,
+        "right": 674,
+        "width": 144
+      }
+    },
+    {
+      "width": 1440,
+      "label": "상태",
+      "panel": {
+        "background": "rgb(255, 255, 255)",
+        "border": "1px solid rgb(226, 232, 240)",
+        "radius": "12px",
+        "padding": "6px",
+        "shadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0.07) 0px 8px 24px 0px"
+      },
+      "selected": {
+        "background": "oklab(0.593308 0.209201 0.098094 / 0.05)",
+        "color": "rgb(232, 25, 44)",
+        "radius": "8px",
+        "padding": "8px 12px",
+        "fontSize": "12px",
+        "fontWeight": "600",
+        "lineHeight": "16px"
+      },
+      "box": {
+        "left": 618,
+        "right": 762,
+        "width": 144
+      }
+    }
+  ],
+  "screenshots": "/var/folders/wv/lv2qb3z92074bwd0pncsq3100000gn/T/poem-filter-style-KN2ivV",
+  "note": "Synthetic map configuration; no live map or news API called."
+}

@@ -2,9 +2,9 @@
 branch: codex/unify-map-filter-style
 owner: amazon
 started: 2026-11-01
-status: active
+status: done
 goal: style(map): 기간 기준으로 카테고리·상태 필터 스타일 통일
-next: 지도 필터의 공통 트리거·패널·옵션 컴포넌트
+next: dev 대상 PR 검토 및 머지
 base: dev
 ---
 
