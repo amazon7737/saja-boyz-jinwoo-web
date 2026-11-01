@@ -2,9 +2,9 @@
 branch: codex/hide-category-unavailable
 owner: amazon
 started: 2026-11-01
-status: active
+status: done
 goal: fix(map): 메인 화면의 분류 정보 미제공 안내 숨김
-next: 지도 카테고리 드롭다운과 전체 필터 안내 표시
+next: dev 대상 PR 검토 및 머지
 base: dev
 ---
 
