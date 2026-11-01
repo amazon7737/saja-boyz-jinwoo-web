@@ -159,3 +159,11 @@ Preview 보호는 유지하고 팀이 접근 가능한 방식으로 검증한다
 - [Node.js 지원 버전](https://vercel.com/docs/functions/runtimes/node-js/node-js-versions)
 - [패키지 매니저](https://vercel.com/docs/package-managers), [Corepack과 빌드 설정](https://vercel.com/docs/builds/configure-a-build#corepack)
 - [Git 기반 배포](https://vercel.com/docs/git), [환경변수](https://vercel.com/docs/environment-variables)
+
+## Vercel Web Analytics
+
+2026-11-01 기준 `@vercel/analytics`2.0.1을 설치하고 루트 레이아웃에 Next.js용 `Analytics`를 한 번 배치한다. 화면별로 중복 추가하지 않는다. 기존 pnpm 설정과 `pnpm-lock.yaml`을 사용하며 별도 브라우저 API 키나 수집 서버는 추가하지 않는다.
+
+대시보드에서 해당 프로젝트의 Web Analytics를 활성화한 뒤 이 변경이 포함된 버전을 배포해야 한다. 배포 주소에서 페이지를 방문하고 화면을 이동한 뒤 대시보드에서 수집 여부를 확인한다. 로컬 검증은 실제 SDK 스크립트가 한 번 삽입되고 라우트 이동에 맞는 페이지뷰 명령이 발생하는 범위이며, Vercel 대시보드의 실제 수집 완료를 의미하지 않는다.
+
+공식 연동 안내: [Getting started with Vercel Web Analytics](https://vercel.com/docs/analytics/quickstart).

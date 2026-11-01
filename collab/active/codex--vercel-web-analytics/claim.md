@@ -2,9 +2,9 @@
 branch: codex/vercel-web-analytics
 owner: amazon
 started: 2026-11-01
-status: active
+status: done
 goal: feat(analytics): Vercel Web Analytics 연결
-next: package.json·pnpm-lock.yaml·루트 레이아웃 Analytics 배치
+next: dev 대상 PR 검토·머지 후 Vercel 배포 및 대시보드 수집 확인
 base: dev
 ---
 
