@@ -246,7 +246,12 @@ function UnavailableOptions({
           </button>
         ))}
       </div>
-      <p id={explanationId} className="m-0 mt-2 text-xs text-muted">
+      <p
+        id={explanationId}
+        className={
+          label === '카테고리' ? 'sr-only' : 'm-0 mt-2 text-xs text-muted'
+        }
+      >
         {explanation}
       </p>
     </fieldset>
