@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 
+import { SearchPromptProvider } from '@/features/search/model/use-rolling-search-prompt';
 import { RouteShell } from '@/components/layout/route-shell/route-shell';
 
 import {
@@ -40,7 +41,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="ko">
       <body>
-        <RouteShell>{children}</RouteShell>
+        <SearchPromptProvider>
+          <RouteShell>{children}</RouteShell>
+        </SearchPromptProvider>
       </body>
     </html>
   );

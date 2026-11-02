@@ -7,6 +7,7 @@ import { useState, useTransition, type ReactNode } from 'react';
 import { Icon } from '@/components/ui/icon/icon';
 import { LoadingSpinner } from '@/components/feedback/loading-spinner';
 
+import { useRollingSearchPrompt } from '../../model/use-rolling-search-prompt';
 import { SearchLoading } from '../search-loading/search-loading';
 
 export function SearchForm({
@@ -17,6 +18,7 @@ export function SearchForm({
   children: ReactNode;
 }) {
   const router = useRouter();
+  const prompt = useRollingSearchPrompt('기사 키워드 검색');
   const [pending, startTransition] = useTransition();
   const [revision, setRevision] = useState(0);
 
@@ -74,7 +76,7 @@ export function SearchForm({
             defaultValue={keyword}
             readOnly={pending}
             aria-label="기사 키워드 검색"
-            placeholder="기사 키워드 검색"
+            placeholder={prompt}
             className="h-full min-h-0 min-w-0 flex-1 border-0 bg-transparent p-0 text-[14px]/[17px] font-semibold text-text placeholder:font-normal"
           />
           {keyword && (

@@ -296,7 +296,7 @@ test('mapCarouselUsesRealArticlesAndSafeImages', async () => {
   expect(cards.querySelector('a[href="/incidents"]')?.textContent).toContain(
     '전체보기',
   );
-  expect(cards.textContent).toContain('최근 보도 기사');
+  expect(cards.querySelector('h2')?.textContent).toBe('🔥 지금 핫한 사건');
   expect(cards.textContent).toContain('발행 시각 미확인');
   expect(cards.textContent).not.toMatch(/진행 중|공론화 성공|종결|인기 순위/);
   const image = cards.querySelector<HTMLImageElement>(
@@ -374,6 +374,30 @@ test('mapUnavailableFiltersExplainMissingMetadataAndCloseAccessibly', async () =
     expect(document.activeElement).toBe(trigger);
   }
   expect(carousel().querySelectorAll('a[href^="/incidents/"]')).toHaveLength(1);
+});
+
+test('categoryUnavailableExplanationIsScreenReaderOnlyInBothFilters', async () => {
+  await mount([item(1)]);
+  await click('카테고리');
+  const popup = document.querySelector('[aria-label="카테고리 선택"]');
+  assert(popup);
+  const explanationId = popup.getAttribute('aria-describedby');
+  assert(explanationId);
+  const explanation = document.getElementById(explanationId);
+  expect(explanation?.textContent).toBe('분류 정보 미제공');
+  expect(explanation?.classList.contains('sr-only')).toBe(true);
+  await click('전체', popup);
+  await click('전체 필터');
+  const category = [...document.querySelectorAll('fieldset')].find(
+    (field) => field.querySelector('legend')?.textContent === '카테고리',
+  );
+  assert(category);
+  const fullExplanationId = category.getAttribute('aria-describedby');
+  assert(fullExplanationId);
+  const fullExplanation = document.getElementById(fullExplanationId);
+  expect(fullExplanation?.textContent).toBe('분류 정보 미제공');
+  expect(fullExplanation?.classList.contains('sr-only')).toBe(true);
+  expect(button('사회', category).disabled).toBe(true);
 });
 
 test('mapAllFiltersApplyOrDiscardDraftAndReset', async () => {
