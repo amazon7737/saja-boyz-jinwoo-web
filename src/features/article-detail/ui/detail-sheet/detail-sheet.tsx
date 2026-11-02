@@ -10,6 +10,7 @@ import {
   type MouseEvent,
 } from 'react';
 
+import { DetailInline } from './detail-inline';
 import { useArticleSheetRoute } from '../../model/article-sheet-context';
 
 const scrollLocks = new Set<symbol>();
@@ -42,17 +43,7 @@ function lockBodyScroll() {
   };
 }
 
-export function DetailSheet({
-  titleId,
-  children,
-  footer,
-  label,
-  initialExpanded,
-  onClose,
-  closeLabel = '닫기',
-  onHeightChange,
-  active = true,
-}: {
+type DetailSheetProps = {
   titleId: string;
   children?: ReactNode;
   footer?: ReactNode;
@@ -62,7 +53,37 @@ export function DetailSheet({
   closeLabel?: string;
   onHeightChange?(height: number, expanded?: boolean): void;
   active?: boolean;
-}) {
+};
+
+export function DetailSheet(props: DetailSheetProps) {
+  const route = useArticleSheetRoute();
+
+  if (
+    route?.active &&
+    route.sourcePath === '/incidents' &&
+    !props.onClose &&
+    props.active !== false
+  )
+    return (
+      <DetailInline titleId={props.titleId} footer={props.footer}>
+        {props.children}
+      </DetailInline>
+    );
+
+  return <ModalDetailSheet {...props} />;
+}
+
+function ModalDetailSheet({
+  titleId,
+  children,
+  footer,
+  label,
+  initialExpanded,
+  onClose,
+  closeLabel = '닫기',
+  onHeightChange,
+  active = true,
+}: DetailSheetProps) {
   const panel = useRef<HTMLDivElement>(null);
   const scroller = useRef<HTMLDivElement>(null);
   const scrollPosition = useRef(0);
