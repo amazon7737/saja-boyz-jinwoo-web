@@ -1,0 +1,36 @@
+{
+  "node": "v24.19.0",
+  "pnpm": "10.34.6",
+  "checks": {
+    "tests": {
+      "exit_code": 0,
+      "log": "/tmp/jinwoo-push-59-tests.log"
+    },
+    "lint": {
+      "exit_code": 0,
+      "log": "/tmp/jinwoo-push-59-lint.log"
+    },
+    "format": {
+      "exit_code": 0,
+      "log": "/tmp/jinwoo-push-59-format.log"
+    },
+    "typecheck": {
+      "exit_code": 0,
+      "log": "/tmp/jinwoo-push-59-typecheck.log"
+    },
+    "build": {
+      "exit_code": 0,
+      "log": "/tmp/jinwoo-push-59-build.log"
+    },
+    "styles": {
+      "exit_code": 0,
+      "log": "/tmp/jinwoo-push-59-styles.log"
+    }
+  },
+  "base_sha": "033b1329efd3ded7a36280345c5dd3fa7406cd60",
+  "previous_head": "b5c7850acee53523e0db1349202af9e86a0f8d14",
+  "verified_source_tree": "c10dfeef43ab73dbc3fb0bfedf17731d915fda9a",
+  "test_files": 41,
+  "tests_passed": 169,
+  "scope": "최신 dev 결합과 충돌 해결. PR 병합·배포·댓글 게시 미실행."
+}
