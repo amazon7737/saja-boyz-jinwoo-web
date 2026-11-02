@@ -8,6 +8,7 @@ import {
 import {
   useCallback,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -37,6 +38,9 @@ export function ArticleRouteHost({
   const sourcePath =
     '/' +
     backgroundSegments.filter((segment) => !segment.startsWith('(')).join('/');
+  const inline = active && sourcePath === '/incidents';
+  const listScroll = useRef(0);
+  const previousInline = useRef(false);
   const opener = useRef<HTMLElement | null>(null);
   const previousActive = useRef(false);
   const [height, setMeasuredHeight] = useState(0);
@@ -67,6 +71,13 @@ export function ArticleRouteHost({
     previousActive.current = active;
   }, [active]);
 
+  useLayoutEffect(() => {
+    if (inline && !previousInline.current) window.scrollTo(0, 0);
+    if (!inline && previousInline.current && pathname === '/incidents')
+      window.scrollTo(0, listScroll.current);
+    previousInline.current = inline;
+  }, [inline, pathname]);
+
   const captureOpener = useCallback(
     (event: MouseEvent<HTMLDivElement>) => {
       if (
@@ -86,10 +97,12 @@ export function ArticleRouteHost({
       if (
         link &&
         /^\/incidents\/[a-f0-9]{64}$/.test(link.getAttribute('href') ?? '')
-      )
+      ) {
         opener.current = link;
+        if (pathname === '/incidents') listScroll.current = window.scrollY;
+      }
     },
-    [active],
+    [active, pathname],
   );
 
   const value = useMemo(
@@ -120,13 +133,20 @@ export function ArticleRouteHost({
     <ArticleSheetContext value={value}>
       <AppShell
         backgroundPath={active ? sourcePath : pathname}
-        inert={active}
+        inert={active && !inline}
         hideHeader={active && sourcePath === '/' && expanded}
         onClickCapture={captureOpener}
       >
-        {background}
+        <div
+          hidden={inline}
+          inert={inline || undefined}
+          style={inline ? { display: 'none' } : undefined}
+        >
+          {background}
+        </div>
+        {inline && children}
       </AppShell>
-      {children}
+      {!inline && children}
     </ArticleSheetContext>
   );
 }

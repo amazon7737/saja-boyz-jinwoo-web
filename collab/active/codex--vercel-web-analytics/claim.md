@@ -4,7 +4,7 @@ owner: amazon
 started: 2026-11-01
 status: done
 goal: feat(analytics): Vercel Web Analytics 연결
-next: dev 대상 PR 검토·머지 후 Vercel 배포 및 대시보드 수집 확인
+next: 충돌 해결 반영 후 dev 대상 PR59 검토·병합 대기
 base: dev
 ---
 

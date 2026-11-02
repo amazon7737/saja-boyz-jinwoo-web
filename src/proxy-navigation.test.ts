@@ -214,7 +214,7 @@ afterAll(async () => {
   if (directory) await rm(directory, { recursive: true, force: true });
 }, 120000);
 
-async function openList(width = 393) {
+async function openList(width = 393, title = article.article.title) {
   const context = await browser!.newContext({
     viewport: { width, height: 852 },
   });
@@ -229,9 +229,7 @@ async function openList(width = 393) {
   });
   const page = await context.newPage();
   await page.goto(origin + '/incidents');
-  await page
-    .getByRole('link', { name: article.article.title, exact: true })
-    .waitFor();
+  await page.getByRole('link', { name: title, exact: true }).waitFor();
   return page;
 }
 
@@ -268,7 +266,7 @@ test('realNextLinkNavigationSkipsDocumentProbeAndTimesOutOnlyOnce', async () => 
       .getByRole('link', { name: article.article.title, exact: true })
       .click();
     await normalPage
-      .getByRole('dialog')
+      .locator('[data-article-inline]')
       .getByRole('heading', { level: 1, name: article.article.title })
       .waitFor();
     expect
@@ -294,7 +292,7 @@ test('realNextLinkNavigationSkipsDocumentProbeAndTimesOutOnlyOnce', async () => 
       .getByRole('link', { name: article.article.title, exact: true })
       .click();
     await slowPage
-      .getByRole('dialog')
+      .locator('[data-article-inline]')
       .getByRole('alert')
       .waitFor({ timeout: 18000 });
     const elapsed = Date.now() - started;
@@ -400,7 +398,7 @@ test('listFocusRemainsVisibleWhileTabbingAndReturningFromDetail', async () => {
       const before = await page.evaluate(() => scrollY);
       await page.keyboard.press('Enter');
       await page
-        .getByRole('dialog')
+        .locator('[data-article-inline]')
         .getByRole('heading', {
           level: 1,
           name: listArticles[12].article.title,
@@ -408,7 +406,7 @@ test('listFocusRemainsVisibleWhileTabbingAndReturningFromDetail', async () => {
         .waitFor();
       await page.keyboard.press('Escape');
       await page.waitForFunction(
-        () => !document.querySelector('[role="dialog"]'),
+        () => !document.querySelector('[data-article-inline]'),
       );
       expect(new URL(page.url()).pathname).toBe('/incidents');
       await visible(24, '상세 닫기');
@@ -421,6 +419,80 @@ test('listFocusRemainsVisibleWhileTabbingAndReturningFromDetail', async () => {
     listArticles = [article];
   }
 }, 120000);
+
+test('listFrameKeepsLoadingInlineAndRestoresLoadedPagesAcrossHistory', async () => {
+  const saved = listArticles;
+  listArticles = [
+    ...Array.from({ length: 24 }, (_, index) => ({
+      ...article,
+      article_id: (index + 1).toString(16).padStart(64, '0'),
+      article: { ...article.article, title: '보존할 기사 ' + index },
+    })),
+    article,
+  ];
+  const release = () => {
+    holdDetails = false;
+    for (const response of waitingDetails.splice(0))
+      response.end(JSON.stringify(article));
+  };
+  try {
+    const page = await openList(393, listArticles[0].article.title);
+    await page.evaluate(() => scrollTo(0, document.body.scrollHeight));
+    await expect.poll(() => page.locator('main article').count()).toBe(25);
+    const opener = page.getByRole('link', {
+      name: article.article.title,
+      exact: true,
+    });
+    await opener.scrollIntoViewIfNeeded();
+    await opener.focus();
+    await opener.evaluate((node) => {
+      node.setAttribute('data-preserved-opener', 'yes');
+    });
+    const before = await page.evaluate(() => scrollY);
+    holdDetails = true;
+    try {
+      await opener.click();
+      await expect.poll(() => waitingDetails.length).toBeGreaterThan(0);
+      const inline = page.locator('main [data-article-inline]');
+      await inline.locator('[role="status"][aria-busy="true"]').waitFor();
+      expect(await page.getByRole('dialog').count()).toBe(0);
+      expect(await page.locator('header').isVisible()).toBe(true);
+      expect(
+        await page.getByRole('navigation', { name: '주 메뉴' }).isVisible(),
+      ).toBe(true);
+      expect(await page.evaluate(() => document.body.style.overflow)).not.toBe(
+        'hidden',
+      );
+    } finally {
+      release();
+    }
+    const inline = page.locator('main [data-article-inline]');
+    await inline
+      .getByRole('heading', { name: article.article.title, exact: true })
+      .waitFor();
+    await inline.getByRole('link', { name: '목록으로', exact: true }).click();
+    await expect.poll(() => new URL(page.url()).pathname).toBe('/incidents');
+    expect(await page.locator('main article').count()).toBe(25);
+    expect(await opener.getAttribute('data-preserved-opener')).toBe('yes');
+    expect(
+      await opener.evaluate((node) => node === document.activeElement),
+    ).toBe(true);
+    expect(
+      Math.abs((await page.evaluate(() => scrollY)) - before),
+    ).toBeLessThanOrEqual(2);
+    await page.goForward();
+    await inline
+      .getByRole('heading', { name: article.article.title, exact: true })
+      .waitFor();
+    expect(await page.getByRole('dialog').count()).toBe(0);
+    await page.goBack();
+    await expect.poll(() => new URL(page.url()).pathname).toBe('/incidents');
+    expect(await page.locator('main article').count()).toBe(25);
+  } finally {
+    release();
+    listArticles = saved;
+  }
+}, 60000);
 
 test('searchAlignmentPreservesFullTargetsAndWorkingControls', async () => {
   const page = await openList();
@@ -601,6 +673,7 @@ test('searchResultFocusStaysAboveNavigationAndReturnsToItsOpener', async () => {
 
 test('inlineIconsPreserveSpacingAndAccessibleControls', async () => {
   const page = await openList();
+  await page.goto(origin + '/archive');
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page
     .getByRole('link', { name: article.article.title, exact: true })
@@ -1260,6 +1333,11 @@ test('repeatingTheSameSearchReplacesCardsAndResetsPagination', async () => {
 
 test('normalArticleSheetsStartHalfAndDragNearTopWithSheetOnlyAiDisclosure', async () => {
   const savedDescription = article.article.description;
+  const openSheetSource = async () => {
+    const page = await openList();
+    await page.goto(origin + '/archive');
+    return page;
+  };
   const size = async (page: Awaited<ReturnType<typeof openList>>) => {
     const read = () =>
       page.evaluate(() => {
@@ -1306,7 +1384,7 @@ test('normalArticleSheetsStartHalfAndDragNearTopWithSheetOnlyAiDisclosure', asyn
     return geometry;
   };
   try {
-    for (const entry of ['list', 'search', 'direct', 'nojs']) {
+    for (const entry of ['archive', 'search', 'direct', 'nojs']) {
       const heights: number[] = [];
       for (const description of [
         '짧은 기사 요약입니다.',
@@ -1323,11 +1401,11 @@ test('normalArticleSheetsStartHalfAndDragNearTopWithSheetOnlyAiDisclosure', asyn
                 contexts.push(context);
                 return context.newPage();
               })()
-            : await openList();
+            : await openSheetSource();
         await page.emulateMedia({ reducedMotion: 'reduce' });
         if (entry === 'search')
           await page.goto(origin + '/search?q=' + encodeURIComponent('검증'));
-        if (entry === 'list' || entry === 'search')
+        if (entry === 'archive' || entry === 'search')
           await page
             .getByRole('link', { name: article.article.title, exact: true })
             .click();
@@ -1366,7 +1444,7 @@ test('normalArticleSheetsStartHalfAndDragNearTopWithSheetOnlyAiDisclosure', asyn
 
     imageEnabled = true;
     article.article.description = '이미지 안내 위치를 확인하는 기사입니다.';
-    const images = await openList();
+    const images = await openSheetSource();
     const listCard = images.locator('main article').first();
     expect
       .soft(await listCard.locator('img').count(), '목록의 실제 이미지 유지')
@@ -1402,7 +1480,7 @@ test('normalArticleSheetsStartHalfAndDragNearTopWithSheetOnlyAiDisclosure', asyn
 
     article.article.description =
       '긴 본문을 읽고 안전 안내를 확인해 주세요. '.repeat(300);
-    const page = await openList();
+    const page = await openSheetSource();
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await page
       .getByRole('link', { name: article.article.title, exact: true })
