@@ -1,0 +1,22 @@
+{
+  "passed": true,
+  "scriptCount": 1,
+  "pageviews": [
+    [
+      "pageview",
+      {
+        "route": "/",
+        "path": "/"
+      }
+    ],
+    [
+      "pageview",
+      {
+        "route": "/search",
+        "path": "/search"
+      }
+    ]
+  ],
+  "browserErrors": [],
+  "note": "Real production SDK with a local test script sink. No analytics events sent to Vercel; dashboard ingestion requires deployment."
+}

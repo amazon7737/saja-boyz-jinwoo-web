@@ -19,9 +19,7 @@ export function MapArticleCarousel({
     >
       <div className="flex items-center justify-between px-4">
         <h2 className="m-0 flex items-center gap-1.5 text-[14px]/[17px] font-extrabold text-text">
-          <IconText icon="flame" iconClassName="text-brand">
-            최근 보도 기사
-          </IconText>
+          🔥 지금 핫한 사건
         </h2>
         <Link
           href="/incidents"
