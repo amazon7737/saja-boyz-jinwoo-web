@@ -75,7 +75,10 @@ test('articleSheetVerifiedContext', () => {
   expect(view.textContent).toContain('검증 지역 A');
   expect(view.textContent).toContain('지역 대표 위치');
   expect(view.textContent).toContain('실제 발생 지점과 다를 수 있습니다');
-  const section = view.querySelector('section[aria-label="같은 지역 보도"]');
+  const section = view.querySelector('section[aria-label="주변 핫한 사건"]');
+  expect(section?.querySelector('h2')?.textContent?.trim()).toBe(
+    '주변 핫한 사건',
+  );
   expect(section?.textContent).toContain('같은 지역 검증 기사');
   expect(
     [...section!.querySelectorAll('a')].map((link) =>
@@ -83,7 +86,9 @@ test('articleSheetVerifiedContext', () => {
     ),
   ).toEqual(['/incidents/' + related.article_id]);
   expect(view.querySelector('b')).toBeNull();
-  expect(view.textContent).not.toMatch(/주변 핫한|진행 중|조회수|다른 지역 B/);
+  expect(view.textContent).not.toMatch(
+    /같은 지역 보도|진행 중|조회수|다른 지역 B/,
+  );
   expect(draw(route, 'f'.repeat(64)).textContent).toBe('');
   expect(
     draw(null, id).textContent,

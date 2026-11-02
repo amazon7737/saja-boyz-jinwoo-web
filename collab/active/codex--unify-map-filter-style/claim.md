@@ -4,7 +4,7 @@ owner: amazon
 started: 2026-11-01
 status: done
 goal: style(map): 기간 기준으로 카테고리·상태 필터 스타일 통일
-next: dev 대상 PR 검토 및 머지
+next: 충돌 해결 반영 후 dev 대상 PR58 검토·병합 대기
 base: dev
 ---
 

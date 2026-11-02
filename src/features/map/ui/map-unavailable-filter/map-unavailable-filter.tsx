@@ -90,7 +90,14 @@ export function MapUnavailableFilter({ kind }: { kind: keyof typeof filters }) {
               {option}
             </MapFilterOption>
           ))}
-          <p id={explanationId} className="m-0 px-4 py-2 text-xs text-muted">
+          <p
+            id={explanationId}
+            className={
+              kind === 'category'
+                ? 'sr-only'
+                : 'm-0 px-4 py-2 text-xs text-muted'
+            }
+          >
             {explanation}
           </p>
         </MapFilterPanel>

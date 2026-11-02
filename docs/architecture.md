@@ -35,11 +35,11 @@ pnpm run dev
 
 기사의 pubDate는 발행 시각이며 사건의 occurredAt과 다르다. 기존 사건 모델의 분류·상태·위치를 기사 API 데이터로 추정하지 않는다. [뉴스 API 소비 계약과 규약 확인 요청](news-api-contract.md)에 현행 동작, 기존 협업 정보와 서버 명세 확인 항목을 구분해 기록한다.
 
-## 기사 상세 시트와 URL
+## 기사 상세 프레임과 URL
 
 지도·목록·검색은 `app/(browse)/@background`에서 실제 화면을 렌더링한다. 같은 그룹의 일반 `children` 페이지는 메타데이터만 소유하고, `(.)incidents/[id]`가 기사 본문과 메타데이터로 교체된다. Next가 head를 찾을 때 children을 먼저 선택하므로 상세를 별도 이름의 슬롯에 두면 배경 검색의 noindex·canonical이 남을 수 있다. 배경 슬롯에는 metadata나 catch-all을 추가하지 않는다.
 
-`ArticleRouteHost`는 배경 상태와 기사 링크 포커스를 보존한다. `DetailSheet`는 드래그·접기/펼치기·배경 스크롤 잠금·포커스 순환·공유 영역을 담당하며, 지도 그룹 선택도 같은 프레임을 사용한다. 직접 공유 주소 `/incidents/{id}`는 browse 그룹 밖의 서버 상세를 사용한다. 동일한 조회·본문·메타데이터를 재사용하며 JS 없이도 제목·요약·발행일·출처를 읽을 수 있다.
+`ArticleRouteHost`는 배경 상태와 기사 링크 포커스를 보존한다. 목록(`/incidents`)에서 연 상세는 검색 헤더·하단 메뉴를 유지하고 main 본문에서 `DetailInline`으로 렌더링한다. 기존 목록은 숨긴 채 마운트를 유지하며 복귀할 때 추가 페이지·스크롤·포커스를 복원한다. 이 표시에는 dialog·body lock·focus trap·시트 핸들을 적용하지 않는다. 지도·검색·보관함은 기존 시트를 유지한다. 직접 공유 주소 `/incidents/{id}`도 기존 시트를 사용하며 JS 없이 제목·요약·발행일·출처를 읽을 수 있다. 조회·본문·메타데이터와 공유 주소는 동일하다.
 
 Next16.3.8에는 page의 notFound 예외가 실제404를 반환하면서도 JS 없는 문서를 비워 두는 문제가 재현된다([공식 이슈](https://github.com/vercel/next.js/issues/62228)). `src/proxy.ts`는 직접 GET/HEAD에서만 기사 존재 여부를 확인하고, 잘못된 ID 또는 실제 upstream404를 미매칭 `/__missing-article`로 rewrite한다. 주소와 쿼리는 브라우저에 유지하고 정적 root404의 안내·지도/목록/검색 링크와 noindex를 서버 HTML로 제공한다. 공개된 200 오류 페이지나 추가 캐시 계층을 만들지 않는다.
 

@@ -126,6 +126,7 @@ test('articleSheetRoutesPreserveSource', async () => {
 });
 
 test('articleSheetLoadingPreservesOpenerFocus', async () => {
+  vi.stubGlobal('scrollTo', vi.fn());
   vi.stubGlobal('IS_REACT_ACT_ENVIRONMENT', true);
   pathname = '/incidents';
   backgroundSegments = ['(__SLOT__)', 'incidents'];
@@ -258,6 +259,101 @@ test('expandedMapSheetHidesOnlyTheBackgroundSearchHeader', async () => {
     expect(shell.querySelector('main p')).toBe(map);
     expect(shell.querySelector('header')).not.toBeNull();
     expect(shell.getAttribute('inert')).toBeNull();
+  } finally {
+    await act(async () => root.unmount());
+    host.remove();
+    pathname = '/search';
+    backgroundSegments = ['search'];
+    childSegments = [];
+    vi.clearAllMocks();
+    vi.unstubAllGlobals();
+  }
+});
+
+test('listArticleDetailReplacesOnlyMainContentWithoutAModalAndRestoresListState', async () => {
+  const { DetailSheet } = await import('../detail-sheet/detail-sheet');
+  vi.stubGlobal('IS_REACT_ACT_ENVIRONMENT', true);
+  vi.stubGlobal('scrollTo', vi.fn());
+  pathname = '/incidents';
+  backgroundSegments = ['incidents'];
+  childSegments = [];
+  const host = document.createElement('div');
+  document.body.append(host);
+  const root = createRoot(host);
+  function List() {
+    const [count, setCount] = useState(1);
+    return createElement(
+      'section',
+      { 'aria-label': '보존할 목록' },
+      createElement(
+        'button',
+        { onClick: () => setCount(count + 1) },
+        '더 보기 ' + count,
+      ),
+      createElement(
+        'a',
+        {
+          href: '/incidents/' + 'a'.repeat(64),
+          onClick: (event: { preventDefault(): void }) =>
+            event.preventDefault(),
+        },
+        '선택 기사',
+      ),
+    );
+  }
+  async function draw(open = false) {
+    await act(async () =>
+      root.render(
+        createElement(
+          ArticleRouteHost,
+          { background: createElement(List) },
+          open
+            ? createElement(
+                DetailSheet,
+                { titleId: 'inline-heading' },
+                createElement('h1', { id: 'inline-heading' }, '선택 기사 상세'),
+              )
+            : null,
+        ),
+      ),
+    );
+  }
+  try {
+    await draw();
+    await act(async () =>
+      host.querySelector<HTMLButtonElement>('main button')!.click(),
+    );
+    const list = host.querySelector('section[aria-label="보존할 목록"]');
+    const opener = host.querySelector<HTMLAnchorElement>('main a')!;
+    opener.focus();
+    await act(async () => opener.click());
+    pathname = '/incidents/' + 'a'.repeat(64);
+    childSegments = ['(.)incidents', 'a'.repeat(64)];
+    await draw(true);
+    expect(host.querySelector('[role="dialog"]')).toBeNull();
+    const detail = host.querySelector('[data-article-inline]');
+    expect(detail).not.toBeNull();
+    expect(host.querySelector('main')?.contains(detail)).toBe(true);
+    expect(
+      host.querySelector('[data-article-background]')?.getAttribute('inert'),
+    ).toBeNull();
+    expect(host.querySelector('header')).not.toBeNull();
+    expect(host.querySelector('nav[aria-label="주 메뉴"]')).not.toBeNull();
+    expect(list?.closest('[hidden]')).not.toBeNull();
+    expect(document.body.style.overflow).not.toBe('hidden');
+    const backControl = detail?.querySelector<HTMLAnchorElement>(
+      'a[aria-label="목록으로"]',
+    );
+    expect(backControl).not.toBeNull();
+    await act(async () => backControl?.click());
+    expect(back).toHaveBeenCalledTimes(1);
+    pathname = '/incidents';
+    childSegments = ['incidents'];
+    await draw();
+    expect(host.querySelector('section[aria-label="보존할 목록"]')).toBe(list);
+    expect(list?.closest('[hidden]')).toBeNull();
+    expect(list?.textContent).toContain('더 보기 2');
+    expect(document.activeElement).toBe(opener);
   } finally {
     await act(async () => root.unmount());
     host.remove();
