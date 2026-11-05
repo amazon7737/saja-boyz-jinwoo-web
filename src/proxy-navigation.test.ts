@@ -228,6 +228,7 @@ export function SheetFixture({ item, id, apiOrigin }: { item: FixtureArticle | n
     NEWS_API_BASE_URL: 'http://127.0.0.1:' + apiPort,
     NEXT_TELEMETRY_DISABLED: '1',
     NEXT_PUBLIC_NAVER_MAP_CLIENT_ID: 'local-loading-test',
+    NEXT_PUBLIC_REPORT_API_BASE_URL: 'https://reports.example.test',
   };
   const next = join(process.cwd(), 'node_modules/next/dist/bin/next');
   await execute(process.execPath, [next, 'build', '--webpack'], {
@@ -2247,3 +2248,144 @@ test('articleSheetToggleKeepsBoundsOnResizeAndRespectsReducedMotion', async () =
     ),
   ).toBe(0);
 }, 60000);
+
+test('reportLayoutKeepsControlsReadableAndReachableOnSmallScreens', async () => {
+  const context = await browser!.newContext({
+    viewport: { width: 320, height: 568 },
+    deviceScaleFactor: 2,
+  });
+  contexts.push(context);
+  await context.route('https://reports.example.test/reports', (route) => {
+    const headers = {
+      'Access-Control-Allow-Origin': origin,
+      'Access-Control-Allow-Methods': 'POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Idempotency-Key, Content-Type',
+    };
+    if (route.request().method() === 'OPTIONS')
+      return route.fulfill({ status: 204, headers });
+    return route.fulfill({
+      status: 201,
+      headers,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        report_id: 'a'.repeat(32),
+        status: 'pending',
+        received_at: '2026-10-13T05:00:00Z',
+      }),
+    });
+  });
+  const page = await context.newPage();
+  await page.goto(origin + '/report');
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+  ).toBe(true);
+
+  const fields = [
+    page.getByLabel('카테고리 선택', { exact: true }),
+    page.getByLabel('발생 날짜 및 시간 (한국시간)', { exact: true }),
+    page.getByLabel('제보 제목', { exact: true }),
+    page.getByLabel('발생 위치', { exact: true }),
+  ];
+  const description = page.getByLabel('상세내용', { exact: true });
+  const attachment = page.getByLabel('사진/동영상 첨부', { exact: true });
+  const upload = attachment.locator('..');
+  const size = async (element: (typeof fields)[number]) =>
+    element.evaluate((node) => {
+      const bounds = node.getBoundingClientRect();
+      const style = getComputedStyle(node);
+      return {
+        height: bounds.height,
+        radius: Number.parseFloat(style.borderTopLeftRadius),
+        border: Number.parseFloat(style.borderTopWidth),
+      };
+    });
+
+  for (const field of fields) {
+    const geometry = await size(field);
+    expect(geometry.height).toBeCloseTo(44, 0);
+    expect(geometry.radius).toBeCloseTo(12, 0);
+    // Chromium can round a half-pixel border according to device scale.
+    expect(geometry.border).toBeGreaterThanOrEqual(1);
+    expect(geometry.border).toBeLessThanOrEqual(1.5);
+  }
+  expect((await size(description)).height).toBeCloseTo(100, 0);
+  expect((await size(upload)).height).toBeCloseTo(110, 0);
+  const plus = upload.locator('[aria-hidden="true"]');
+  expect((await plus.textContent())?.trim()).toBe('+');
+  expect(
+    await plus.evaluate((node) =>
+      Number.parseFloat(getComputedStyle(node).fontSize),
+    ),
+  ).toBe(26);
+
+  // A focused control must be inside the visible area and above the sticky
+  // submit bar. Inspect the center hit target as well as its bounding box.
+  await page.getByRole('link', { name: '제보 닫기' }).focus();
+  for (const field of [...fields, description, attachment]) {
+    // Native datetime controls may expose several keyboard segments.
+    for (let attempt = 0; attempt < 10; attempt++) {
+      await page.keyboard.press('Tab');
+      if (await field.evaluate((node) => document.activeElement === node))
+        break;
+    }
+    await expect
+      .poll(async () =>
+        field.evaluate((node) => {
+          const rect = node.getBoundingClientRect();
+          const header = document
+            .querySelector('header')
+            ?.getBoundingClientRect();
+          const submit = document
+            .querySelector<HTMLButtonElement>('button[type="submit"]')
+            ?.getBoundingClientRect();
+          const hit = document.elementFromPoint(
+            rect.left + rect.width / 2,
+            rect.top + rect.height / 2,
+          );
+          return {
+            name: node.getAttribute('name'),
+            focused: document.activeElement === node,
+            headerClear: rect.top >= (header?.bottom ?? 0),
+            footerClear: rect.bottom <= (submit?.top ?? window.innerHeight),
+            hit: hit === node || node.contains(hit),
+          };
+        }),
+      )
+      .toEqual({
+        name: await field.getAttribute('name'),
+        focused: true,
+        headerClear: true,
+        footerClear: true,
+        hit: true,
+      });
+  }
+
+  await fields[0].selectOption('society');
+  await fields[1].fill('2026-10-13T14:00');
+  await fields[2].fill('확인용 제목');
+  await fields[3].fill('서울');
+  await description.fill('확인용 본문');
+  await page.getByRole('button', { name: '제보 접수' }).click();
+  const heading = page.getByRole('heading', { name: '제보가 완료되었습니다' });
+  await heading.waitFor();
+  await expect
+    .poll(async () =>
+      heading.evaluate((node) => document.activeElement === node),
+    )
+    .toBe(true);
+  const check = page.locator('[role="status"] [aria-hidden="true"]');
+  const checkSize = await check.evaluate((node) => {
+    const box = node.getBoundingClientRect();
+    return {
+      width: box.width,
+      height: box.height,
+      font: Number.parseFloat(getComputedStyle(node).fontSize),
+    };
+  });
+  expect(checkSize).toEqual({ width: 78, height: 78, font: 38 });
+  expect(
+    await page.getByText('접수번호:', { exact: false }).textContent(),
+  ).toContain('a'.repeat(32));
+}, 120000);

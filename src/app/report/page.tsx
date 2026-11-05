@@ -336,6 +336,17 @@ export default function ReportPage() {
         style={confirmedReportId ? { display: 'none' } : undefined}
         className="flex min-h-[calc(100dvh-57px)] flex-col [&_:is(input,select,textarea,button)]:scroll-mt-[calc(80px_+_env(safe-area-inset-top))] [&_:is(input,select,textarea,button)]:scroll-mb-[calc(112px_+_env(safe-area-inset-bottom))]"
         noValidate
+        onFocus={(event) => {
+          const target = event.target;
+
+          if (
+            target instanceof HTMLInputElement ||
+            target instanceof HTMLSelectElement ||
+            target instanceof HTMLTextAreaElement
+          ) {
+            target.scrollIntoView?.({ block: 'nearest', inline: 'nearest' });
+          }
+        }}
         onSubmit={checkInput}
       >
         <div className="flex flex-col gap-5 p-4">
@@ -348,7 +359,7 @@ export default function ReportPage() {
             </label>
             <div className="relative">
               <select
-                className="box-border h-[41px] w-full min-w-0 appearance-none rounded-[10px] border border-solid border-border bg-background py-[11px] pr-11 pl-3.5 text-[14px]/[17px] text-text invalid:text-slate-400"
+                className="box-border h-11 w-full min-w-0 appearance-none rounded-xl border-[1.5px] border-solid border-border bg-background py-[11px] pr-11 pl-3.5 text-[14px]/[17px] text-text invalid:text-slate-400"
                 id="report-category"
                 name="category"
                 disabled={formLocked}
@@ -382,7 +393,7 @@ export default function ReportPage() {
               발생 날짜 및 시간 (한국시간)
             </label>
             <input
-              className="box-border h-[41px] w-full min-w-0 rounded-[10px] border border-solid border-border bg-background px-3.5 py-[11px] text-[14px]/[17px] text-muted"
+              className="box-border h-11 w-full min-w-0 rounded-xl border-[1.5px] border-solid border-border bg-background px-3.5 py-[11px] text-[14px]/[17px] text-muted"
               id="report-occurred-at"
               name="occurredAt"
               disabled={formLocked}
@@ -400,7 +411,7 @@ export default function ReportPage() {
               제보 제목
             </label>
             <input
-              className="box-border h-[41px] w-full min-w-0 appearance-none rounded-[10px] border border-solid border-border bg-background px-3.5 py-[11px] text-[14px]/[17px] text-text placeholder:text-slate-400"
+              className="box-border h-11 w-full min-w-0 appearance-none rounded-xl border-[1.5px] border-solid border-border bg-background px-3.5 py-[11px] text-[14px]/[17px] text-text placeholder:text-slate-400"
               id="report-title"
               name="title"
               disabled={formLocked}
@@ -423,7 +434,7 @@ export default function ReportPage() {
                 className="pointer-events-none absolute top-1/2 left-3.5 -translate-y-1/2 text-brand"
               />
               <input
-                className="box-border h-[41px] w-full min-w-0 appearance-none rounded-[10px] border border-solid border-border bg-background py-[11px] pr-3.5 pl-[34px] text-[14px]/[17px] text-text placeholder:text-slate-400"
+                className="box-border h-11 w-full min-w-0 appearance-none rounded-xl border-[1.5px] border-solid border-border bg-background py-[11px] pr-3.5 pl-[34px] text-[14px]/[17px] text-text placeholder:text-slate-400"
                 id="report-location"
                 name="location"
                 disabled={formLocked}
@@ -442,7 +453,7 @@ export default function ReportPage() {
               상세내용
             </label>
             <textarea
-              className="box-border h-[120px] w-full min-w-0 resize-none appearance-none rounded-[10px] border border-solid border-border bg-background p-3.5 text-[14px]/[17px] text-text placeholder:text-slate-400"
+              className="box-border h-[100px] w-full min-w-0 resize-none appearance-none rounded-xl border-[1.5px] border-solid border-border bg-background p-3.5 text-[14px]/[17px] text-text placeholder:text-slate-400"
               id="report-description"
               name="description"
               disabled={formLocked}
@@ -459,12 +470,12 @@ export default function ReportPage() {
             >
               사진/동영상 첨부
             </label>
-            <div className="relative flex h-[100px] flex-col items-center justify-center gap-1.5 rounded-[10px] border border-dashed border-slate-400 bg-background p-5 text-[13px]/[normal] font-bold text-muted focus-within:outline-[3px] focus-within:outline-solid focus-within:outline-brand focus-within:outline-offset-4">
+            <div className="relative flex h-[110px] flex-col items-center justify-center gap-[9px] rounded-xl border-[1.5px] border-dashed border-slate-400 bg-background p-5 text-[13px]/[normal] font-bold text-slate-400 focus-within:outline-[3px] focus-within:outline-solid focus-within:outline-brand focus-within:outline-offset-4">
               <span
                 aria-hidden="true"
-                className="text-[18px]/[normal] font-normal"
+                className="text-[26px]/[normal] font-normal"
               >
-                ➕
+                +
               </span>
               <span>이미지 첨부</span>
               <input
@@ -608,7 +619,7 @@ export default function ReportPage() {
           >
             <span
               aria-hidden="true"
-              className="mb-6 grid size-[78px] place-items-center rounded-full bg-brand/5 text-[32px] font-bold text-brand"
+              className="mb-[26px] grid size-[78px] place-items-center rounded-full bg-brand/5 text-[38px]/[57px] font-bold text-brand"
             >
               ✓
             </span>
