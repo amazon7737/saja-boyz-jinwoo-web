@@ -15,6 +15,7 @@ export async function proxy(request: NextRequest) {
 
   const id = match[1];
   let missing = !/^[a-f0-9]{64}$/.test(id);
+  let unavailable = false;
 
   if (!missing) {
     try {
@@ -24,20 +25,31 @@ export async function proxy(request: NextRequest) {
         (base.protocol !== 'https:' && base.protocol !== 'http:') ||
         base.username ||
         base.password
-      )
-        return next();
+      ) {
+        unavailable = true;
+      } else {
+        const response = await fetch(new URL('/news/' + id, base), {
+          method: 'GET',
+          cache: 'no-store',
+          signal: AbortSignal.timeout(5000),
+        });
 
-      const response = await fetch(new URL('/news/' + id, base), {
-        method: 'GET',
-        cache: 'no-store',
-        signal: AbortSignal.timeout(5000),
-      });
-
-      missing = response.status === 404;
-      await response.body?.cancel().catch(() => {});
+        missing = response.status === 404;
+        unavailable = !response.ok && !missing;
+        await response.body?.cancel().catch(() => {});
+      }
     } catch {
-      return next();
+      unavailable = true;
     }
+  }
+
+  if (unavailable) {
+    const fallback = request.nextUrl.clone();
+
+    fallback.pathname = '/article-unavailable/' + id;
+    fallback.search = '';
+
+    return NextResponse.rewrite(fallback);
   }
 
   if (!missing) return next();

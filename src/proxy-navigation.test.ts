@@ -1338,12 +1338,57 @@ test('searchSubmissionsAndDetailRetriesExposePendingWithoutLosingGetOrRecovery',
           .getByRole('link', { name: article.article.title, exact: true })
           .click();
       else await retryPage.goto(origin + '/incidents/' + id);
+      const directStates: Array<{
+        busy: string | null;
+        spinnerVisible: boolean;
+        duplicateBlocked: boolean;
+      }> = [];
+      if (mode === 'direct') {
+        await retryPage.exposeFunction(
+          'observeDocumentRetry',
+          (state: (typeof directStates)[number]) => {
+            directStates.push(state);
+          },
+        );
+      }
       for (const status of [503, 200]) {
         const retry = retryPage.getByRole('link', {
           name: '다시 시도',
           exact: true,
         });
         await retry.waitFor();
+        directStates.length = 0;
+        if (mode === 'direct') {
+          await retry.evaluate((element) => {
+            element.addEventListener(
+              'click',
+              () => {
+                const spinner =
+                  element.querySelector<HTMLElement>('[role="status"]');
+                const duplicate = new MouseEvent('click', {
+                  bubbles: true,
+                  cancelable: true,
+                  button: 0,
+                });
+                const state = {
+                  busy: element.getAttribute('aria-busy'),
+                  spinnerVisible: Boolean(
+                    spinner && !spinner.hidden && spinner.querySelector('svg'),
+                  ),
+                  duplicateBlocked: !element.dispatchEvent(duplicate),
+                };
+                void (
+                  window as unknown as {
+                    observeDocumentRetry: (
+                      value: typeof state,
+                    ) => Promise<void>;
+                  }
+                ).observeDocumentRetry(state);
+              },
+              { once: true },
+            );
+          });
+        }
         holdDetails = true;
         const before = detailRequests.length;
         const retrying = retry.click();
@@ -1351,15 +1396,38 @@ test('searchSubmissionsAndDetailRetriesExposePendingWithoutLosingGetOrRecovery',
           await expect
             .poll(() => waitingDetails.length, { timeout: 5000 })
             .toBeGreaterThan(0);
-          expect
-            .soft(await retry.getAttribute('aria-busy'), mode + ' 재시도 대기')
-            .toBe('true');
-          expect
-            .soft(await retry.locator('svg').count(), '재시도 스피너')
-            .toBe(1);
-          if ((await retry.getAttribute('aria-busy')) === 'true') {
-            await retry.evaluate((node) => (node as HTMLAnchorElement).click());
-            await retryPage.keyboard.press('Enter');
+          if (mode === 'direct') {
+            await expect
+              .poll(() => directStates[0], { timeout: 5000 })
+              .toBeDefined();
+            expect
+              .soft(directStates[0]?.busy, '직접 진입 재시도 대기')
+              .toBe('true');
+            expect
+              .soft(directStates[0]?.spinnerVisible, '직접 진입 재시도 스피너')
+              .toBe(true);
+            expect
+              .soft(
+                directStates[0]?.duplicateBlocked,
+                '직접 진입 중복 클릭 방지',
+              )
+              .toBe(true);
+          } else {
+            expect
+              .soft(
+                await retry.getAttribute('aria-busy'),
+                mode + ' 재시도 대기',
+              )
+              .toBe('true');
+            expect
+              .soft(await retry.locator('svg').count(), '재시도 스피너')
+              .toBe(1);
+            if ((await retry.getAttribute('aria-busy')) === 'true') {
+              await retry.evaluate((node) =>
+                (node as HTMLAnchorElement).click(),
+              );
+              await retryPage.keyboard.press('Enter');
+            }
           }
           await wait(100);
           expect
@@ -2818,3 +2886,306 @@ test('detailCloseIconKeepsAccessibleHitTargetAndReturnsToMap', async () => {
     await page.close();
   }
 }, 120000);
+
+test('articleDocumentUpstreamFailureReturns503WithNoJsRecovery', async () => {
+  failDetail = true;
+  try {
+    const response = await fetch(origin + '/incidents/' + id);
+    const html = await response.text();
+
+    expect(response.status).toBe(503);
+    expect(response.headers.get('cache-control')).toContain('no-store');
+    expect(response.headers.get('retry-after')).toBe('60');
+    expect(response.headers.get('content-type')).toContain('text/html');
+    expect(html).not.toContain('QA_PRIVATE_DETAIL');
+    expect(html).not.toContain('127.0.0.1');
+    expect(html).not.toContain('noindex');
+
+    const head = await fetch(origin + '/incidents/' + id, { method: 'HEAD' });
+    expect(head.status).toBe(503);
+    expect(head.headers.get('retry-after')).toBe('60');
+    expect(await head.text()).toBe('');
+    const invalid = await fetch(origin + '/article-unavailable/invalid');
+    expect(invalid.status).toBe(404);
+
+    const context = await browser!.newContext({
+      javaScriptEnabled: false,
+      viewport: { width: 320, height: 568 },
+    });
+    contexts.push(context);
+    const page = await context.newPage();
+    const documentResponse = await page.goto(origin + '/incidents/' + id);
+    expect(documentResponse?.status()).toBe(503);
+    expect(
+      await page
+        .getByRole('heading', { name: '이 소식을 다시 열어볼까요?' })
+        .count(),
+    ).toBe(1);
+    expect(
+      await page.getByRole('link', { name: '다시 시도' }).getAttribute('href'),
+    ).toBe('/incidents/' + id);
+    expect(
+      await page.getByRole('link', { name: '목록으로' }).getAttribute('href'),
+    ).toBe('/incidents');
+    expect(
+      await page.getByRole('link', { name: '지도로' }).getAttribute('href'),
+    ).toBe('/');
+
+    const retry = page.getByRole('link', { name: '다시 시도' });
+    const bounds = await retry.boundingBox();
+    expect(bounds?.height).toBeGreaterThanOrEqual(44);
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= window.innerWidth,
+      ),
+    ).toBe(true);
+    await retry.focus();
+    expect(
+      await retry.evaluate((element) => document.activeElement === element),
+    ).toBe(true);
+
+    failDetail = false;
+    await retry.click();
+    await page.getByRole('heading', { name: article.article.title }).waitFor();
+  } finally {
+    failDetail = false;
+  }
+}, 30000);
+
+test('articleDocument503RetryModifiedClickOpensANewTab', async () => {
+  failDetail = true;
+  try {
+    const context = await browser!.newContext();
+    contexts.push(context);
+    const page = await context.newPage();
+    await page.goto(origin + '/incidents/' + id);
+    const retry = page.getByRole('link', { name: '다시 시도' });
+    const [popup] = await Promise.all([
+      context.waitForEvent('page'),
+      retry.click({
+        modifiers: [process.platform === 'darwin' ? 'Meta' : 'Control'],
+      }),
+    ]);
+    await popup.waitForLoadState('domcontentloaded');
+    expect(new URL(popup.url()).pathname).toBe('/incidents/' + id);
+    expect(await retry.getAttribute('aria-busy')).toBe('false');
+    expect(await retry.getAttribute('aria-disabled')).toBeNull();
+    expect(
+      await page
+        .getByRole('heading', { name: '이 소식을 다시 열어볼까요?' })
+        .count(),
+    ).toBe(1);
+    await popup.close();
+  } finally {
+    failDetail = false;
+  }
+}, 30000);
+
+test('articleDocument503RetryRecoversAfterNavigationIsStopped', async () => {
+  failDetail = true;
+  const context = await browser!.newContext();
+  contexts.push(context);
+  const page = await context.newPage();
+  const client = await context.newCDPSession(page);
+
+  try {
+    await page.goto(origin + '/incidents/' + id);
+    const retry = page.getByRole('link', { name: '다시 시도' });
+    await retry.waitFor();
+    const box = await retry.boundingBox();
+    if (!box) throw new Error('재시도 링크의 위치를 읽지 못함');
+    const x = box.x + box.width / 2;
+    const y = box.y + box.height / 2;
+    holdDetails = true;
+    const before = detailRequests.length;
+    const pendingStates: Array<{
+      busy: string | null;
+      spinnerVisible: boolean;
+    }> = [];
+    await page.exposeFunction(
+      'observeRetryBeforeNavigation',
+      (state: (typeof pendingStates)[number]) => pendingStates.push(state),
+    );
+    await retry.evaluate((element) => {
+      element.addEventListener(
+        'click',
+        () => {
+          const spinner = element.querySelector<HTMLElement>('[role="status"]');
+          const state = {
+            busy: element.getAttribute('aria-busy'),
+            spinnerVisible: Boolean(spinner && !spinner.hidden),
+          };
+          void (
+            window as unknown as {
+              observeRetryBeforeNavigation: (
+                value: typeof state,
+              ) => Promise<void>;
+            }
+          ).observeRetryBeforeNavigation(state);
+        },
+        { once: true },
+      );
+    });
+    const firstClick = retry.click({ noWaitAfter: true }).catch(() => {});
+    await expect
+      .poll(() => waitingDetails.length, { timeout: 3000 })
+      .toBeGreaterThan(0);
+    await expect.poll(() => pendingStates[0], { timeout: 2000 }).toBeDefined();
+    expect(pendingStates[0]).toEqual({ busy: 'true', spinnerVisible: true });
+    await page.mouse.click(x, y);
+    await page.keyboard.press('Enter');
+    await wait(100);
+    expect(detailRequests.length - before).toBe(1);
+    await client.send('Page.stopLoading');
+    const evaluate = async (expression: string) =>
+      (
+        await client.send('Runtime.evaluate', {
+          expression,
+          returnByValue: true,
+        })
+      ).result.value;
+    await expect
+      .poll(
+        () =>
+          evaluate(
+            "document.querySelector('[data-detail-retry]').getAttribute('aria-busy')",
+          ),
+        { timeout: 3000 },
+      )
+      .toBe('false');
+    expect(
+      await evaluate(
+        "document.querySelector('[data-detail-retry]').hasAttribute('aria-disabled')",
+      ),
+    ).toBe(false);
+    expect(await evaluate("document.querySelector('.spinner').hidden")).toBe(
+      true,
+    );
+    await firstClick;
+    holdDetails = false;
+    failDetail = false;
+    for (const response of waitingDetails.splice(0))
+      if (!response.destroyed) response.end(JSON.stringify(article));
+    await retry.click();
+    await page.getByRole('heading', { name: article.article.title }).waitFor();
+  } finally {
+    failDetail = false;
+    holdDetails = false;
+    for (const response of waitingDetails.splice(0))
+      if (!response.destroyed) response.end(JSON.stringify(article));
+    await client.detach();
+  }
+}, 30000);
+
+test('articleDocument503RetryWithoutNavigationApiRecoversAfterThirtySeconds', async () => {
+  const script = await readFile(
+    join(process.cwd(), 'public/article-detail/error-retry.js'),
+    'utf8',
+  );
+  let attempts = 0;
+  let recover = false;
+  const pending = new Set<ServerResponse>();
+  const fixture = createServer((request, response) => {
+    if (request.url === '/retry.js') {
+      response
+        .writeHead(200, { 'Content-Type': 'text/javascript' })
+        .end(script);
+    } else if (request.url === '/pending') {
+      attempts++;
+      if (recover)
+        response
+          .writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' })
+          .end('<h1>복구된 기사</h1>');
+      else {
+        pending.add(response);
+        response.on('close', () => pending.delete(response));
+      }
+    } else {
+      response
+        .writeHead(503, { 'Content-Type': 'text/html; charset=utf-8' })
+        .end(
+          '<!doctype html><html lang="ko"><body><a data-detail-retry aria-label="다시 시도" aria-busy="false" href="/pending"><span class="spinner" hidden></span>다시 시도</a><script src="/retry.js" defer></script></body></html>',
+        );
+    }
+  });
+  const port = await listen(fixture);
+  const context = await browser!.newContext();
+  contexts.push(context);
+  await context.addInitScript(() => {
+    Object.defineProperty(window, 'navigation', {
+      value: undefined,
+      configurable: true,
+    });
+  });
+  const page = await context.newPage();
+  const client = await context.newCDPSession(page);
+
+  try {
+    await page.clock.install();
+    await page.goto('http://127.0.0.1:' + port + '/error');
+    const retry = page.getByRole('link', { name: '다시 시도' });
+    const box = await retry.boundingBox();
+    if (!box) throw new Error('재시도 링크의 위치를 읽지 못함');
+    const x = box.x + box.width / 2;
+    const y = box.y + box.height / 2;
+    await retry.click({ noWaitAfter: true });
+    await expect.poll(() => attempts, { timeout: 3000 }).toBe(1);
+    await page.mouse.click(x, y);
+    await page.keyboard.press('Enter');
+    await wait(100);
+    expect(attempts).toBe(1);
+    await client.send('Page.stopLoading');
+    await page.clock.fastForward(29000);
+    await page.mouse.click(x, y);
+    await page.keyboard.press('Enter');
+    await wait(100);
+    expect(attempts).toBe(1);
+    expect(await retry.getAttribute('aria-busy')).toBe('true');
+    expect(
+      await retry
+        .locator('.spinner')
+        .evaluate((node) => (node as HTMLElement).hidden),
+    ).toBe(false);
+    await page.clock.fastForward(1000);
+    expect(await retry.getAttribute('aria-busy')).toBe('false');
+    expect(await retry.getAttribute('aria-disabled')).toBeNull();
+    expect(
+      await retry
+        .locator('.spinner')
+        .evaluate((node) => (node as HTMLElement).hidden),
+    ).toBe(true);
+    recover = true;
+    await Promise.all([page.waitForURL('**/pending'), retry.click()]);
+    await page.getByRole('heading', { name: '복구된 기사' }).waitFor();
+    expect(attempts).toBe(2);
+
+    recover = false;
+    await page.goto('http://127.0.0.1:' + port + '/error');
+    const slowRetry = page.getByRole('link', { name: '다시 시도' });
+    const slowBox = await slowRetry.boundingBox();
+    if (!slowBox) throw new Error('느린 재시도 링크의 위치를 읽지 못함');
+    await slowRetry.click({ noWaitAfter: true });
+    await expect.poll(() => attempts, { timeout: 3000 }).toBe(3);
+    await page.mouse.click(
+      slowBox.x + slowBox.width / 2,
+      slowBox.y + slowBox.height / 2,
+    );
+    await page.keyboard.press('Enter');
+    await wait(1500);
+    expect(attempts).toBe(3);
+    recover = true;
+    for (const response of pending)
+      if (!response.destroyed)
+        response
+          .writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' })
+          .end('<h1>복구된 기사</h1>');
+    pending.clear();
+    await page.getByRole('heading', { name: '복구된 기사' }).waitFor();
+    expect(attempts).toBe(3);
+  } finally {
+    for (const response of pending) response.destroy();
+    fixture.closeAllConnections();
+    await new Promise<void>((resolve) => fixture.close(() => resolve()));
+    await client.detach();
+  }
+}, 30000);

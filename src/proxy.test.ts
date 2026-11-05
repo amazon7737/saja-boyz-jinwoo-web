@@ -39,14 +39,29 @@ test('articleDocument404KeepsItsAddressAndDoesNotMisclassifyApiErrors', async ()
   expect(invalid.status).toBe(404);
   expect(request).not.toHaveBeenCalled();
 
-  for (const status of [200, 503]) {
+  request.mockResolvedValueOnce(
+    new Response('PRIVATE_UPSTREAM', { status: 200 }),
+  );
+  const success = await proxy(document());
+  expect(success.headers.get('x-middleware-next')).toBe('1');
+  expect(success.headers.get('x-middleware-rewrite')).toBeNull();
+
+  const expectUnavailable = (result: Awaited<ReturnType<typeof proxy>>) => {
+    const fallback = new URL(result.headers.get('x-middleware-rewrite')!);
+
+    expect(fallback.origin).toBe('https://hyunghyung.vercel.app');
+    expect(fallback.pathname).toBe('/article-unavailable/' + id);
+    expect(fallback.search).toBe('');
+  };
+
+  for (const status of [429, 500, 503]) {
     request.mockResolvedValueOnce(new Response('PRIVATE_UPSTREAM', { status }));
-    const result = await proxy(document());
-    expect(result.headers.get('x-middleware-next')).toBe('1');
-    expect(result.headers.get('x-middleware-rewrite')).toBeNull();
+    expectUnavailable(await proxy(document()));
   }
   request.mockRejectedValueOnce(new DOMException('timeout', 'TimeoutError'));
-  expect((await proxy(document())).headers.get('x-middleware-next')).toBe('1');
+  expectUnavailable(await proxy(document()));
+  request.mockRejectedValueOnce(new TypeError('PRIVATE_NETWORK_ERROR'));
+  expectUnavailable(await proxy(document()));
 
   request.mockReset();
   expect(
@@ -75,9 +90,7 @@ test('articleDocument404KeepsItsAddressAndDoesNotMisclassifyApiErrors', async ()
     'https://user:password@news.example.invalid',
   ]) {
     vi.stubEnv('NEWS_API_BASE_URL', base);
-    expect((await proxy(document())).headers.get('x-middleware-next')).toBe(
-      '1',
-    );
+    expectUnavailable(await proxy(document()));
   }
   expect(request).not.toHaveBeenCalled();
 });
