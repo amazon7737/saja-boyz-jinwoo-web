@@ -907,14 +907,20 @@ test('inlineIconsPreserveSpacingAndAccessibleControls', async () => {
         const a = icon.getBoundingClientRect(),
           b = range.getBoundingClientRect();
         return {
-          svg: icon.tagName.toLowerCase() === 'svg',
+          svg:
+            icon.tagName.toLowerCase() === 'svg' ||
+            (icon.tagName.toLowerCase() === 'img' &&
+              icon.getAttribute('src') === '/figma/preview-date.svg'),
           width: a.width,
           height: a.height,
           gap: trailing ? a.left - b.right : b.left - a.right,
           centerDelta: Math.abs((a.top + a.bottom - b.top - b.bottom) / 2),
           shrink: getComputedStyle(icon).flexShrink,
           hidden: icon.getAttribute('aria-hidden'),
-          focusable: icon.getAttribute('focusable'),
+          focusable:
+            icon instanceof HTMLImageElement && icon.tabIndex < 0
+              ? 'false'
+              : icon.getAttribute('focusable'),
         };
       },
       { label, trailing },
@@ -934,7 +940,7 @@ test('inlineIconsPreserveSpacingAndAccessibleControls', async () => {
   }
   const date = dialog.locator('p:has(time)').first();
   const dateText = (await date.locator('time').textContent())!;
-  await checkRow(date, dateText, 12, 6);
+  await checkRow(date, dateText, 16, 4);
   const share = dialog.getByRole('button', {
     name: '기사 공유하기',
     exact: true,

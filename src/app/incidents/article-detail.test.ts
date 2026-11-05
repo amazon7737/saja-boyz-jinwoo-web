@@ -197,10 +197,14 @@ test('articleDetailImageFailure', async () => {
   fetchMock.mockResolvedValueOnce(Response.json(item));
   const tree = await detailTree();
   await act(async () => root.render(tree));
-  const image = container.querySelector('img');
+  const image = container.querySelector(
+    `figure img[src="${apiOrigin}/images/${id}.jpg"]`,
+  );
   assert(image);
   await act(async () => image.dispatchEvent(new Event('error')));
-  expect(container.querySelector('img')).toBeNull();
+  expect(
+    container.querySelector('img:not([src="/figma/preview-date.svg"])'),
+  ).toBeNull();
   expect(container.textContent).toContain('이미지 없음');
   expect(container.textContent).not.toContain('AI로 생성된 이미지입니다.');
   expect(container.querySelector('h1')?.textContent).toBe('교통 안내 & 점검');
@@ -379,7 +383,9 @@ test('articleDetailSafePresentation', async () => {
       Response.json({ ...item, image_status: imageStatus }),
     );
     const view = await detailMarkup();
-    expect(view.querySelector('img')).toBeNull();
+    expect(
+      view.querySelector('img:not([src="/figma/preview-date.svg"])'),
+    ).toBeNull();
     expect(view.textContent).toContain('이미지 없음');
     expect(view.textContent).not.toContain('AI로 생성된 이미지입니다.');
   }
@@ -431,4 +437,29 @@ test('articleDetailSafePresentation', async () => {
   const view = await detailMarkup();
   expect(view.textContent).toContain('원문 링크 없음');
   expect(view.querySelector('a[href^="//"], a[href^="data:"]')).toBeNull();
+});
+
+test('serverDetailUsesFigmaDateIconAndKeepsArticleContent', async () => {
+  fetchMock.mockResolvedValueOnce(Response.json(item));
+  const view = await detailMarkup();
+  const time = view.querySelector('time');
+  assert(time);
+  const row = time.closest('p');
+  assert(row);
+  const icon = row.querySelector<HTMLImageElement>(
+    'img[src="/figma/preview-date.svg"]',
+  );
+  assert(icon);
+  expect(icon.getAttribute('width')).toBe('16');
+  expect(icon.getAttribute('height')).toBe('16');
+  expect(icon.getAttribute('alt')).toBe('');
+  expect(icon.parentElement?.classList.contains('items-center')).toBe(true);
+  expect(icon.parentElement?.classList.contains('gap-1')).toBe(true);
+  expect(row.textContent).toContain('기사 발행');
+  expect(time.dateTime).toBe('2026-10-10T00:00:00.000Z');
+  expect(view.querySelector('h1')?.textContent).toBe('교통 안내 & 점검');
+  expect(view.textContent).toContain(item.article.description);
+  expect(
+    view.querySelector('script[type="application/ld+json"]'),
+  ).not.toBeNull();
 });

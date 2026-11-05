@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Image from 'next/image';
 import { notFound } from 'next/navigation';
 
 import { ArticleViewTracker } from '@/features/article-views/article-view-tracker';
@@ -147,16 +148,27 @@ export default async function IncidentDetailPage({
         </h1>
         <div className="flex flex-col gap-1">
           <DetailLocation id={id} />
-          <p className="m-0 flex items-center gap-1 text-[12px]/4 text-muted">
+          <p className="m-0 flex items-center gap-1 text-[12px]/4 text-slate-400">
             {Number.isNaN(publishedAt.getTime()) ? (
               '발행 시각 미확인'
             ) : (
-              <IconText icon="calendar" size="compact">
-                <span className="sr-only">기사 발행 </span>
-                <time dateTime={publishedAt.toISOString()}>
-                  {publicationText(publishedAt)}
-                </time>
-              </IconText>
+              <span className="inline-flex min-w-0 items-center gap-1">
+                <Image
+                  src="/figma/preview-date.svg"
+                  alt=""
+                  aria-hidden="true"
+                  width={16}
+                  height={16}
+                  unoptimized
+                  className="size-4 shrink-0"
+                />
+                <span>
+                  <span className="sr-only">기사 발행 </span>
+                  <time dateTime={publishedAt.toISOString()}>
+                    {publicationText(publishedAt)}
+                  </time>
+                </span>
+              </span>
             )}
           </p>
         </div>
