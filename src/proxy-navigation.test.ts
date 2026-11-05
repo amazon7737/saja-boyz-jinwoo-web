@@ -1331,6 +1331,302 @@ test('repeatingTheSameSearchReplacesCardsAndResetsPagination', async () => {
   }
 }, 60000);
 
+test('errorSheetTracksSmallDragWithoutCountingScreenReaderOnlyContent', async () => {
+  const page = await openList();
+
+  try {
+    await page.emulateMedia({ reducedMotion: 'no-preference' });
+    failDetail = true;
+    await page.goto(origin + '/incidents/' + id);
+    const dialog = page.getByRole('dialog');
+    const handle = dialog.locator('button[aria-expanded]');
+    const hiddenHeading = dialog.locator('#article-detail-error');
+    await page.getByRole('link', { name: '다시 시도', exact: true }).waitFor();
+    expect(
+      await hiddenHeading.evaluate(
+        (element) => getComputedStyle(element).position,
+      ),
+      '오류 시트에는 일반 흐름 밖의 접근성 제목이 있음',
+    ).toBe('absolute');
+    await dialog.evaluate(async (element) => {
+      await Promise.all(
+        element
+          .getAnimations()
+          .map((animation) => animation.finished.catch(() => undefined)),
+      );
+    });
+    const start = await dialog.boundingBox();
+    const grip = await handle.boundingBox();
+    if (!start || !grip)
+      throw new Error('오류 시트 또는 핸들의 위치를 읽지 못함');
+    const x = grip.x + grip.width / 2;
+    const y = grip.y + grip.height / 2;
+    const waitForFrames = () =>
+      page.evaluate(
+        () =>
+          new Promise<void>((resolve) =>
+            requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+          ),
+      );
+
+    await page.mouse.move(x, y);
+    await page.mouse.down();
+    try {
+      await waitForFrames();
+      const pressed = await dialog.boundingBox();
+      if (!pressed) throw new Error('누른 직후 오류 시트의 위치를 읽지 못함');
+      expect
+        .soft(
+          Math.abs(pressed.height - start.height),
+          `누르기만 해서는 오류 시트 높이가 바뀌지 않아야 함: 시작 ${start.height}, 누른 후 ${pressed.height}`,
+        )
+        .toBeLessThan(2);
+      await page.mouse.move(x, y - 10, { steps: 2 });
+      await waitForFrames();
+      const moved = await dialog.boundingBox();
+      if (!moved) throw new Error('이동 중 오류 시트의 위치를 읽지 못함');
+      expect
+        .soft(
+          Math.abs(moved.height - (start.height + 10)),
+          `오류 시트는 10px 이동만큼 커져야 함: 시작 ${start.height}, 이동 후 ${moved.height}`,
+        )
+        .toBeLessThan(4);
+    } finally {
+      await page.mouse.up();
+    }
+  } finally {
+    failDetail = false;
+  }
+}, 60000);
+
+test('articleSheetStaysInViewportWhenResizedDuringDrag', async () => {
+  const savedDescription = article.article.description;
+
+  try {
+    article.article.description =
+      '회전 중 크기를 확인하는 긴 기사입니다. '.repeat(300);
+    const page = await openList();
+    await page.emulateMedia({ reducedMotion: 'no-preference' });
+    await page.goto(origin + '/archive');
+    await page
+      .getByRole('link', { name: article.article.title, exact: true })
+      .click();
+
+    const dialog = page.getByRole('dialog');
+    const handle = dialog.locator('button[aria-expanded]');
+    await dialog
+      .getByRole('heading', { name: article.article.title, exact: true })
+      .waitFor();
+    await dialog.evaluate(async (element) => {
+      await Promise.all(
+        element
+          .getAnimations()
+          .map((animation) => animation.finished.catch(() => undefined)),
+      );
+    });
+    const grip = await handle.boundingBox();
+    if (!grip) throw new Error('핸들의 위치를 읽지 못함');
+    const x = grip.x + grip.width / 2;
+    const y = grip.y + grip.height / 2;
+    const waitForFrames = () =>
+      page.evaluate(
+        () =>
+          new Promise<void>((resolve) =>
+            requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+          ),
+      );
+
+    await page.mouse.move(x, y);
+    await page.mouse.down();
+    try {
+      await page.mouse.move(x, y - 120, { steps: 4 });
+      await waitForFrames();
+      const before = await dialog.boundingBox();
+      if (!before) throw new Error('회전 전 시트의 위치를 읽지 못함');
+      expect(
+        before.height,
+        '가로 화면보다 높은 시트를 드래그 중',
+      ).toBeGreaterThan(320);
+
+      await page.setViewportSize({ width: 852, height: 320 });
+      await waitForFrames();
+      const rotated = await dialog.boundingBox();
+      if (!rotated) throw new Error('회전 후 시트의 위치를 읽지 못함');
+      expect
+        .soft(
+          rotated.y,
+          `회전 직후 시트 상단이 화면 밖으로 나가면 안 됨: ${rotated.y}`,
+        )
+        .toBeGreaterThanOrEqual(0);
+
+      await page.mouse.move(x, y - 160, { steps: 4 });
+      await waitForFrames();
+      const continued = await dialog.boundingBox();
+      if (!continued)
+        throw new Error('회전 후 이동 중 시트의 위치를 읽지 못함');
+      expect
+        .soft(
+          continued.y,
+          `회전 후 계속 드래그해도 상단이 화면 안에 있어야 함: ${continued.y}`,
+        )
+        .toBeGreaterThanOrEqual(0);
+    } finally {
+      await page.mouse.up();
+    }
+  } finally {
+    article.article.description = savedDescription;
+  }
+}, 60000);
+
+test('articleSheetTracksSmallPointerMovement', async () => {
+  const savedDescription = article.article.description;
+
+  try {
+    article.article.description = '작은 이동을 확인하는 긴 기사입니다. '.repeat(
+      300,
+    );
+    const page = await openList();
+    await page.emulateMedia({ reducedMotion: 'no-preference' });
+    await page.goto(origin + '/archive');
+    await page
+      .getByRole('link', { name: article.article.title, exact: true })
+      .click();
+
+    const dialog = page.getByRole('dialog');
+    const handle = dialog.locator('button[aria-expanded]');
+    await dialog
+      .getByRole('heading', { name: article.article.title, exact: true })
+      .waitFor();
+    await dialog.evaluate(async (element) => {
+      await Promise.all(
+        element
+          .getAnimations()
+          .map((animation) => animation.finished.catch(() => undefined)),
+      );
+    });
+
+    const start = await dialog.boundingBox();
+    const grip = await handle.boundingBox();
+    if (!start || !grip) throw new Error('시트 또는 핸들의 위치를 읽지 못함');
+    const x = grip.x + grip.width / 2;
+    const y = grip.y + grip.height / 2;
+
+    await page.mouse.move(x, y);
+    await page.mouse.down();
+    try {
+      const waitForFrames = () =>
+        page.evaluate(
+          () =>
+            new Promise<void>((resolve) =>
+              requestAnimationFrame(() =>
+                requestAnimationFrame(() => resolve()),
+              ),
+            ),
+        );
+      await waitForFrames();
+      const pressed = await dialog.boundingBox();
+      if (!pressed) throw new Error('누른 직후 시트의 위치를 읽지 못함');
+      const motion = await dialog.evaluate((element) => ({
+        transition: getComputedStyle(element).transitionProperty,
+        running: element
+          .getAnimations()
+          .filter((animation) => animation.playState === 'running').length,
+      }));
+      expect
+        .soft(
+          Math.abs(pressed.y - start.y),
+          `핸들을 누르기만 해서는 위치가 바뀌지 않아야 함: 시작 ${start.y}, 누른 후 ${pressed.y}, 전환 ${motion.transition}, 동작 중 ${motion.running}`,
+        )
+        .toBeLessThan(2);
+
+      await page.mouse.move(x, y - 10, { steps: 2 });
+      await waitForFrames();
+      const moved = await dialog.boundingBox();
+      if (!moved) throw new Error('이동 중 시트의 위치를 읽지 못함');
+      expect
+        .soft(
+          Math.abs(moved.y - (start.y - 10)),
+          `핸들을 놓기 전 10px 이동에도 시트가 따라와야 함: 시작 ${start.y}, 이동 후 ${moved.y}`,
+        )
+        .toBeLessThan(4);
+    } finally {
+      await page.mouse.up();
+    }
+  } finally {
+    article.article.description = savedDescription;
+  }
+}, 60000);
+
+test('articleSheetFollowsPointerBeforeRelease', async () => {
+  const savedDescription = article.article.description;
+
+  try {
+    article.article.description =
+      '드래그 검증을 위한 긴 기사 요약입니다. '.repeat(300);
+    const page = await openList();
+    await page.goto(origin + '/archive');
+    await page
+      .getByRole('link', { name: article.article.title, exact: true })
+      .click();
+
+    const dialog = page.getByRole('dialog');
+    const handle = dialog.locator('button[aria-expanded]');
+    await dialog
+      .getByRole('heading', { name: article.article.title, exact: true })
+      .waitFor();
+    await dialog.evaluate(async (element) => {
+      await Promise.all(
+        element
+          .getAnimations()
+          .map((animation) => animation.finished.catch(() => undefined)),
+      );
+    });
+
+    const start = await dialog.boundingBox();
+    const grip = await handle.boundingBox();
+    if (!start || !grip) throw new Error('시트 또는 핸들의 위치를 읽지 못함');
+    const x = grip.x + grip.width / 2;
+    const y = grip.y + grip.height / 2;
+    const nextFrames = () =>
+      page.evaluate(
+        () =>
+          new Promise<void>((resolve) =>
+            requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+          ),
+      );
+
+    await page.mouse.move(x, y);
+    await page.mouse.down();
+    try {
+      await page.mouse.move(x, y - 40, { steps: 4 });
+      await nextFrames();
+      const first = await dialog.boundingBox();
+      if (!first) throw new Error('첫 이동 중 시트의 위치를 읽지 못함');
+      expect
+        .soft(
+          Math.abs(first.y - (start.y - 40)),
+          '핸들을 놓기 전 40px 이동에 시트가 따라와야 함',
+        )
+        .toBeLessThan(8);
+
+      await page.mouse.move(x, y - 80, { steps: 4 });
+      await nextFrames();
+      const second = await dialog.boundingBox();
+      if (!second) throw new Error('두 번째 이동 중 시트의 위치를 읽지 못함');
+      expect
+        .soft(
+          Math.abs(second.y - (start.y - 80)),
+          '핸들을 놓기 전 80px 이동에 시트가 따라와야 함',
+        )
+        .toBeLessThan(8);
+    } finally {
+      await page.mouse.up();
+    }
+  } finally {
+    article.article.description = savedDescription;
+  }
+}, 60000);
+
 test('normalArticleSheetsStartHalfAndDragNearTopWithSheetOnlyAiDisclosure', async () => {
   const savedDescription = article.article.description;
   const openSheetSource = async () => {
