@@ -192,6 +192,87 @@ test('reportImagePreviewRemainsForRetryAndReleasesAfterConfirmedReceipt', async 
   expect(revoke).toHaveBeenCalledWith('blob:local-preview');
 });
 
+test('reportVideoPreviewRemainsForRetryAndReleasesAfterConfirmedReceipt', async () => {
+  const create = vi.fn(() => 'blob:local-video');
+  const revoke = vi.fn();
+  const NativeURL = URL;
+  class MockURL extends NativeURL {
+    static createObjectURL = create;
+    static revokeObjectURL = revoke;
+  }
+  vi.stubGlobal('URL', MockURL);
+  fetchMock.mockRejectedValueOnce(new TypeError('network'));
+  fetchMock.mockResolvedValueOnce(receiptResponse(200));
+  await renderReport();
+  await fillValid();
+  const videoFile = testFile('현장.webm', 'video/webm');
+  await selectFiles([videoFile]);
+  const preview = () =>
+    container.querySelector('video[src="blob:local-video"]');
+  expect(create).toHaveBeenCalledWith(videoFile);
+  expect(preview()).not.toBeNull();
+
+  await checkInput();
+  expect(container.querySelector('[role="alert"]')?.textContent).toContain(
+    '접수 여부를 확인하지 못했어요',
+  );
+  expect(field('title').value).toBe('도로 점검 제보');
+  expect(
+    container.querySelector('button[aria-label="현장.webm 삭제"]'),
+  ).not.toBeNull();
+  expect(preview()).not.toBeNull();
+  expect(revoke).not.toHaveBeenCalledWith('blob:local-video');
+  const first = fetchMock.mock.calls[0][1];
+  assert(first?.body instanceof FormData);
+  expect(first.body.getAll('attachments')).toEqual([videoFile]);
+  const requestKey = new Headers(first.headers).get('Idempotency-Key');
+  expect(requestKey).toBeTruthy();
+
+  await checkInput();
+  const retry = fetchMock.mock.calls[1][1];
+  assert(retry?.body instanceof FormData);
+  expect(retry.body.getAll('attachments')).toEqual([videoFile]);
+  expect(new Headers(retry.headers).get('Idempotency-Key')).toBe(requestKey);
+  expect(container.querySelector('[role="status"]')?.textContent).toContain(
+    receipt.report_id,
+  );
+  expect(preview()).toBeNull();
+  expect(revoke).toHaveBeenCalledTimes(1);
+  expect(revoke).toHaveBeenCalledWith('blob:local-video');
+});
+
+test('reportVideoPreviewReleasesItsObjectUrlWhenRemoved', async () => {
+  const create = vi.fn(() => 'blob:local-video');
+  const revoke = vi.fn();
+  const NativeURL = URL;
+  class MockURL extends NativeURL {
+    static createObjectURL = create;
+    static revokeObjectURL = revoke;
+  }
+  vi.stubGlobal('URL', MockURL);
+  await renderReport();
+  const file = testFile('현장.webm', 'video/webm');
+  await selectFiles([file]);
+  expect(create).toHaveBeenCalledWith(file);
+  const preview = container.querySelector<HTMLVideoElement>(
+    'video[src="blob:local-video"]',
+  );
+  assert(preview);
+  expect(preview.autoplay).toBe(false);
+  expect(preview.muted).toBe(true);
+  expect(preview.getAttribute('preload')).toBe('metadata');
+  expect(container.textContent).toContain('현장.webm');
+  expect(fetchMock).not.toHaveBeenCalled();
+  await act(async () => preview.dispatchEvent(new Event('error')));
+  const remove = container.querySelector('button[aria-label="현장.webm 삭제"]');
+  assert(remove instanceof HTMLButtonElement);
+  expect(container.textContent).toContain('현장.webm');
+  await act(async () => remove.click());
+  expect(container.querySelector('video[src="blob:local-video"]')).toBeNull();
+  expect(revoke).toHaveBeenCalledWith('blob:local-video');
+  expect(fetchMock).not.toHaveBeenCalled();
+});
+
 test('reportImagePreviewReleasesItsObjectUrlWhenRemoved', async () => {
   const create = vi.fn(() => 'blob:local-preview');
   const revoke = vi.fn();

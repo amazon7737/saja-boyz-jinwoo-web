@@ -11,6 +11,7 @@ import { LoadingSpinner } from '@/components/feedback/loading-spinner';
 import { categoryLabels } from '@/features/incidents/model/labels';
 
 import { ReportImagePreview } from './report-image-preview';
+import { ReportVideoPreview } from './report-video-preview';
 
 const requiredFields = [
   'category',
@@ -546,9 +547,12 @@ export default function ReportPage() {
                     className="flex items-center justify-between gap-2"
                   >
                     <div className="flex min-w-0 items-center gap-3">
-                      {!confirmedReportId && file.type.startsWith('image/') && (
-                        <ReportImagePreview file={file} />
-                      )}
+                      {!confirmedReportId &&
+                        (file.type.startsWith('image/') ? (
+                          <ReportImagePreview file={file} />
+                        ) : (
+                          <ReportVideoPreview file={file} />
+                        ))}
                       <span className="min-w-0 [overflow-wrap:anywhere]">
                         {file.name}
                       </span>
