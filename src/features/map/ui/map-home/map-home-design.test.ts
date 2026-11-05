@@ -353,7 +353,6 @@ test('mapUnavailableFiltersExplainMissingMetadataAndCloseAccessibly', async () =
   await mount([item(1)]);
   for (const [label, explanation, options] of [
     ['카테고리', '분류 정보 미제공', ['사회', '안보', '정치', '국제']],
-    ['상태', '상태 정보 미제공', ['진행 중', '공론화 성공', '종결']],
   ] as const) {
     const trigger = button(label);
     trigger.focus();
@@ -407,7 +406,7 @@ test('mapAllFiltersApplyOrDiscardDraftAndReset', async () => {
   let panel = document.querySelector('[role="dialog"][aria-label="전체 필터"]');
   assert(panel);
   expect(panel.textContent).toContain('카테고리');
-  expect(panel.textContent).toContain('상태');
+  expect(panel.textContent).not.toContain('상태');
   await click('최근 24시간', panel);
   expect(carousel().querySelectorAll('a[href^="/incidents/"]')).toHaveLength(2);
   await click('필터 닫기', panel);
@@ -448,4 +447,74 @@ test('mapFilteredEmptyAndApiFailureKeepRecoveryAndLocation', async () => {
   expect(failed.active.size).toBe(0);
   expect(button('내 위치').disabled).toBe(false);
   expect(button('기사 위치 다시 불러오기')).toBeDefined();
+});
+
+test('mapFiltersKeepPeriodAndCategoryWithoutStatus', async () => {
+  const fixture = await mount([item(1, 0.5), item(2, 8)]);
+  const toolbar = host.querySelector('[role="group"][aria-label="기사 필터"]');
+  assert(toolbar, '지도 필터 영역이 있어야 합니다');
+
+  expect(button('전체 필터', toolbar).disabled).toBe(false);
+  expect(button('기간', toolbar).disabled).toBe(false);
+  expect(button('카테고리', toolbar).disabled).toBe(false);
+  expect
+    .soft(
+      toolbar.querySelector('button[aria-label="상태"]'),
+      '지도 상단에 상태 필터가 없어야 합니다',
+    )
+    .toBeNull();
+
+  await click('카테고리', toolbar);
+  const categoryPopup = toolbar.querySelector('[aria-label="카테고리 선택"]');
+  assert(categoryPopup, '카테고리 선택 영역이 있어야 합니다');
+  expect(button('전체', categoryPopup).getAttribute('aria-pressed')).toBe(
+    'true',
+  );
+  for (const option of ['사회', '안보', '정치', '국제']) {
+    expect(button(option, categoryPopup).disabled).toBe(true);
+  }
+  await click('전체', categoryPopup);
+
+  await click('기간', toolbar);
+  await click('최근 24시간', toolbar);
+  expect(carousel().querySelectorAll('a[href^="/incidents/"]')).toHaveLength(1);
+  expect(
+    [...fixture.active].map((marker) => marker.content.textContent),
+  ).toEqual(['1']);
+
+  const trigger = button('전체 필터', toolbar);
+  await click('전체 필터', toolbar);
+  const panel = document.querySelector(
+    '[role="dialog"][aria-label="전체 필터"]',
+  );
+  assert(panel, '전체 필터 시트가 있어야 합니다');
+  const fields = Array.from(panel.querySelectorAll('fieldset'));
+  const legend = (field: Element) =>
+    field.querySelector('legend')?.textContent?.trim() ?? '';
+  const period = fields.find((field) => legend(field).startsWith('기간'));
+  const category = fields.find((field) => legend(field) === '카테고리');
+  assert(period, '기간 선택 영역이 있어야 합니다');
+  assert(category, '카테고리 선택 영역이 있어야 합니다');
+  expect
+    .soft(
+      fields.find((field) => legend(field) === '상태'),
+      '전체 필터 시트에 상태 항목이 없어야 합니다',
+    )
+    .toBeUndefined();
+  expect(button('최근 24시간', period).getAttribute('aria-pressed')).toBe(
+    'true',
+  );
+  expect(button('전체', category).getAttribute('aria-pressed')).toBe('true');
+  for (const option of ['사회', '안보', '정치', '국제']) {
+    expect(button(option, category).disabled).toBe(true);
+  }
+
+  await click('전체 기간', period);
+  await click('필터 적용하기', panel);
+  expect(document.activeElement).toBe(trigger);
+  expect(carousel().querySelectorAll('a[href^="/incidents/"]')).toHaveLength(2);
+  expect(fixture.created).toHaveBeenCalledTimes(1);
+  expect(fixture.destroy).not.toHaveBeenCalled();
+  expect(fixture.setCenter).not.toHaveBeenCalled();
+  expect(fixture.setZoom).not.toHaveBeenCalled();
 });

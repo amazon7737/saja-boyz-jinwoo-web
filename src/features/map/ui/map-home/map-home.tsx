@@ -767,7 +767,6 @@ export function MapHome({
           <MapAllFilters value={period} onChange={applyPeriod} />
           <MapPeriodFilter value={period} onChange={applyPeriod} />
           <MapUnavailableFilter kind="category" />
-          <MapUnavailableFilter kind="status" />
         </div>
         <div ref={canvas} className="h-dvh overflow-hidden" />
         <div

@@ -186,11 +186,6 @@ function FilterSheet({
           explanation="분류 정보 미제공"
           options={['사회', '안보', '정치', '국제']}
         />
-        <UnavailableOptions
-          label="상태"
-          explanation="상태 정보 미제공"
-          options={['진행 중', '공론화 성공', '종결']}
-        />
         <footer className="flex gap-2 border-0 border-t border-solid border-border pt-4">
           <button
             type="button"
@@ -246,12 +241,7 @@ function UnavailableOptions({
           </button>
         ))}
       </div>
-      <p
-        id={explanationId}
-        className={
-          label === '카테고리' ? 'sr-only' : 'm-0 mt-2 text-xs text-muted'
-        }
-      >
+      <p id={explanationId} className="sr-only">
         {explanation}
       </p>
     </fieldset>

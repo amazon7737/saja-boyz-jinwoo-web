@@ -10,7 +10,7 @@ function visualClasses(element: Element, ignore: (value: string) => boolean) {
   return [...element.classList].filter((value) => !ignore(value)).sort();
 }
 
-test('periodCategoryAndStatusShareDropdownStylesAndRetainDisabledChoices', async () => {
+test('periodAndCategoryShareDropdownStylesAndRetainDisabledChoices', async () => {
   vi.stubGlobal('IS_REACT_ACT_ENVIRONMENT', true);
   const change = vi.fn();
   const host = document.createElement('div');
@@ -24,14 +24,13 @@ test('periodCategoryAndStatusShareDropdownStylesAndRetainDisabledChoices', async
           null,
           createElement(MapPeriodFilter, { value: 'all', onChange: change }),
           createElement(MapUnavailableFilter, { kind: 'category' }),
-          createElement(MapUnavailableFilter, { kind: 'status' }),
         ),
       ),
     );
     let panelStyle: string[] | undefined;
     let selectedStyle: string[] | undefined;
     let triggerStyle: string[] | undefined;
-    for (const label of ['기간', '카테고리', '상태']) {
+    for (const label of ['기간', '카테고리']) {
       const trigger = host.querySelector<HTMLButtonElement>(
         `button[aria-label="${label}"]`,
       );
