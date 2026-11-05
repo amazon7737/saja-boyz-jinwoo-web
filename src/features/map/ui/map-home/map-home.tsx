@@ -203,6 +203,8 @@ export function MapHome({
     const viewport = restoreMapViewport(clientId);
     let disposed = false;
     let loadFailed = false;
+    let viewportUnavailable = false;
+    let hasUsableViewport = false;
     let map: MapInstance | undefined;
     let marker: MarkerInstance | undefined;
     let selectedMarker: HTMLButtonElement | undefined;
@@ -356,12 +358,17 @@ export function MapHome({
         ?.maps;
 
       if (!disposed && !loadFailed && map && maps && canvas.current) {
-        map.setSize(
-          new maps.Size(
-            canvas.current.clientWidth,
-            canvas.current.clientHeight,
-          ),
-        );
+        const { clientWidth, clientHeight } = canvas.current;
+
+        if (!clientWidth || !clientHeight) {
+          viewportUnavailable = true;
+
+          return;
+        }
+
+        viewportUnavailable = false;
+        hasUsableViewport = true;
+        map.setSize(new maps.Size(clientWidth, clientHeight));
         positionControls();
         refreshDisplay?.();
       }
@@ -456,6 +463,15 @@ export function MapHome({
       updateArticles.current = (items) => {
         if (disposed || loadFailed || !map) return;
         currentItems = items;
+
+        if (canvas.current?.clientWidth && canvas.current.clientHeight) {
+          hasUsableViewport = true;
+        } else if (hasUsableViewport) {
+          viewportUnavailable = true;
+        }
+
+        if (viewportUnavailable) return;
+
         const groups = groupMapArticles(items);
 
         const projection = map.getProjection?.();
