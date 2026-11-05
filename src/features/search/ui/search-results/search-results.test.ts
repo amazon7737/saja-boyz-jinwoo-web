@@ -312,3 +312,61 @@ test('searchMoreResetsOnKeywordChangeAndIgnoresLatePages', async () => {
     container.querySelector('section[aria-label="최근 검색"]'),
   ).not.toBeNull();
 });
+// Append to search-results.test.ts; this uses the existing API mock and mount.
+test('searchResultsShowOnlyTheSelectedArticlesSafeImages', async () => {
+  const first = {
+    ...article(1),
+    image_status: 'ready',
+    image_url: `/images/${article(1).article_id}.jpg`,
+    article: {
+      ...article(1).article,
+      title: 'AI 지역 보도',
+      description: 'Ai 기사 요약',
+    },
+  };
+  const unsafe = {
+    ...article(2),
+    image_status: 'ready',
+    image_url: 'https://untrusted.example.invalid/image.jpg',
+  };
+  const unavailable = {
+    ...article(3),
+    image_status: 'disabled',
+    image_url: `/images/${article(3).article_id}.jpg`,
+  };
+  request.mockResolvedValueOnce(
+    Response.json({ total: 3, items: [first, unsafe, unavailable] }),
+  );
+  await mount('ai');
+
+  const cards = container.querySelectorAll('article');
+  expect(cards).toHaveLength(3);
+  const image = cards[0].querySelector<HTMLImageElement>('img');
+  expect(image?.getAttribute('src')).toBe(
+    `https://news.example.invalid/images/${first.article_id}.jpg`,
+  );
+  expect(image?.getAttribute('alt')).toBe('');
+  expect(image?.getAttribute('width')).toBe('60');
+  expect(image?.getAttribute('height')).toBe('60');
+  expect(cards[0].querySelector('h2 mark')?.textContent).toBe('AI');
+  expect(cards[0].querySelector('article > p mark')?.textContent).toBe('Ai');
+  expect(cards[0].querySelector('h2 a')?.getAttribute('href')).toBe(
+    `/incidents/${first.article_id}`,
+  );
+  expect(cards[0].textContent).toContain(first.article.description);
+  expect(cards[0].querySelector('figcaption')).toBeNull();
+
+  for (const card of [cards[1], cards[2]]) {
+    expect(card.querySelector('img')).toBeNull();
+    expect(card.textContent).toContain('이미지 없음');
+  }
+  expect(container.querySelector('img[src^="https://untrusted"]')).toBeNull();
+
+  await act(async () => image!.dispatchEvent(new Event('error')));
+  expect(cards[0].querySelector('img')).toBeNull();
+  expect(cards[0].textContent).toContain('이미지 없음');
+  expect(cards[0].querySelector('h2 a')?.getAttribute('href')).toBe(
+    `/incidents/${first.article_id}`,
+  );
+  expect(cards[0].textContent).toContain(first.article.description);
+});
