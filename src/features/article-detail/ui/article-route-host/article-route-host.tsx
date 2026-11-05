@@ -45,6 +45,7 @@ export function ArticleRouteHost({
   const listScroll = useRef(0);
   const previousInline = useRef(false);
   const opener = useRef<HTMLElement | null>(null);
+  const detailFocus = useRef<'back' | 'close' | null>(null);
   const previousActive = useRef(false);
   const [height, setMeasuredHeight] = useState(0);
   const setHeight = useCallback((height: number) => {
@@ -66,6 +67,8 @@ export function ArticleRouteHost({
   const retry = useCallback(() => router.refresh(), [router]);
 
   useEffect(() => {
+    if (previousActive.current && !active) detailFocus.current = null;
+
     if (previousActive.current && !active && opener.current?.isConnected) {
       opener.current.focus({ preventScroll: true });
     }
@@ -112,6 +115,7 @@ export function ArticleRouteHost({
     () => ({
       active,
       sourcePath,
+      detailFocus,
       height,
       mapArticles,
       openArticle,

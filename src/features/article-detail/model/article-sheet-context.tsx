@@ -5,6 +5,7 @@ import { createContext, useContext } from 'react';
 import type { LocatedArticle } from '@/features/map/model/map-article.types';
 
 export type ArticleSheetRoute = {
+  detailFocus?: { current: 'back' | 'close' | null };
   active: boolean;
   sourcePath: string;
   height: number;

@@ -670,6 +670,86 @@ test('searchDetailBackLinkKeepsTheOriginalSearchQuery', async () => {
   }
 }, 120000);
 
+test('detailResponseKeepsKeyboardFocusOnItsBackControl', async () => {
+  const releaseDetails = (status: 200 | 503) => {
+    holdDetails = false;
+    failDetail = status === 503;
+    for (const response of waitingDetails.splice(0)) {
+      if (!response.destroyed) {
+        response
+          .writeHead(status)
+          .end(
+            status === 200
+              ? JSON.stringify(article)
+              : '{"error":"QA_PRIVATE_DETAIL"}',
+          );
+      }
+    }
+  };
+
+  try {
+    for (const status of [200, 503] as const) {
+      failDetail = false;
+      const page = await openList();
+      const opener = page.getByRole('link', {
+        name: article.article.title,
+        exact: true,
+      });
+      holdDetails = true;
+      try {
+        await opener.click();
+        await expect
+          .poll(() => waitingDetails.length, { timeout: 5000 })
+          .toBeGreaterThan(0);
+        const detail = page.locator('[data-article-inline]');
+        await detail
+          .locator('[role="status"][aria-busy="true"]')
+          .waitFor({ state: 'visible' });
+        // 초기 포커스 위치를 명시하고 Tab으로 헤더 제어에 진입한다.
+        await detail.focus();
+        await page.keyboard.press('Tab');
+        const backLink = detail
+          .getByRole('navigation', { name: '기사 상세 탐색' })
+          .locator('a')
+          .first();
+        expect(
+          await backLink.evaluate((node) => node === document.activeElement),
+        ).toBe(true);
+
+        releaseDetails(status);
+        if (status === 200) {
+          await detail
+            .getByRole('heading', { name: article.article.title, exact: true })
+            .waitFor();
+        } else {
+          await detail
+            .getByText('기사를 불러오지 못했어요', { exact: true })
+            .waitFor();
+        }
+        // 로딩과 본문의 DOM이 교체되더라도 같은 사용자 제어를 유지해야 한다.
+        await expect
+          .poll(() =>
+            backLink.evaluate((node) => node === document.activeElement),
+          )
+          .toBe(true);
+        await page.keyboard.press('Enter');
+        await page.waitForURL((url) => url.pathname === '/incidents');
+        await expect
+          .poll(() =>
+            opener.evaluate((node) => node === document.activeElement),
+          )
+          .toBe(true);
+      } finally {
+        releaseDetails(200);
+        await page.close();
+      }
+    }
+  } finally {
+    releaseDetails(200);
+    failDetail = false;
+  }
+}, 120000);
+
 test('searchResultFocusStaysAboveNavigationAndReturnsToItsOpener', async () => {
   listArticles = [
     article,

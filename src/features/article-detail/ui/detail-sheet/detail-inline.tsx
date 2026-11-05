@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useRef, type ReactNode } from 'react';
+import { useLayoutEffect, useRef, type ReactNode } from 'react';
 
 import { useArticleSheetRoute } from '../../model/article-sheet-context';
 
@@ -17,9 +17,31 @@ export function DetailInline({
   const route = useArticleSheetRoute();
   const panel = useRef<HTMLElement>(null);
 
-  useEffect(() => {
-    panel.current?.focus({ preventScroll: true });
-  }, []);
+  const detailFocus = route?.detailFocus;
+
+  useLayoutEffect(() => {
+    const element = panel.current;
+    const control = detailFocus?.current;
+    const target = control
+      ? element?.querySelector<HTMLElement>(
+          `[data-article-control="${control}"]`,
+        )
+      : null;
+
+    (target ?? element)?.focus({ preventScroll: true });
+
+    return () => {
+      if (!detailFocus) return;
+      const focused = document.activeElement;
+      const value =
+        focused instanceof HTMLElement && element?.contains(focused)
+          ? focused.dataset.articleControl
+          : undefined;
+
+      detailFocus.current =
+        value === 'back' || value === 'close' ? value : null;
+    };
+  }, [detailFocus]);
 
   return (
     <section
@@ -40,6 +62,7 @@ export function DetailInline({
         className="flex items-center justify-between border-0 border-b border-solid border-border px-4 py-3"
       >
         <Link
+          data-article-control="back"
           href={route?.active ? route.sourcePath : '/incidents'}
           scroll={false}
           aria-label={
@@ -68,6 +91,7 @@ export function DetailInline({
           사건 상세
         </Link>
         <Link
+          data-article-control="close"
           href="/"
           aria-label="닫기"
           className="ui-control grid size-11 place-items-center rounded-lg text-2xl text-text"
