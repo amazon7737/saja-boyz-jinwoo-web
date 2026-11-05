@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 import { useLayoutEffect, useRef, type ReactNode } from 'react';
 
@@ -96,7 +97,12 @@ export function DetailInline({
           aria-label="닫기"
           className="ui-control grid size-11 place-items-center rounded-lg text-2xl text-text"
         >
-          <span aria-hidden="true">×</span>
+          <Image
+            src="/article-detail/header-close.svg"
+            alt=""
+            width={24}
+            height={24}
+          />
         </Link>
       </nav>
       <div className="flex flex-1 flex-col gap-4 p-4">{children}</div>

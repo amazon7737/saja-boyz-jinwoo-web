@@ -2763,3 +2763,58 @@ test('searchInputCanClearDraftAndSubmitAfterComposition', async () => {
       url.pathname === '/search' && url.searchParams.get('q') === '서울 & 화재',
   );
 }, 120000);
+
+test('detailCloseIconKeepsAccessibleHitTargetAndReturnsToMap', async () => {
+  for (const entry of ['list', 'direct']) {
+    const page = await openList();
+
+    if (entry === 'list') {
+      await page
+        .getByRole('link', { name: article.article.title, exact: true })
+        .click();
+    } else {
+      await page.goto(origin + '/incidents/' + id);
+    }
+
+    const detail = page.locator('[data-article-inline]');
+    await detail
+      .getByRole('heading', { level: 1, name: article.article.title })
+      .waitFor();
+    const close = detail.getByRole('link', { name: '닫기', exact: true });
+    const icon = close.locator('img');
+    expect(await close.getAttribute('href')).toBe('/');
+    expect(await icon.getAttribute('alt')).toBe('');
+    expect(await icon.getAttribute('src')).toBe(
+      '/article-detail/header-close.svg',
+    );
+    const geometry = await close.evaluate((node) => {
+      const link = node.getBoundingClientRect();
+      const img = node.querySelector('img')!.getBoundingClientRect();
+      const hit = document.elementFromPoint(
+        link.left + link.width / 2,
+        link.top + link.height / 2,
+      );
+      return {
+        width: link.width,
+        height: link.height,
+        iconWidth: img.width,
+        iconHeight: img.height,
+        hit: hit === node || node.contains(hit),
+      };
+    });
+    expect(geometry.width).toBeGreaterThanOrEqual(44);
+    expect(geometry.height).toBeGreaterThanOrEqual(44);
+    expect(geometry.iconWidth).toBeCloseTo(24, 0);
+    expect(geometry.iconHeight).toBeCloseTo(24, 0);
+    expect(geometry.hit).toBe(true);
+    await close.focus();
+    expect(
+      await close.evaluate((node) => node === document.activeElement),
+    ).toBe(true);
+    await Promise.all([
+      page.waitForURL((url) => url.pathname === '/'),
+      close.click(),
+    ]);
+    await page.close();
+  }
+}, 120000);

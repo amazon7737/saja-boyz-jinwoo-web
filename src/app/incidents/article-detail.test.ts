@@ -203,7 +203,9 @@ test('articleDetailImageFailure', async () => {
   assert(image);
   await act(async () => image.dispatchEvent(new Event('error')));
   expect(
-    container.querySelector('img:not([src="/figma/preview-date.svg"])'),
+    container.querySelector(
+      'img:not([src="/figma/preview-date.svg"]):not([src="/article-detail/header-close.svg"])',
+    ),
   ).toBeNull();
   expect(container.textContent).toContain('이미지 없음');
   expect(container.textContent).not.toContain('AI로 생성된 이미지입니다.');
@@ -384,7 +386,9 @@ test('articleDetailSafePresentation', async () => {
     );
     const view = await detailMarkup();
     expect(
-      view.querySelector('img:not([src="/figma/preview-date.svg"])'),
+      view.querySelector(
+        'img:not([src="/figma/preview-date.svg"]):not([src="/article-detail/header-close.svg"])',
+      ),
     ).toBeNull();
     expect(view.textContent).toContain('이미지 없음');
     expect(view.textContent).not.toContain('AI로 생성된 이미지입니다.');
@@ -415,7 +419,7 @@ test('articleDetailSafePresentation', async () => {
     expect(view.textContent).toContain('"확인"');
     expect(
       view.querySelector(
-        'script:not([type="application/ld+json"]), img, b, time',
+        'script:not([type="application/ld+json"]), img:not([src="/article-detail/header-close.svg"]), b, time',
       ),
     ).toBeNull();
     expect(

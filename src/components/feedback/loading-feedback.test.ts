@@ -29,10 +29,19 @@ test('loadingFeedbackUsesDecorativeSkeletonsAndCompactAccessibleSpinners', () =>
     expect(statuses[0].textContent).toContain(label);
     expect(statuses[0].querySelector('[aria-hidden="true"]')).not.toBeNull();
     expect(statuses[0].querySelector('article, a, button, img')).toBeNull();
-    expect(host.querySelector('article, img')).toBeNull();
-    if (Component === ArticleDetailLoading)
-      expect(host.querySelector('a[aria-label="닫기"]')).not.toBeNull();
-    else expect(host.querySelector('a, button')).toBeNull();
+    expect(host.querySelector('article')).toBeNull();
+    if (Component === ArticleDetailLoading) {
+      const close = host.querySelector('a[aria-label="닫기"]');
+      expect(close).not.toBeNull();
+      const images = host.querySelectorAll('img');
+      expect(images).toHaveLength(1);
+      expect(images[0].getAttribute('src')).toBe(
+        '/article-detail/header-close.svg',
+      );
+      expect(close?.contains(images[0])).toBe(true);
+    } else {
+      expect(host.querySelector('a, button, img')).toBeNull();
+    }
     expect(host.textContent).not.toMatch(/없어요|못했어요/);
   }
 

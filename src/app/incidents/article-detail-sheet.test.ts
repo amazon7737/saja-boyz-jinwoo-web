@@ -373,3 +373,42 @@ test('directArticlePageMovesFocusWithoutLockingScroll', async () => {
     vi.unstubAllEnvs();
   }
 });
+
+// Add to article-detail-sheet.test.ts. Tests the real server-rendered control
+// and the committed asset; it does not depend on a CSS class or /tmp file.
+test('detailCloseUsesAccessibleFigmaIcon', async () => {
+  const { readFile } = await import('node:fs/promises');
+  const { createElement } = await import('react');
+  const { DetailInline } =
+    await import('@/features/article-detail/ui/detail-sheet/detail-inline');
+  const view = document.createElement('div');
+  view.innerHTML = renderToStaticMarkup(
+    createElement(
+      DetailInline,
+      { titleId: 'heading' },
+      createElement('h1', { id: 'heading' }, '기사 상세'),
+    ),
+  );
+  const link = view.querySelector<HTMLAnchorElement>(
+    'nav[aria-label="기사 상세 탐색"] a[aria-label="닫기"]',
+  );
+  expect(link?.getAttribute('href')).toBe('/');
+  const image = link?.querySelector<HTMLImageElement>('img');
+  expect(image?.getAttribute('src')).toBe('/article-detail/header-close.svg');
+  expect(image?.getAttribute('alt')).toBe('');
+  expect(image?.getAttribute('width')).toBe('24');
+  expect(image?.getAttribute('height')).toBe('24');
+
+  const svgText = await readFile(
+    'public/article-detail/header-close.svg',
+    'utf8',
+  );
+  const svg = new DOMParser().parseFromString(svgText, 'image/svg+xml');
+  expect(svg.querySelector('parsererror')).toBeNull();
+  expect(svg.documentElement.getAttribute('viewBox')).toBe('0 0 24 24');
+  expect(svg.documentElement.getAttribute('width')).toBe('24');
+  expect(svg.documentElement.getAttribute('height')).toBe('24');
+  expect(
+    [...svg.querySelectorAll('path')].map((path) => path.getAttribute('d')),
+  ).toEqual(['M6 6L18 18', 'M18 6L6 18']);
+});
