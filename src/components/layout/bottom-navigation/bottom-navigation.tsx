@@ -18,13 +18,16 @@ export function BottomNavigation({ pathname }: { pathname: string }) {
         aria-current={mapCurrent}
         className={`${tabClassName} ${mapCurrent ? 'text-brand' : 'text-[#94a3b8]'}`}
       >
-        {isList ? (
-          <span aria-hidden="true" className="text-[18px]/[normal] font-normal">
-            🗺️
-          </span>
-        ) : (
-          <Image src="/navigation/map-pin.svg" alt="" width={22} height={22} />
-        )}
+        <Image
+          src={
+            mapCurrent
+              ? '/navigation/map-active.svg'
+              : '/navigation/map-inactive.svg'
+          }
+          alt=""
+          width={20}
+          height={20}
+        />
         <span>지도</span>
       </Link>
       <Link
@@ -32,16 +35,23 @@ export function BottomNavigation({ pathname }: { pathname: string }) {
         aria-label="제보하기"
         className="ui-control ui-primary flex size-[54px] shrink-0 items-center justify-center rounded-full bg-brand text-[22px]/[normal] text-white shadow-[0_6px_8px_rgba(232,26,43,0.35)]"
       >
-        <span aria-hidden="true">📢</span>
+        <Image src="/navigation/report.svg" alt="" width={24} height={24} />
       </Link>
       <Link
         href="/incidents"
         aria-current={isList ? 'page' : undefined}
         className={`${tabClassName} ${isList ? 'text-brand' : 'text-[#94a3b8]'}`}
       >
-        <span aria-hidden="true" className="text-[18px]/[normal] font-normal">
-          ≡
-        </span>
+        <Image
+          src={
+            isList
+              ? '/navigation/list-active.svg'
+              : '/navigation/list-inactive.svg'
+          }
+          alt=""
+          width={20}
+          height={20}
+        />
         <span>목록</span>
       </Link>
     </nav>

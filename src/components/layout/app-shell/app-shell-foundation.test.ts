@@ -153,3 +153,55 @@ test('foundationUnconnectedArticleFiltersCannotPretendToFilter', async () => {
     expect(host.querySelector('[aria-label="기사 필터"]')).toBeNull();
   });
 });
+
+test('foundationNavigationDisplaysFigmaIconsForEachDestination', async () => {
+  for (const [route, mapIcon, listIcon, currentHref, currentValue] of [
+    ['/', 'map-active.svg', 'list-inactive.svg', '/', 'page'],
+    ['/search', 'map-active.svg', 'list-inactive.svg', '/', 'location'],
+    ['/incidents', 'map-inactive.svg', 'list-active.svg', '/incidents', 'page'],
+  ] as const) {
+    await withShell(route, (host) => {
+      const nav = host.querySelector('nav[aria-label="주 메뉴"]');
+      assert(nav);
+
+      for (const [href, name, icon, size] of [
+        ['/', '지도', mapIcon, 20],
+        ['/report', '제보하기', 'report.svg', 24],
+        ['/incidents', '목록', listIcon, 20],
+      ] as const) {
+        const link = nav.querySelector<HTMLAnchorElement>(`a[href="${href}"]`);
+        assert(link, `${route}: ${name} 링크`);
+        expect(
+          link.getAttribute('aria-label') ?? link.textContent?.trim(),
+        ).toBe(name);
+        const images = link.querySelectorAll('img');
+        expect(images, `${route}: ${name} 아이콘`).toHaveLength(1);
+        const img = images[0];
+        const src = `/navigation/${icon}`;
+        expect(img.getAttribute('src')).toBe(src);
+        expect(img.getAttribute('alt')).toBe('');
+        expect(img.getAttribute('width')).toBe(String(size));
+        expect(img.getAttribute('height')).toBe(String(size));
+        expect(link.getAttribute('aria-current')).toBe(
+          href === currentHref ? currentValue : null,
+        );
+
+        const file = resolve(process.cwd(), `public${src}`);
+        expect(existsSync(file), `${route}: ${name} 원본 파일`).toBe(true);
+        const svg = new DOMParser().parseFromString(
+          readFileSync(file, 'utf8'),
+          'image/svg+xml',
+        );
+        expect(svg.querySelector('parsererror')).toBeNull();
+        expect(svg.documentElement.localName).toBe('svg');
+        expect(svg.documentElement.getAttribute('width')).toBe(String(size));
+        expect(svg.documentElement.getAttribute('height')).toBe(String(size));
+        expect(svg.documentElement.getAttribute('viewBox')).toBe(
+          `0 0 ${size} ${size}`,
+        );
+      }
+
+      expect(nav.querySelectorAll('a[aria-current]')).toHaveLength(1);
+    });
+  }
+});
