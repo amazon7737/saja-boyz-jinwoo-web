@@ -184,7 +184,7 @@ function FilterSheet({
         <UnavailableOptions
           label="카테고리"
           explanation="분류 정보 미제공"
-          options={['사회', '안보', '정치', '국제']}
+          options={['안보', '사회', '정치', '국제']}
         />
         <footer className="flex gap-2 border-0 border-t border-solid border-border pt-4">
           <button

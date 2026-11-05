@@ -518,3 +518,37 @@ test('mapFiltersKeepPeriodAndCategoryWithoutStatus', async () => {
   expect(fixture.setCenter).not.toHaveBeenCalled();
   expect(fixture.setZoom).not.toHaveBeenCalled();
 });
+
+test('mapCategoryOptionsFollowFigmaOrderInBothFilters', async () => {
+  await mount([item(1)]);
+  const expected = ['전체', '안보', '사회', '정치', '국제'];
+  const labels = (within: Element) =>
+    Array.from(within.querySelectorAll<HTMLButtonElement>('button')).map(
+      (item) => item.textContent?.trim(),
+    );
+
+  await click('카테고리');
+  const popup = document.querySelector('[aria-label="카테고리 선택"]');
+  assert(popup);
+  expect.soft(labels(popup), '지도 상단 카테고리 순서').toEqual(expected);
+  expect(button('전체', popup).getAttribute('aria-pressed')).toBe('true');
+  for (const label of expected.slice(1)) {
+    expect(button(label, popup).disabled).toBe(true);
+  }
+  await click('전체', popup);
+
+  await click('전체 필터');
+  const panel = document.querySelector(
+    '[role="dialog"][aria-label="전체 필터"]',
+  );
+  assert(panel);
+  const category = Array.from(panel.querySelectorAll('fieldset')).find(
+    (field) => field.querySelector('legend')?.textContent === '카테고리',
+  );
+  assert(category);
+  expect.soft(labels(category), '전체 필터 카테고리 순서').toEqual(expected);
+  expect(button('전체', category).getAttribute('aria-pressed')).toBe('true');
+  for (const label of expected.slice(1)) {
+    expect(button(label, category).disabled).toBe(true);
+  }
+});

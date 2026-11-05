@@ -10,7 +10,7 @@ const filters = {
   category: {
     label: '카테고리',
     explanation: '분류 정보 미제공',
-    options: ['사회', '안보', '정치', '국제'],
+    options: ['안보', '사회', '정치', '국제'],
   },
 };
 
