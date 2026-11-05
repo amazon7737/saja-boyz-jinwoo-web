@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { createPortal } from 'react-dom';
+import { useId, useState } from 'react';
 
 import { IconText } from '@/components/ui/icon-text/icon-text';
 import { DetailSheet } from '@/features/article-detail/ui/detail-sheet/detail-sheet';
@@ -29,21 +30,24 @@ export function MapArticleSheet({
   active?: boolean;
 }) {
   const route = useArticleSheetRoute();
+  const titleId = useId();
+  const [previewId, setPreviewId] = useState<string | null>(null);
+  const preview =
+    items.length > 1
+      ? items.find((item) => item.article_id === previewId)
+      : undefined;
 
-  return createPortal(
+  const sheet = (
     <DetailSheet
-      titleId="selected-map-articles"
+      titleId={titleId}
       label="선택한 기사"
       initialExpanded={false}
       onClose={onClose}
       closeLabel="기사 선택 닫기"
       onHeightChange={onHeightChange}
-      active={active}
+      active={active && !preview}
     >
-      <h1
-        id="selected-map-articles"
-        className="m-0 text-sm font-bold text-muted"
-      >
+      <h1 id={titleId} className="m-0 text-sm font-bold text-muted">
         선택한 위치의 기사 {items.length}건
       </h1>
       {items.map((item) => {
@@ -82,7 +86,7 @@ export function MapArticleSheet({
 
                     event.preventDefault();
                     event.currentTarget.focus({ preventScroll: true });
-                    route.openArticle(item.article_id);
+                    setPreviewId(item.article_id);
                   }}
                 >
                   {articleText(item.article.title)}
@@ -155,7 +159,21 @@ export function MapArticleSheet({
           </article>
         );
       })}
-    </DetailSheet>,
-    document.body,
+    </DetailSheet>
+  );
+
+  return (
+    <>
+      {createPortal(sheet, document.body)}
+      {preview && (
+        <MapArticleSheet
+          items={[preview]}
+          apiOrigin={apiOrigin}
+          active={active}
+          onHeightChange={onHeightChange}
+          onClose={() => setPreviewId(null)}
+        />
+      )}
+    </>
   );
 }

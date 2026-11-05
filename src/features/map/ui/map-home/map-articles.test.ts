@@ -575,13 +575,24 @@ test('mapGroupedSheetRestoresExpandedReadingPositionAndArticleFocus', async () =
         '수정키 클릭은 기존 링크 동작 유지',
       ).not.toHaveBeenCalled();
       await act(async () => article.click());
+      expect(
+        openArticle,
+        '선택한 기사는 미리보기부터 표시',
+      ).not.toHaveBeenCalled();
+      const preview = document.querySelector<HTMLElement>(
+        '[aria-label="선택한 기사"]',
+      )!;
+      expect(preview.textContent).toContain(items[9].article.title);
+      const detailLink = preview.querySelector<HTMLAnchorElement>(
+        'a[href="/incidents/' + items[9].article_id + '"]',
+      )!;
+      await act(async () => detailLink.click());
     } finally {
       document.removeEventListener('click', preventNavigation);
     }
-    expect(
-      openArticle,
-      '포털 링크도 공통 상세 진입으로 opener 보존',
-    ).toHaveBeenCalledWith(items[9].article_id);
+    expect(openArticle, '미리보기 링크로 공통 상세 진입').toHaveBeenCalledWith(
+      items[9].article_id,
+    );
 
     container.dataset.articleOverlay = 'true';
     container.inert = true;
@@ -619,6 +630,18 @@ test('mapGroupedSheetRestoresExpandedReadingPositionAndArticleFocus', async () =
     container.inert = false;
     container.removeAttribute('aria-hidden');
     await fixture.draw(route);
+    const restoredPreview = document.querySelector<HTMLElement>(
+      '[aria-label="선택한 기사"]',
+    )!;
+    expect(restoredPreview).not.toBe(chooser);
+    expect(restoredPreview.textContent).toContain(items[9].article.title);
+    await act(async () =>
+      restoredPreview
+        .querySelector<HTMLButtonElement>(
+          'button[aria-label="기사 선택 닫기"]',
+        )!
+        .click(),
+    );
     expect(document.querySelector('[aria-label="선택한 기사"]')).toBe(chooser);
     expect(chooser.hidden).toBe(false);
     expect(chooser.hasAttribute('inert')).toBe(false);
@@ -652,6 +675,119 @@ test('mapGroupedSheetRestoresExpandedReadingPositionAndArticleFocus', async () =
     root = undefined;
     document.body.style.overflow = overflow;
     document.body.style.paddingRight = padding;
+  }
+});
+
+test('groupedMarkerShowsSelectedArticlePreviewBeforeDetailAndRestoresChooser', async () => {
+  const items = Array.from({ length: 12 }, (_, index) => ({
+    ...data.items[0],
+    article_id: (3000 + index).toString(16).padStart(64, '0'),
+    article: {
+      ...data.items[0].article,
+      title: '미리보기 선택 기사 ' + index,
+      description: '선택한 기사 내용 ' + index,
+    },
+  }));
+  const openArticle = vi.fn();
+  const route: ArticleSheetRoute = {
+    active: false,
+    sourcePath: '/',
+    height: 456,
+    mapArticles: items,
+    openArticle,
+    close: vi.fn(),
+    setHeight: vi.fn(),
+    registerMapArticles: vi.fn(),
+    retry: vi.fn(),
+  };
+  const fixture = await mount({ ...data, total: items.length, items }, route);
+  const originalUrl = window.location.href;
+  await act(async () => fixture.selected[0]());
+  const chooser = document.querySelector<HTMLElement>(
+    '[aria-label="선택한 기사"]',
+  )!;
+  const scroller = chooser.querySelector<HTMLElement>('[tabindex="0"]')!;
+  const selected = chooser.querySelectorAll<HTMLAnchorElement>(
+    'a[href^="/incidents/"]',
+  )[9];
+  const toggle = chooser.querySelector<HTMLButtonElement>(
+    'button[aria-expanded]',
+  )!;
+  await act(async () => toggle.click());
+  scroller.scrollTop = 640;
+  await act(async () => scroller.dispatchEvent(new Event('scroll')));
+  selected.focus();
+  const preventNavigation = (event: MouseEvent) => event.preventDefault();
+  document.addEventListener('click', preventNavigation);
+  try {
+    await act(async () =>
+      selected.dispatchEvent(
+        new MouseEvent('click', {
+          bubbles: true,
+          cancelable: true,
+          ctrlKey: true,
+        }),
+      ),
+    );
+    expect(
+      openArticle,
+      '수정키 선택은 네이티브 링크 유지',
+    ).not.toHaveBeenCalled();
+    expect(chooser.hidden).toBe(false);
+    await act(async () => selected.click());
+    expect(
+      openArticle,
+      '기사 선택은 상세로 이동하지 않음',
+    ).not.toHaveBeenCalled();
+    expect(window.location.href).toBe(originalUrl);
+    expect(chooser.isConnected).toBe(true);
+    expect(chooser.hidden).toBe(true);
+    const preview = document.querySelector<HTMLElement>(
+      '[aria-label="선택한 기사"]',
+    )!;
+    expect(preview).not.toBe(chooser);
+    expect(preview.textContent).toContain(items[9].article.title);
+    expect(preview.textContent).toContain(items[9].article.description);
+    expect(preview.textContent).not.toContain(items[8].article.title);
+    const detail = preview.querySelector<HTMLAnchorElement>(
+      'a[href="/incidents/' + items[9].article_id + '"]',
+    )!;
+    expect(detail.textContent).toContain('자세히 보기');
+    await act(async () =>
+      detail.dispatchEvent(
+        new MouseEvent('click', {
+          bubbles: true,
+          cancelable: true,
+          metaKey: true,
+        }),
+      ),
+    );
+    expect(
+      openArticle,
+      '미리보기 상세 링크 수정키 동작 유지',
+    ).not.toHaveBeenCalled();
+    await act(async () => detail.click());
+    expect(openArticle).toHaveBeenCalledOnce();
+    expect(openArticle).toHaveBeenCalledWith(items[9].article_id);
+    await fixture.draw({ ...route, active: true });
+    expect(document.querySelector('[aria-label="선택한 기사"]')).toBeNull();
+    await fixture.draw(route);
+    expect(document.querySelector('[aria-label="선택한 기사"]')).toBe(preview);
+    const close = preview.querySelector<HTMLButtonElement>(
+      'button[aria-label="기사 선택 닫기"]',
+    )!;
+    await act(async () => close.click());
+    expect(document.querySelector('[aria-label="선택한 기사"]')).toBe(chooser);
+    expect(chooser.dataset.expanded).toBe('true');
+    expect(scroller.scrollTop).toBe(640);
+    expect(document.activeElement).toBe(selected);
+    expect(fixture.positions).toHaveLength(1);
+    expect(fixture.removed).not.toHaveBeenCalled();
+    expect(fixture.setCenter).not.toHaveBeenCalled();
+    expect(fixture.setZoom).not.toHaveBeenCalled();
+    expect(fixture.fitBounds).not.toHaveBeenCalled();
+  } finally {
+    document.removeEventListener('click', preventNavigation);
   }
 });
 
