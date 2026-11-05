@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { flushSync } from 'react-dom';
 import {
   useCallback,
   useEffect,
@@ -449,9 +450,32 @@ function ModalDetailSheet({
 
             suppressClick.current = false;
             clearTimeout(settleTimer.current);
-            setDragHeight(null);
-            setDragging(false);
-            setExpanded((value) => !value);
+            const expand = !expanded;
+            const heights = measureSnapHeights();
+
+            if (
+              !heights ||
+              window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+            ) {
+              setExpanded(expand);
+              setDragHeight(null);
+              setDragging(false);
+
+              return;
+            }
+
+            // Freeze the current rendered height before changing the target.
+            // Reading geometry commits that style so CSS can interpolate it.
+            flushSync(() => {
+              setExpanded(expand);
+              setDragHeight(heights.startHeight);
+              setDragging(true);
+            });
+            panel.current?.getBoundingClientRect();
+            finishDrag(
+              expand,
+              expand ? heights.expandedHeight : heights.collapsedHeight,
+            );
           }}
           onPointerDown={(event) => {
             if (event.button !== 0 || drag.current) return;

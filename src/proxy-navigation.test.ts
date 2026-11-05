@@ -2048,3 +2048,202 @@ test('normalArticleSheetsStartHalfAndDragNearTopWithSheetOnlyAiDisclosure', asyn
     article.article.description = savedDescription;
   }
 }, 60000);
+
+test('articleSheetClickAndKeyboardAnimateBetweenMeasuredHeights', async () => {
+  const savedDescription = article.article.description;
+  const page = await openList();
+  try {
+    await page.emulateMedia({ reducedMotion: 'no-preference' });
+    for (const [index, description] of [
+      '짧은 기사입니다.',
+      '긴 기사를 읽어요. '.repeat(300),
+    ].entries()) {
+      article.article.description = description;
+      await page.goto(origin + '/sheet-test-fixture');
+      const sheet = page.getByRole('dialog');
+      const handle = sheet.locator('button[aria-expanded]');
+      await sheet
+        .getByRole('heading', { name: article.article.title, exact: true })
+        .waitFor();
+      await sheet.evaluate(async (element) => {
+        await Promise.all(
+          element
+            .getAnimations()
+            .map((animation) => animation.finished.catch(() => undefined)),
+        );
+      });
+      const initial = (await sheet.boundingBox())!.height;
+      const observe = async (activate: () => Promise<unknown>) => {
+        await page.evaluate(() => {
+          const element =
+            document.querySelector<HTMLElement>('[role="dialog"]')!;
+          const button = element.querySelector<HTMLButtonElement>(
+            'button[aria-expanded]',
+          )!;
+          const state = { heights: [] as number[], runs: 0, done: false };
+          (window as unknown as { motionState: typeof state }).motionState =
+            state;
+          element.addEventListener('transitionrun', (event) => {
+            if (
+              event.target === element &&
+              (event as TransitionEvent).propertyName === 'height'
+            )
+              state.runs++;
+          });
+          button.addEventListener(
+            'click',
+            () => {
+              const started = performance.now();
+              const sample = (time: number) => {
+                state.heights.push(element.getBoundingClientRect().height);
+                if (time - started < 400) requestAnimationFrame(sample);
+                else state.done = true;
+              };
+              requestAnimationFrame(sample);
+            },
+            { once: true },
+          );
+        });
+        await activate();
+        await page.waitForFunction(
+          () =>
+            (window as unknown as { motionState: { done: boolean } })
+              .motionState?.done,
+        );
+        return page.evaluate(
+          () =>
+            (
+              window as unknown as {
+                motionState: { heights: number[]; runs: number };
+              }
+            ).motionState,
+        );
+      };
+      const assertMotion = (
+        samples: number[],
+        from: number,
+        to: number,
+        label: string,
+      ) => {
+        const low = Math.min(from, to),
+          high = Math.max(from, to);
+        expect(high - low, label + '은 실제로 다른 높이').toBeGreaterThan(50);
+        expect(
+          samples.some((height) => height > low + 2 && height < high - 2),
+          label + ' 중간 프레임',
+        ).toBe(true);
+      };
+      await handle.focus();
+      const expanding = await observe(() =>
+        index === 0 ? handle.click() : page.keyboard.press('Enter'),
+      );
+      const expanded = (await sheet.boundingBox())!.height;
+      expect(expanding.runs, '마우스 확장 높이 전환').toBeGreaterThan(0);
+      expect(await sheet.getAttribute('data-expanded')).toBe('true');
+      assertMotion(expanding.heights, initial, expanded, '확장');
+      expect(expanded).toBeCloseTo(852 - 49, 0);
+      await handle.focus();
+      const collapsing = await observe(() =>
+        index === 0 ? page.keyboard.press('Enter') : handle.click(),
+      );
+      const collapsed = (await sheet.boundingBox())!.height;
+      expect(collapsing.runs, '키보드 접기 높이 전환').toBeGreaterThan(0);
+      expect(await sheet.getAttribute('data-expanded')).toBe('false');
+      assertMotion(collapsing.heights, expanded, collapsed, '접기');
+      expect(
+        Math.abs(collapsed - initial),
+        '짧은 본문은 원래 내용 높이로',
+      ).toBeLessThan(2);
+      expect(
+        await sheet
+          .locator('button[aria-expanded]')
+          .evaluate((node) => node === document.activeElement),
+      ).toBe(true);
+    }
+  } finally {
+    article.article.description = savedDescription;
+  }
+}, 60000);
+
+test('articleSheetToggleKeepsBoundsOnResizeAndRespectsReducedMotion', async () => {
+  const page = await openList();
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
+  await page.goto(origin + '/sheet-test-fixture');
+  const sheet = page.getByRole('dialog');
+  const handle = sheet.locator('button[aria-expanded]');
+  await sheet
+    .getByRole('heading', { name: article.article.title, exact: true })
+    .waitFor();
+  await sheet.evaluate(async (element) => {
+    await Promise.all(
+      element
+        .getAnimations()
+        .map((animation) => animation.finished.catch(() => undefined)),
+    );
+  });
+  await handle.click();
+  await page.setViewportSize({ width: 320, height: 320 });
+  const waitForFrames = () =>
+    page.evaluate(
+      () =>
+        new Promise<void>((resolve) =>
+          requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+        ),
+    );
+  await waitForFrames();
+  const resized = await sheet.boundingBox();
+  expect(resized).not.toBeNull();
+  expect(
+    resized!.y,
+    '확장 중 회전해도 화면 위로 벗어나지 않음',
+  ).toBeGreaterThanOrEqual(0);
+  expect(
+    resized!.height,
+    '확장 중 회전해도 화면 높이를 넘지 않음',
+  ).toBeLessThanOrEqual(320);
+  expect(await sheet.getAttribute('data-expanded')).toBe('true');
+
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await handle.focus();
+  await page.keyboard.press('Space');
+  await waitForFrames();
+  const collapsed = await sheet.boundingBox();
+  expect(collapsed).not.toBeNull();
+  expect(collapsed!.height, '모션 축소 시 즉시 접힘').toBeLessThanOrEqual(
+    320 * 0.5352 + 1,
+  );
+  expect(await sheet.getAttribute('data-expanded')).toBe('false');
+  expect(
+    await sheet.evaluate(
+      (element) =>
+        element
+          .getAnimations()
+          .filter(
+            (animation) =>
+              animation instanceof CSSTransition &&
+              animation.transitionProperty === 'height',
+          ).length,
+    ),
+    '모션 축소에서는 높이 전환 없음',
+  ).toBe(0);
+  expect(
+    await handle.evaluate((element) => element === document.activeElement),
+  ).toBe(true);
+  await page.keyboard.press('Enter');
+  await waitForFrames();
+  const expanded = await sheet.boundingBox();
+  expect(expanded!.height, '모션 축소 시 즉시 확장').toBeCloseTo(320 - 49, 0);
+  expect(await sheet.getAttribute('data-expanded')).toBe('true');
+  expect(
+    await sheet.evaluate(
+      (element) =>
+        element
+          .getAnimations()
+          .filter(
+            (animation) =>
+              animation instanceof CSSTransition &&
+              animation.transitionProperty === 'height',
+          ).length,
+    ),
+  ).toBe(0);
+}, 60000);
