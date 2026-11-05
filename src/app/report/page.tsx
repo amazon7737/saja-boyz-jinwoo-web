@@ -108,6 +108,9 @@ export default function ReportPage() {
   const submissionInFlight = useRef(false);
   const activeRequest = useRef<ReportRequest | null>(null);
   const submissionBoundary = useRef<{ reset: () => void }>(null);
+  const formRef = useRef<HTMLFormElement>(null);
+  const completionHeading = useRef<HTMLHeadingElement>(null);
+  const focusFirstAfterReset = useRef(false);
   const retryRequest = useRef<{
     key: string;
     fields: string;
@@ -116,6 +119,17 @@ export default function ReportPage() {
   const [attachments, setAttachments] = useState<File[]>([]);
   const [attachmentError, setAttachmentError] = useState('');
   const formLocked = isSubmitting || Boolean(confirmedReportId);
+
+  useEffect(() => {
+    if (confirmedReportId) {
+      completionHeading.current?.focus();
+    } else if (focusFirstAfterReset.current) {
+      focusFirstAfterReset.current = false;
+      const category = formRef.current?.elements.namedItem('category');
+
+      if (category instanceof HTMLElement) category.focus();
+    }
+  }, [confirmedReportId]);
 
   useEffect(() => {
     return () => {
@@ -317,6 +331,9 @@ export default function ReportPage() {
         </Link>
       </header>
       <form
+        ref={formRef}
+        hidden={Boolean(confirmedReportId)}
+        style={confirmedReportId ? { display: 'none' } : undefined}
         className="flex min-h-[calc(100dvh-57px)] flex-col [&_:is(input,select,textarea,button)]:scroll-mt-[calc(80px_+_env(safe-area-inset-top))] [&_:is(input,select,textarea,button)]:scroll-mb-[calc(112px_+_env(safe-area-inset-bottom))]"
         noValidate
         onSubmit={checkInput}
@@ -562,30 +579,6 @@ export default function ReportPage() {
           >
             <SubmissionError message={submissionError} />
           </ErrorBoundary>
-          {confirmedReportId && (
-            <Notice
-              title={`제보가 접수됐어요 · 접수번호: ${confirmedReportId}`}
-            >
-              소식을 전해주셔서 고마워요.
-            </Notice>
-          )}
-          {confirmedReportId && (
-            <button
-              className="cursor-pointer rounded-[10px] border border-solid border-border bg-surface px-3 py-2 text-muted"
-              type="button"
-              onClick={(event) => {
-                event.currentTarget.form?.reset();
-                retryRequest.current = null;
-                setErrors({});
-                setConfirmedReportId('');
-                setSubmissionError('');
-                setAttachments([]);
-                setAttachmentError('');
-              }}
-            >
-              새 제보 작성
-            </button>
-          )}
         </div>
         <div className="sticky bottom-0 z-20 mt-auto bg-surface px-4 pt-4 pb-[max(24px,env(safe-area-inset-bottom))]">
           <button
@@ -607,6 +600,58 @@ export default function ReportPage() {
           </button>
         </div>
       </form>
+      {confirmedReportId && (
+        <div className="flex min-h-[calc(100dvh-57px)] flex-col px-4 pb-[max(24px,env(safe-area-inset-bottom))]">
+          <div
+            role="status"
+            className="flex flex-1 flex-col items-center justify-center py-6 text-center"
+          >
+            <span
+              aria-hidden="true"
+              className="mb-6 grid size-[78px] place-items-center rounded-full bg-brand/5 text-[32px] font-bold text-brand"
+            >
+              ✓
+            </span>
+            <h2
+              ref={completionHeading}
+              tabIndex={-1}
+              className="m-0 text-[24px]/[1.35] font-bold tracking-[-0.6px] rounded text-text focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand"
+            >
+              제보가 완료되었습니다
+            </h2>
+            <p className="mt-3 mb-0 text-[15px]/[1.7] text-muted">
+              소중한 제보 감사합니다.
+              <br />
+              접수 내용을 확인할게요.
+            </p>
+            <p className="mt-3 mb-0 text-xs text-muted [overflow-wrap:anywhere]">
+              접수번호: {confirmedReportId}
+            </p>
+          </div>
+          <button
+            type="button"
+            className="ui-control mb-2 min-h-11 cursor-pointer self-center border-0 bg-transparent px-3 text-sm font-semibold text-muted underline underline-offset-2"
+            onClick={() => {
+              formRef.current?.reset();
+              retryRequest.current = null;
+              focusFirstAfterReset.current = true;
+              setErrors({});
+              setConfirmedReportId('');
+              setSubmissionError('');
+              setAttachments([]);
+              setAttachmentError('');
+            }}
+          >
+            새 제보 작성
+          </button>
+          <Link
+            href="/"
+            className="ui-control ui-primary flex min-h-[52px] w-full items-center justify-center rounded-card bg-brand px-4 py-3 text-[16px]/[normal] font-extrabold text-surface no-underline"
+          >
+            닫기
+          </Link>
+        </div>
+      )}
     </section>
   );
 }

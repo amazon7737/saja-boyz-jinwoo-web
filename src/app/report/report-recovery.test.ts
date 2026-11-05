@@ -425,6 +425,8 @@ test('reportFailureCleanup: async failures enter the real local boundary and set
   }
   await submit();
   expect(container.textContent).toContain(receipt.report_id);
+  // 완료 화면 포커스의 selectionchange와 링크의 idle 콜백을 처리한다.
+  await advance(2);
   expect(vi.getTimerCount()).toBe(0);
   await advance(60001);
   expect(container.querySelector('[role="alert"]')).toBeNull();
