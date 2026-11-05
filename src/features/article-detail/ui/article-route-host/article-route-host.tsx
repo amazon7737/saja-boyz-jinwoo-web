@@ -35,9 +35,12 @@ export function ArticleRouteHost({
   const articleSegments = useSelectedLayoutSegments();
   const router = useRouter();
   const active = articleSegments.includes('(.)incidents');
-  const sourcePath =
+  const [sourceQuery, setSourceQuery] = useState('');
+  const sourceBase =
     '/' +
     backgroundSegments.filter((segment) => !segment.startsWith('(')).join('/');
+  const sourcePath =
+    sourceBase === '/search' && active ? sourceBase + sourceQuery : sourceBase;
   const inline = active;
   const listScroll = useRef(0);
   const previousInline = useRef(false);
@@ -50,13 +53,14 @@ export function ArticleRouteHost({
   const [mapArticles, registerMapArticles] = useState<LocatedArticle[]>([]);
   const openArticle = useCallback(
     (id: string) => {
+      setSourceQuery(pathname === '/search' ? window.location.search : '');
       opener.current =
         document.activeElement instanceof HTMLElement
           ? document.activeElement
           : null;
       router.push('/incidents/' + id, { scroll: false });
     },
-    [router],
+    [pathname, router],
   );
   const close = useCallback(() => router.back(), [router]);
   const retry = useCallback(() => router.refresh(), [router]);
@@ -96,6 +100,7 @@ export function ArticleRouteHost({
         link &&
         /^\/incidents\/[a-f0-9]{64}$/.test(link.getAttribute('href') ?? '')
       ) {
+        setSourceQuery(pathname === '/search' ? window.location.search : '');
         opener.current = link;
         if (pathname !== '/') listScroll.current = window.scrollY;
       }

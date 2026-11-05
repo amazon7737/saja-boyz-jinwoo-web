@@ -627,6 +627,49 @@ test('searchAlignmentPreservesFullTargetsAndWorkingControls', async () => {
   await page.close();
 }, 120000);
 
+test('searchDetailBackLinkKeepsTheOriginalSearchQuery', async () => {
+  const page = await openList();
+  const keyword = '검증 & 안전';
+
+  try {
+    await page.goto(origin + '/search?q=' + encodeURIComponent(keyword));
+    const opener = page.getByRole('link', {
+      name: article.article.title,
+      exact: true,
+    });
+    await opener.waitFor();
+    await opener.focus();
+    await page.keyboard.press('Enter');
+
+    const detail = page.locator('[data-article-inline]');
+    await detail
+      .getByRole('heading', { name: article.article.title, exact: true })
+      .waitFor();
+    const backLink = detail
+      .getByRole('navigation', { name: '기사 상세 탐색' })
+      .locator('a')
+      .first();
+    const href = await backLink.getAttribute('href');
+    expect(href).not.toBeNull();
+    const destination = new URL(href!, origin);
+    expect(destination.pathname).toBe('/search');
+    expect(destination.searchParams.get('q')).toBe(keyword);
+
+    await backLink.click();
+    await page.waitForURL(
+      (url) =>
+        url.pathname === '/search' && url.searchParams.get('q') === keyword,
+    );
+    await expect
+      .poll(() =>
+        opener.evaluate((element) => element === document.activeElement),
+      )
+      .toBe(true);
+  } finally {
+    await page.close();
+  }
+}, 120000);
+
 test('searchResultFocusStaysAboveNavigationAndReturnsToItsOpener', async () => {
   listArticles = [
     article,
