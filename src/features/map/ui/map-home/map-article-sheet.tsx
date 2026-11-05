@@ -61,29 +61,33 @@ export function MapArticleSheet({
             className="flex shrink-0 flex-col gap-3 rounded-lg border border-solid border-border bg-background p-2.5"
           >
             <h2 className="m-0 text-[15px]/[21px] font-extrabold text-text [overflow-wrap:anywhere]">
-              <Link
-                scroll={false}
-                href={'/incidents/' + item.article_id}
-                onClick={(event) => {
-                  if (
-                    !route ||
-                    event.defaultPrevented ||
-                    event.button !== 0 ||
-                    event.metaKey ||
-                    event.ctrlKey ||
-                    event.shiftKey ||
-                    event.altKey ||
-                    event.currentTarget.target === '_blank'
-                  )
-                    return;
+              {route && items.length === 1 ? (
+                articleText(item.article.title)
+              ) : (
+                <Link
+                  scroll={false}
+                  href={'/incidents/' + item.article_id}
+                  onClick={(event) => {
+                    if (
+                      !route ||
+                      event.defaultPrevented ||
+                      event.button !== 0 ||
+                      event.metaKey ||
+                      event.ctrlKey ||
+                      event.shiftKey ||
+                      event.altKey ||
+                      event.currentTarget.target === '_blank'
+                    )
+                      return;
 
-                  event.preventDefault();
-                  event.currentTarget.focus({ preventScroll: true });
-                  route.openArticle(item.article_id);
-                }}
-              >
-                {articleText(item.article.title)}
-              </Link>
+                    event.preventDefault();
+                    event.currentTarget.focus({ preventScroll: true });
+                    route.openArticle(item.article_id);
+                  }}
+                >
+                  {articleText(item.article.title)}
+                </Link>
+              )}
             </h2>
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
               <p className="m-0 text-[13px]/[18px] font-medium text-muted">
@@ -123,6 +127,31 @@ export function MapArticleSheet({
                   ? '기사에 언급된 동네 기준 위치 · 실제 발생 지점과 다를 수 있습니다'
                   : '지역 대표 위치 · 실제 발생 지점과 다를 수 있습니다'}
             </p>
+            {route && items.length === 1 && (
+              <Link
+                scroll={false}
+                href={'/incidents/' + item.article_id}
+                className="ui-control inline-flex min-h-12 items-center justify-center rounded-xl border border-solid border-brand bg-surface px-4 py-3 text-sm font-bold text-brand"
+                onClick={(event) => {
+                  if (
+                    event.defaultPrevented ||
+                    event.button !== 0 ||
+                    event.metaKey ||
+                    event.ctrlKey ||
+                    event.shiftKey ||
+                    event.altKey ||
+                    event.currentTarget.target === '_blank'
+                  )
+                    return;
+
+                  event.preventDefault();
+                  event.currentTarget.focus({ preventScroll: true });
+                  route.openArticle(item.article_id);
+                }}
+              >
+                자세히 보기
+              </Link>
+            )}
           </article>
         );
       })}

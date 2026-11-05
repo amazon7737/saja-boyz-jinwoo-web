@@ -464,12 +464,21 @@ test('mapArticleSheetPreservesGroupedChoices', async () => {
   await act(async () => fixture.selected[0]());
   expect(
     openArticle,
-    '단건 원은 공통 상세 주소로 바로 진입',
-  ).toHaveBeenCalledWith(data.items[0].article_id);
+    '단건 원 선택 시 미리보기부터 표시',
+  ).not.toHaveBeenCalled();
+  expect(
+    document
+      .querySelector('[aria-label="선택한 기사"]')
+      ?.querySelectorAll('a[href^="/incidents/"]'),
+  ).toHaveLength(1);
   await fixture.draw({ ...route, active: true });
   expect(document.querySelector('[aria-label="선택한 기사"]')).toBeNull();
   await fixture.draw(route);
-  expect(document.querySelector('[aria-label="선택한 기사"]')).toBeNull();
+  expect(
+    document
+      .querySelector('[aria-label="선택한 기사"]')
+      ?.querySelectorAll('a[href^="/incidents/"]'),
+  ).toHaveLength(1);
   for (const [index, count] of [
     [1, 2],
     [2, 12],
@@ -647,4 +656,75 @@ test('mapGroupedSheetRestoresExpandedReadingPositionAndArticleFocus', async () =
     document.body.style.overflow = overflow;
     document.body.style.paddingRight = padding;
   }
+});
+
+test('singleMapMarkerShowsArticlePreviewBeforeOpeningDetail', async () => {
+  const item = {
+    ...data.items[0],
+    image_status: 'ready',
+    image_url: `/images/${data.items[0].article_id}.jpg`,
+  };
+  const openArticle = vi.fn();
+  const route: ArticleSheetRoute = {
+    active: false,
+    sourcePath: '/',
+    height: 0,
+    mapArticles: [item],
+    openArticle,
+    close: vi.fn(),
+    setHeight: vi.fn(),
+    registerMapArticles: vi.fn(),
+    retry: vi.fn(),
+  };
+  const originalUrl = window.location.href;
+  const fixture = await mount({ ...data, items: [item] }, route);
+  expect(fixture.positions).toHaveLength(1);
+  const marker = (
+    fixture.positions[0] as { icon: { content: HTMLButtonElement } }
+  ).icon.content;
+  marker.focus();
+
+  await act(async () => fixture.selected[0]());
+
+  expect(
+    openArticle,
+    '마커 선택만으로 상세 경로에 진입하지 않음',
+  ).not.toHaveBeenCalled();
+  expect(window.location.href, '미리보기는 지도 주소에서 열림').toBe(
+    originalUrl,
+  );
+  expect(marker.getAttribute('aria-pressed')).toBe('true');
+  const sheets = document.querySelectorAll<HTMLElement>('[role="dialog"]');
+  expect(sheets, '기사 미리보기 하나만 표시').toHaveLength(1);
+  const sheet = sheets[0];
+  expect(sheet.textContent).toContain('장림동 공장 화재');
+  expect(sheet.textContent).toContain(item.article.description);
+  expect(sheet.textContent).toContain(item.location.label);
+  expect(sheet.textContent).toContain('실제 발생 지점과 다를 수 있습니다');
+  expect(sheet.querySelector('b'), '기사 HTML은 텍스트로 표시').toBeNull();
+  const imageUrl = `${data.apiOrigin}${item.image_url}`;
+  expect(
+    sheet.querySelector(`img[src="${imageUrl}"]`),
+    '미리보기는 선택한 기사의 실제 이미지를 표시',
+  ).not.toBeNull();
+
+  const href = `/incidents/${item.article_id}`;
+  const detail = sheet.querySelector<HTMLAnchorElement>(`a[href="${href}"]`);
+  expect(detail, '실제 기사의 상세 주소가 있는 링크').not.toBeNull();
+  expect(detail?.getAttribute('href')).toBe(href);
+  expect(new URL(detail!.href).origin).toBe(window.location.origin);
+
+  const close = sheet.querySelector<HTMLButtonElement>(
+    'button[aria-label="기사 선택 닫기"], button[aria-label="닫기"]',
+  );
+  expect(close, '키보드로 접근할 수 있는 미리보기 닫기').not.toBeNull();
+  await act(async () => close!.click());
+  expect(document.querySelector('[role="dialog"]')).toBeNull();
+  expect(marker.getAttribute('aria-pressed')).toBe('false');
+  expect(document.activeElement, '닫으면 선택한 지도 원으로 복귀').toBe(marker);
+  expect(window.location.href).toBe(originalUrl);
+  expect(fixture.positions).toHaveLength(1);
+  expect(fixture.setCenter).not.toHaveBeenCalled();
+  expect(fixture.setZoom).not.toHaveBeenCalled();
+  expect(fixture.fitBounds).not.toHaveBeenCalled();
 });

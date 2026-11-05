@@ -99,10 +99,8 @@ export function MapHome({
   articles?: MapArticleResult | null;
 }) {
   const sheetRoute = useArticleSheetRoute();
-  const openArticleRef = useRef(sheetRoute?.openArticle);
   const registerMapArticles = sheetRoute?.registerMapArticles;
   const detailOpen = sheetRoute?.active ?? false;
-  const previousDetailOpen = useRef(false);
   const [selectionHeight, setSelectionHeight] = useState(0);
   const [selectedArticles, setSelectedArticles] = useState<LocatedArticle[]>(
     [],
@@ -146,27 +144,10 @@ export function MapHome({
   const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
-    openArticleRef.current = sheetRoute?.openArticle;
-  }, [sheetRoute?.openArticle]);
-
-  useEffect(() => {
     registerMapArticles?.(filteredArticles?.items ?? []);
 
     return () => registerMapArticles?.([]);
   }, [filteredArticles, registerMapArticles]);
-
-  useEffect(() => {
-    if (
-      previousDetailOpen.current &&
-      !detailOpen &&
-      selectedArticles.length === 1
-    ) {
-      clearSelection.current?.(true);
-      setSelectedArticles([]);
-    }
-
-    previousDetailOpen.current = detailOpen;
-  }, [detailOpen, selectedArticles.length]);
 
   useEffect(() => {
     if (selectedArticles.length || !restoreSelectionFocus.current) return;
@@ -579,8 +560,6 @@ export function MapHome({
             selectedMarker = visual.content;
             selectedPoint = point;
             setSelectedArticles(group);
-            if (group.length === 1)
-              openArticleRef.current?.(group[0].article_id);
           };
           const listener = maps.Event.addListener(
             articleMarker,
@@ -776,7 +755,7 @@ export function MapHome({
           style={{
             height: detailOpen
               ? sheetRoute!.height + 8
-              : selectedArticles.length > (sheetRoute ? 1 : 0)
+              : selectedArticles.length > 0
                 ? selectionHeight + 8
                 : undefined,
           }}
@@ -928,20 +907,18 @@ export function MapHome({
             </div>
           )}
         </div>
-        {ready &&
-          selectedArticles.length > (sheetRoute ? 1 : 0) &&
-          articles && (
-            <MapArticleSheet
-              active={!detailOpen}
-              items={selectedArticles}
-              apiOrigin={articles.apiOrigin}
-              onHeightChange={setSelectionHeight}
-              onClose={() => {
-                clearSelection.current?.(true);
-                setSelectedArticles([]);
-              }}
-            />
-          )}
+        {ready && selectedArticles.length > 0 && articles && (
+          <MapArticleSheet
+            active={!detailOpen}
+            items={selectedArticles}
+            apiOrigin={articles.apiOrigin}
+            onHeightChange={setSelectionHeight}
+            onClose={() => {
+              clearSelection.current?.(true);
+              setSelectedArticles([]);
+            }}
+          />
+        )}
       </section>
     </>
   );
