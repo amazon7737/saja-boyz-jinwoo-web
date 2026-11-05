@@ -299,6 +299,32 @@ test('reportImagePreviewReleasesItsObjectUrlWhenRemoved', async () => {
   expect(fetchMock).not.toHaveBeenCalled();
 });
 
+test('reportAttachmentDeletionKeepsKeyboardFocusInAttachments', async () => {
+  await renderReport();
+  await selectFiles([
+    testFile('one.png', 'image/png'),
+    testFile('two.png', 'image/png'),
+  ]);
+  const first = container.querySelector<HTMLButtonElement>(
+    'button[aria-label="one.png 삭제"]',
+  );
+  const second = container.querySelector<HTMLButtonElement>(
+    'button[aria-label="two.png 삭제"]',
+  );
+  assert(first && second);
+  first.focus();
+  await act(async () => first.click());
+  const remaining = container.querySelector<HTMLButtonElement>(
+    'button[aria-label="two.png 삭제"]',
+  );
+  assert(remaining);
+  expect(document.activeElement).toBe(remaining);
+  await act(async () => remaining.click());
+  expect(document.activeElement).toBe(
+    container.querySelector('input[type="file"]'),
+  );
+});
+
 test('reportAttachments: valid files can be selected removed and selected again', async () => {
   await renderReport();
   const image = testFile('road.jpg', 'image/jpeg', 10 * 1024 * 1024);

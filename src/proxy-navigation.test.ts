@@ -1,7 +1,15 @@
 // file: src/proxy-navigation.test.ts
 import { execFile, spawn, type ChildProcess } from 'node:child_process';
 import { once } from 'node:events';
-import { cp, mkdir, mkdtemp, rm, symlink, writeFile } from 'node:fs/promises';
+import {
+  cp,
+  mkdir,
+  mkdtemp,
+  readFile,
+  rm,
+  symlink,
+  writeFile,
+} from 'node:fs/promises';
 import { createServer, type Server, type ServerResponse } from 'node:http';
 import type { AddressInfo } from 'node:net';
 import { tmpdir } from 'node:os';
@@ -2495,4 +2503,71 @@ test('recentSearchChipsScrollAndRemainKeyboardAccessible', async () => {
       JSON.parse(localStorage.getItem('hh:recent-searches:v1') ?? '[]'),
     ),
   ).toEqual(terms.slice(0, -1));
+}, 120000);
+
+test('reportAttachmentTilesAreHorizontalAndKeepAccessibleFileControls', async () => {
+  const png = await readFile(join(process.cwd(), 'src/app/icon.png'));
+  const file = (name: string) => ({ name, mimeType: 'image/png', buffer: png });
+  for (const width of [320, 393]) {
+    const page = await openList(width);
+    try {
+      await page.goto(origin + '/report');
+      const input = page.locator('input[type="file"]');
+      await input.setInputFiles([file('one.png'), file('two.png')]);
+      const first = page.getByRole('button', {
+        name: 'one.png 삭제',
+        exact: true,
+      });
+      const second = page.getByRole('button', {
+        name: 'two.png 삭제',
+        exact: true,
+      });
+      await first.waitFor();
+      await second.waitFor();
+      const previews = page.locator('form ul li img[src^="blob:"]');
+      await expect.poll(() => previews.count()).toBe(2);
+      await previews.first().waitFor({ state: 'visible' });
+      await previews.last().waitFor({ state: 'visible' });
+      const boxes = await previews.evaluateAll((nodes) =>
+        nodes.map((node) => {
+          const rect = node.getBoundingClientRect();
+          return {
+            x: rect.x,
+            y: rect.y,
+            width: rect.width,
+            height: rect.height,
+          };
+        }),
+      );
+      expect(boxes[0].width).toBeCloseTo(76, 0);
+      expect(boxes[0].height).toBeCloseTo(76, 0);
+      expect(boxes[1].width).toBeCloseTo(76, 0);
+      expect(boxes[1].height).toBeCloseTo(76, 0);
+      expect(boxes[1].y).toBeCloseTo(boxes[0].y, 0);
+      expect(boxes[1].x).toBeGreaterThanOrEqual(boxes[0].x + boxes[0].width);
+      await page.getByText('2 / 3', { exact: true }).waitFor();
+      expect(
+        await page.getByLabel('첨부파일 추가', { exact: true }).count(),
+      ).toBe(1);
+      await first.click();
+      expect(await second.isVisible()).toBe(true);
+      await page.getByText('1 / 3', { exact: true }).waitFor();
+      await input.setInputFiles([file('three.png'), file('four.png')]);
+      await page.getByText('3 / 3', { exact: true }).waitFor();
+      expect(await second.isVisible()).toBe(true);
+      expect(
+        await page
+          .getByRole('button', { name: 'three.png 삭제', exact: true })
+          .isVisible(),
+      ).toBe(true);
+      expect(
+        await page
+          .getByRole('button', { name: 'four.png 삭제', exact: true })
+          .isVisible(),
+      ).toBe(true);
+      expect(await input.isDisabled()).toBe(true);
+    } finally {
+      await page.close();
+    }
+  }
 }, 120000);

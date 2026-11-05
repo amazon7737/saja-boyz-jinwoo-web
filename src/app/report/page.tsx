@@ -3,7 +3,13 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { ErrorBoundary, useErrorBoundary } from '@suspensive/react';
-import { useEffect, useRef, useState, type FormEvent } from 'react';
+import {
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type FormEvent,
+} from 'react';
 
 import { Icon } from '@/components/ui/icon/icon';
 import { Notice } from '@/components/feedback/notice';
@@ -121,7 +127,23 @@ export default function ReportPage() {
   } | null>(null);
   const [attachments, setAttachments] = useState<File[]>([]);
   const [attachmentError, setAttachmentError] = useState('');
+  const attachmentList = useRef<HTMLUListElement>(null);
+  const attachmentInput = useRef<HTMLInputElement>(null);
+  const restoreAttachmentFocus = useRef<number | null>(null);
   const formLocked = isSubmitting || Boolean(confirmedReportId);
+
+  useLayoutEffect(() => {
+    const index = restoreAttachmentFocus.current;
+
+    if (index === null) return;
+    restoreAttachmentFocus.current = null;
+    const buttons =
+      attachmentList.current?.querySelectorAll<HTMLButtonElement>('button');
+    const target =
+      buttons?.[Math.min(index, buttons.length - 1)] ?? attachmentInput.current;
+
+    target?.focus({ preventScroll: true });
+  }, [attachments]);
 
   useEffect(() => {
     if (confirmedReportId) {
@@ -473,63 +495,139 @@ export default function ReportPage() {
             >
               사진/동영상 첨부
             </label>
-            <div className="relative flex h-[110px] flex-col items-center justify-center gap-[9px] rounded-xl border-[1.5px] border-dashed border-slate-400 bg-background p-5 text-[13px]/[normal] font-bold text-slate-400 focus-within:outline-[3px] focus-within:outline-solid focus-within:outline-brand focus-within:outline-offset-4">
-              <span
-                aria-hidden="true"
-                className="text-[26px]/[normal] font-normal"
-              >
-                +
-              </span>
-              <span>이미지 첨부</span>
-              <input
-                className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
-                id="report-attachments"
-                name="attachments"
-                type="file"
-                disabled={formLocked}
-                multiple
-                accept={attachmentTypes.join(',')}
-                aria-invalid={Boolean(attachmentError) || undefined}
-                aria-describedby={
-                  attachmentError ? 'report-attachments-error' : undefined
+            <div
+              className={
+                attachments.length ? 'flex flex-wrap items-start' : undefined
+              }
+            >
+              {attachments.length > 0 && (
+                <ul
+                  ref={attachmentList}
+                  className="m-0 flex list-none flex-wrap p-0 text-[13px]/[normal]"
+                >
+                  {attachments.map((file, index) => (
+                    <li
+                      key={`${index}-${file.name}`}
+                      className="relative w-[86px] shrink-0 pt-2.5 pr-2.5"
+                    >
+                      <div className="size-[76px]">
+                        {!confirmedReportId &&
+                          (file.type.startsWith('image/') ? (
+                            <ReportImagePreview file={file} />
+                          ) : (
+                            <ReportVideoPreview file={file} />
+                          ))}
+                      </div>
+                      <span
+                        title={file.name}
+                        className="block truncate text-[11px] text-muted"
+                      >
+                        {file.name}
+                      </span>
+                      <button
+                        className="absolute -top-3 -right-3 z-10 grid size-11 cursor-pointer place-items-center rounded-full border-0 bg-transparent p-0"
+                        type="button"
+                        disabled={formLocked}
+                        aria-label={`${file.name} 삭제`}
+                        onClick={(event) => {
+                          if (submissionInFlight.current || confirmedReportId)
+                            return;
+                          if (document.activeElement === event.currentTarget)
+                            restoreAttachmentFocus.current = index;
+                          setAttachmentError('');
+                          setAttachments((previous) =>
+                            previous.filter(
+                              (_, position) => position !== index,
+                            ),
+                          );
+                        }}
+                      >
+                        <span
+                          aria-hidden="true"
+                          className="grid size-5 place-items-center rounded-full bg-text text-[16px] leading-none text-surface"
+                        >
+                          ×
+                        </span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              <div
+                className={
+                  attachments.length >= 3
+                    ? 'sr-only'
+                    : `relative flex flex-col items-center justify-center gap-[9px] rounded-xl border-[1.5px] border-dashed border-slate-400 bg-background text-[13px]/[normal] font-bold text-slate-400 focus-within:outline-[3px] focus-within:outline-solid focus-within:outline-brand focus-within:outline-offset-4 ${attachments.length ? 'mt-2.5 h-[76px] w-10 shrink-0' : 'h-[110px] p-5'}`
                 }
-                onChange={(event) => {
-                  if (submissionInFlight.current || confirmedReportId) return;
+              >
+                <span
+                  aria-hidden="true"
+                  className="text-[26px]/[normal] font-normal"
+                >
+                  +
+                </span>
+                <span className={attachments.length ? 'sr-only' : undefined}>
+                  이미지 첨부
+                </span>
+                <input
+                  className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+                  ref={attachmentInput}
+                  id="report-attachments"
+                  name="attachments"
+                  type="file"
+                  disabled={formLocked || attachments.length >= 3}
+                  aria-label={attachments.length ? '첨부파일 추가' : undefined}
+                  multiple
+                  accept={attachmentTypes.join(',')}
+                  aria-invalid={Boolean(attachmentError) || undefined}
+                  aria-describedby={
+                    attachmentError ? 'report-attachments-error' : undefined
+                  }
+                  onChange={(event) => {
+                    if (submissionInFlight.current || confirmedReportId) return;
 
-                  const selected = Array.from(event.currentTarget.files ?? []);
-
-                  event.currentTarget.value = '';
-
-                  if (selected.length === 0) return;
-
-                  if (attachments.length + selected.length > 3) {
-                    setAttachmentError(
-                      '첨부파일은 최대 3개까지 선택할 수 있어요',
+                    const selected = Array.from(
+                      event.currentTarget.files ?? [],
                     );
 
-                    return;
-                  }
+                    event.currentTarget.value = '';
 
-                  if (
-                    selected.some(
-                      (file) =>
-                        !attachmentTypes.includes(file.type) ||
-                        file.size === 0 ||
-                        file.size > 10 * 1024 * 1024,
-                    )
-                  ) {
-                    setAttachmentError(
-                      'JPEG·PNG·WebP·MP4·WebM 형식의 0바이트보다 크고 10 MiB 이하인 파일을 선택해 주세요',
-                    );
+                    if (selected.length === 0) return;
 
-                    return;
-                  }
+                    if (attachments.length + selected.length > 3) {
+                      setAttachmentError(
+                        '첨부파일은 최대 3개까지 선택할 수 있어요',
+                      );
 
-                  setAttachmentError('');
-                  setAttachments((previous) => [...previous, ...selected]);
-                }}
-              />
+                      return;
+                    }
+
+                    if (
+                      selected.some(
+                        (file) =>
+                          !attachmentTypes.includes(file.type) ||
+                          file.size === 0 ||
+                          file.size > 10 * 1024 * 1024,
+                      )
+                    ) {
+                      setAttachmentError(
+                        'JPEG·PNG·WebP·MP4·WebM 형식의 0바이트보다 크고 10 MiB 이하인 파일을 선택해 주세요',
+                      );
+
+                      return;
+                    }
+
+                    setAttachmentError('');
+                    setAttachments((previous) => [...previous, ...selected]);
+                  }}
+                />
+              </div>
             </div>
+            {attachments.length > 0 && (
+              <p aria-live="polite" className="m-0 text-xs text-slate-400">
+                {attachments.length} / 3
+              </p>
+            )}
             {attachmentError && (
               <p
                 id="report-attachments-error"
@@ -538,45 +636,6 @@ export default function ReportPage() {
               >
                 {attachmentError}
               </p>
-            )}
-            {attachments.length > 0 && (
-              <ul className="m-0 flex list-none flex-col gap-2 p-0 text-[13px]/[normal]">
-                {attachments.map((file, index) => (
-                  <li
-                    key={`${index}-${file.name}`}
-                    className="flex items-center justify-between gap-2"
-                  >
-                    <div className="flex min-w-0 items-center gap-3">
-                      {!confirmedReportId &&
-                        (file.type.startsWith('image/') ? (
-                          <ReportImagePreview file={file} />
-                        ) : (
-                          <ReportVideoPreview file={file} />
-                        ))}
-                      <span className="min-w-0 [overflow-wrap:anywhere]">
-                        {file.name}
-                      </span>
-                    </div>
-                    <button
-                      className="shrink-0 cursor-pointer rounded-[10px] border border-solid border-border bg-surface px-3 py-2 text-muted"
-                      type="button"
-                      disabled={formLocked}
-                      aria-label={`${file.name} 삭제`}
-                      onClick={() => {
-                        if (submissionInFlight.current || confirmedReportId)
-                          return;
-
-                        setAttachmentError('');
-                        setAttachments((previous) =>
-                          previous.filter((_, position) => position !== index),
-                        );
-                      }}
-                    >
-                      삭제
-                    </button>
-                  </li>
-                ))}
-              </ul>
             )}
           </div>
           <p className="m-0 text-[13px]/[normal] text-muted">
