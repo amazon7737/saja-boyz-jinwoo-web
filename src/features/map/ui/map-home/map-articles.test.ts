@@ -598,7 +598,9 @@ test('mapGroupedSheetRestoresExpandedReadingPositionAndArticleFocus', async () =
         ),
       ),
     );
-    const detail = document.querySelector<HTMLElement>('[role="dialog"]')!;
+    const detail = document.querySelector<HTMLElement>(
+      '[data-article-inline]',
+    )!;
     expect(chooser.isConnected, '그룹 시트를 버리지 않고 읽기 상태 보존').toBe(
       true,
     );
@@ -606,17 +608,12 @@ test('mapGroupedSheetRestoresExpandedReadingPositionAndArticleFocus', async () =
     expect(chooser.hasAttribute('inert')).toBe(true);
     expect(chooser.getAttribute('role')).toBeNull();
     expect(document.querySelector('[aria-label="선택한 기사"]')).toBeNull();
-    expect(document.querySelectorAll('[role="dialog"]')).toHaveLength(1);
+    expect(document.querySelectorAll('[role="dialog"]')).toHaveLength(0);
     expect(
       detail.contains(document.activeElement),
       '새 상세가 포커스를 소유',
     ).toBe(true);
-    expect(document.body.style.overflow).toBe('hidden');
-    marker.focus();
-    expect(
-      detail.contains(document.activeElement),
-      '숨은 그룹이 포커스를 가로채지 않음',
-    ).toBe(true);
+    expect(document.body.style.overflow).toBe('auto');
 
     delete container.dataset.articleOverlay;
     container.inert = false;

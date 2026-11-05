@@ -1,7 +1,7 @@
 // file: src/proxy-navigation.test.ts
 import { execFile, spawn, type ChildProcess } from 'node:child_process';
 import { once } from 'node:events';
-import { cp, mkdtemp, rm, symlink } from 'node:fs/promises';
+import { cp, mkdir, mkdtemp, rm, symlink, writeFile } from 'node:fs/promises';
 import { createServer, type Server, type ServerResponse } from 'node:http';
 import type { AddressInfo } from 'node:net';
 import { tmpdir } from 'node:os';
@@ -167,6 +167,62 @@ beforeAll(async () => {
     join(directory, 'node_modules'),
     'junction',
   );
+  // The temporary app exposes the actual shared sheet as a preview fixture.
+  const sheetFixture = join(directory, 'src/app/sheet-test-fixture');
+  await mkdir(sheetFixture, { recursive: true });
+  await writeFile(
+    join(sheetFixture, 'page.tsx'),
+    `import { SheetFixture, type FixtureArticle } from './sheet-fixture';
+export const dynamic = 'force-dynamic';
+export default async function FixturePage() {
+  const id = 'a'.repeat(64);
+  const base = process.env.NEWS_API_BASE_URL!;
+  const response = await fetch(new URL('/news/' + id, base), { cache: 'no-store' });
+  const item = response.ok ? ((await response.json()) as FixtureArticle) : null;
+  return <SheetFixture item={item} id={id} apiOrigin={base} />;
+}
+`,
+  );
+  await writeFile(
+    join(sheetFixture, 'sheet-fixture.tsx'),
+    `"use client";
+import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
+import { DetailSheet } from '@/features/article-detail/ui/detail-sheet/detail-sheet';
+import { DetailImage } from '@/app/incidents/[id]/detail-image';
+import { DetailShare } from '@/app/incidents/[id]/detail-share';
+import { DetailRetry } from '@/features/article-detail/ui/detail-retry/detail-retry';
+import { Notice } from '@/components/feedback/notice';
+export type FixtureArticle = {
+  image_status: string;
+  image_url: string | null;
+  article: { title: string; description: string };
+};
+export function SheetFixture({ item, id, apiOrigin }: { item: FixtureArticle | null; id: string; apiOrigin: string }) {
+  const [open, setOpen] = useState(true);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  const imageUrl = item?.image_status === 'ready' && item.image_url === '/images/' + id + '.jpg'
+    ? new URL(item.image_url, apiOrigin).href : null;
+  return <>
+    <div data-article-background="">지도 배경 fixture</div>
+    {mounted && open && createPortal(<DetailSheet titleId={item ? 'fixture-title' : 'article-detail-error'} onClose={() => setOpen(false)} footer={item ? <DetailShare id={id} title={item.article.title} /> : undefined}>
+      {item ? <>
+        <h1 id="fixture-title" className="m-0 text-sm">{item.article.title}</h1>
+        {imageUrl && <DetailImage src={imageUrl} />}
+        <p className="m-0">{item.article.description}</p>
+      </> : <>
+        <span id="article-detail-error" className="sr-only">기사 상세 오류</span>
+        <Notice role="alert" title="이 소식을 다시 열어볼까요?" action={<DetailRetry id={id} />}>
+          <p className="mt-0 font-bold">기사를 불러오지 못했어요</p>
+          <p>연결을 확인한 뒤 다시 눌러주세요.</p>
+        </Notice>
+      </>}
+    </DetailSheet>, document.body)}
+  </>;
+}
+`,
+  );
   const env = {
     ...process.env,
     NEWS_API_BASE_URL: 'http://127.0.0.1:' + apiPort,
@@ -179,6 +235,9 @@ beforeAll(async () => {
     env,
     timeout: 90000,
     maxBuffer: 8 * 1024 * 1024,
+  }).catch((error: Error & { stdout?: string; stderr?: string }) => {
+    console.error(error.stdout, error.stderr);
+    throw error;
   });
   app = spawn(
     process.execPath,
@@ -456,10 +515,10 @@ test('listFrameKeepsLoadingInlineAndRestoresLoadedPagesAcrossHistory', async () 
       const inline = page.locator('main [data-article-inline]');
       await inline.locator('[role="status"][aria-busy="true"]').waitFor();
       expect(await page.getByRole('dialog').count()).toBe(0);
-      expect(await page.locator('header').isVisible()).toBe(true);
+      expect(await page.locator('header').isVisible()).toBe(false);
       expect(
         await page.getByRole('navigation', { name: '주 메뉴' }).isVisible(),
-      ).toBe(true);
+      ).toBe(false);
       expect(await page.evaluate(() => document.body.style.overflow)).not.toBe(
         'hidden',
       );
@@ -643,7 +702,7 @@ test('searchResultFocusStaysAboveNavigationAndReturnsToItsOpener', async () => {
       const before = await page.evaluate(() => scrollY);
       await page.keyboard.press('Enter');
       await page
-        .getByRole('dialog')
+        .locator('[data-article-inline]')
         .getByRole('heading', {
           level: 1,
           name: listArticles[12].article.title,
@@ -651,7 +710,7 @@ test('searchResultFocusStaysAboveNavigationAndReturnsToItsOpener', async () => {
         .waitFor();
       await page.keyboard.press('Escape');
       await page.waitForFunction(
-        () => !document.querySelector('[role="dialog"]'),
+        () => !document.querySelector('[data-article-inline]'),
       );
       const returned = new URL(page.url());
       expect(returned.pathname).toBe('/search');
@@ -678,18 +737,11 @@ test('inlineIconsPreserveSpacingAndAccessibleControls', async () => {
   await page
     .getByRole('link', { name: article.article.title, exact: true })
     .click();
-  const dialog = page.getByRole('dialog');
+  const dialog = page.locator('[data-article-inline]');
   await dialog
     .getByRole('heading', { level: 1, name: article.article.title })
     .waitFor();
-  const expand = dialog.getByRole('button', {
-    name: '기사 시트 펼치기',
-    exact: true,
-  });
-  if (await expand.count()) await expand.click();
-  await dialog
-    .getByRole('button', { name: '기사 시트 접기', exact: true })
-    .waitFor();
+  expect(await page.getByRole('dialog').count()).toBe(0);
   async function checkRow(
     element: import('playwright-core').Locator,
     label: string,
@@ -920,13 +972,13 @@ test('serverLoadingBoundariesKeepMapFrameAndStandaloneArticleSeoAccessible', asy
         .poll(() => waitingDetails.length, { timeout: 5000 })
         .toBeGreaterThan(0);
       const loading = page
-        .getByRole('dialog')
+        .locator('[data-article-inline]')
         .locator('[role="status"][aria-busy="true"]');
       await loading.waitFor({ timeout: 1500 }).catch(() => {});
       expect
         .soft(
           await loading.isVisible(),
-          '기사 주소로 내부 이동할 때 시트 스켈레톤',
+          '기사 주소로 내부 이동할 때 상세 스켈레톤',
         )
         .toBe(true);
     } finally {
@@ -1337,7 +1389,7 @@ test('errorSheetTracksSmallDragWithoutCountingScreenReaderOnlyContent', async ()
   try {
     await page.emulateMedia({ reducedMotion: 'no-preference' });
     failDetail = true;
-    await page.goto(origin + '/incidents/' + id);
+    await page.goto(origin + '/sheet-test-fixture');
     const dialog = page.getByRole('dialog');
     const handle = dialog.locator('button[aria-expanded]');
     const hiddenHeading = dialog.locator('#article-detail-error');
@@ -1407,10 +1459,7 @@ test('articleSheetStaysInViewportWhenResizedDuringDrag', async () => {
       '회전 중 크기를 확인하는 긴 기사입니다. '.repeat(300);
     const page = await openList();
     await page.emulateMedia({ reducedMotion: 'no-preference' });
-    await page.goto(origin + '/archive');
-    await page
-      .getByRole('link', { name: article.article.title, exact: true })
-      .click();
+    await page.goto(origin + '/sheet-test-fixture');
 
     const dialog = page.getByRole('dialog');
     const handle = dialog.locator('button[aria-expanded]');
@@ -1487,10 +1536,7 @@ test('articleSheetTracksSmallPointerMovement', async () => {
     );
     const page = await openList();
     await page.emulateMedia({ reducedMotion: 'no-preference' });
-    await page.goto(origin + '/archive');
-    await page
-      .getByRole('link', { name: article.article.title, exact: true })
-      .click();
+    await page.goto(origin + '/sheet-test-fixture');
 
     const dialog = page.getByRole('dialog');
     const handle = dialog.locator('button[aria-expanded]');
@@ -1564,10 +1610,7 @@ test('articleSheetFollowsPointerBeforeRelease', async () => {
     article.article.description =
       '드래그 검증을 위한 긴 기사 요약입니다. '.repeat(300);
     const page = await openList();
-    await page.goto(origin + '/archive');
-    await page
-      .getByRole('link', { name: article.article.title, exact: true })
-      .click();
+    await page.goto(origin + '/sheet-test-fixture');
 
     const dialog = page.getByRole('dialog');
     const handle = dialog.locator('button[aria-expanded]');
@@ -1684,7 +1727,7 @@ test('normalArticleSheetsStartHalfAndDragNearTopWithSheetOnlyAiDisclosure', asyn
       const heights: number[] = [];
       for (const description of [
         '짧은 기사 요약입니다.',
-        '동네 소식과 안전 안내를 확인해 주세요. '.repeat(10),
+        '동네 소식과 안전 안내를 확인해 주세요. '.repeat(120),
       ]) {
         article.article.description = description;
         const page =
@@ -1709,34 +1752,69 @@ test('normalArticleSheetsStartHalfAndDragNearTopWithSheetOnlyAiDisclosure', asyn
         await page
           .getByRole('heading', { name: article.article.title, exact: true })
           .waitFor();
-        const geometry = await size(page);
-        heights.push(geometry.height);
+        const detail = page.locator('[data-article-inline]');
+        await detail.waitFor({ state: 'visible', timeout: 5000 });
+        await detail
+          .getByRole('heading', { name: article.article.title, exact: true })
+          .waitFor();
         expect
           .soft(
-            await page.getByRole('dialog').getAttribute('data-expanded'),
-            entry + ' 기본은 접힘',
+            await page.getByRole('dialog').count(),
+            entry + ' 전체 상세 페이지',
           )
-          .toBe('false');
+          .toBe(0);
         expect
-          .soft(
-            Math.abs(
-              geometry.height -
-                Math.min(geometry.natural, geometry.viewport * 0.5352),
-            ),
-            entry + ' 기본은 내용 높이와 Figma 절반 상한',
-          )
-          .toBeLessThan(2);
-        expect
-          .soft(geometry.bottom, entry + ' 화면 아래 정렬')
-          .toBeCloseTo(geometry.viewport, 0);
+          .soft(await detail.textContent(), entry + ' 기사 본문 유지')
+          .toContain(description);
+        heights.push(
+          await page.evaluate(() => document.documentElement.scrollHeight),
+        );
         const context = page.context();
         contexts.splice(contexts.indexOf(context), 1);
         await context.close();
       }
       expect
-        .soft(heights[1], entry + ' 기본 상태도 내용이 짧으면 작게 열림')
+        .soft(heights[1], entry + ' 본문 길이에 따라 페이지가 늘어남')
         .toBeGreaterThan(heights[0] + 20);
     }
+
+    const sheetHeights: number[] = [];
+    for (const description of [
+      '짧은 기사 요약입니다.',
+      '동네 소식과 안전 안내를 확인해 주세요. '.repeat(10),
+    ]) {
+      article.article.description = description;
+      const page = await openList();
+      await page.emulateMedia({ reducedMotion: 'reduce' });
+      await page.goto(origin + '/sheet-test-fixture');
+      const sheet = page.getByRole('dialog');
+      await sheet
+        .getByRole('heading', { name: article.article.title, exact: true })
+        .waitFor();
+      const geometry = await size(page);
+      sheetHeights.push(geometry.height);
+      expect
+        .soft(await sheet.getAttribute('data-expanded'), '미리보기 기본은 접힘')
+        .toBe('false');
+      expect
+        .soft(
+          Math.abs(
+            geometry.height -
+              Math.min(geometry.natural, geometry.viewport * 0.5352),
+          ),
+          '미리보기는 내용 높이와 절반 상한',
+        )
+        .toBeLessThan(2);
+      expect
+        .soft(geometry.bottom, '미리보기는 화면 아래 정렬')
+        .toBeCloseTo(geometry.viewport, 0);
+      const context = page.context();
+      contexts.splice(contexts.indexOf(context), 1);
+      await context.close();
+    }
+    expect
+      .soft(sheetHeights[1], '내용이 짧으면 높이가 내용에 맞게 늘어남')
+      .toBeGreaterThan(sheetHeights[0] + 20);
 
     imageEnabled = true;
     article.article.description = '이미지 안내 위치를 확인하는 기사입니다.';
@@ -1754,7 +1832,7 @@ test('normalArticleSheetsStartHalfAndDragNearTopWithSheetOnlyAiDisclosure', asyn
     await images
       .getByRole('link', { name: article.article.title, exact: true })
       .click();
-    const detail = images.getByRole('dialog');
+    const detail = images.locator('[data-article-inline]');
     await detail
       .getByRole('heading', { name: article.article.title, exact: true })
       .waitFor();
@@ -1762,7 +1840,7 @@ test('normalArticleSheetsStartHalfAndDragNearTopWithSheetOnlyAiDisclosure', asyn
     await photo.evaluate((element) => (element as HTMLImageElement).decode());
     const caption = detail.locator('figcaption');
     expect
-      .soft((await caption.textContent())?.trim(), '시트에서만 정확한 AI 안내')
+      .soft((await caption.textContent())?.trim(), '상세의 정확한 AI 안내')
       .toBe('AI로 생성된 이미지입니다.');
     const photoBox = await photo.boundingBox(),
       captionBox = await caption.boundingBox();
@@ -1776,11 +1854,9 @@ test('normalArticleSheetsStartHalfAndDragNearTopWithSheetOnlyAiDisclosure', asyn
 
     article.article.description =
       '긴 본문을 읽고 안전 안내를 확인해 주세요. '.repeat(300);
-    const page = await openSheetSource();
+    const page = await openList();
     await page.emulateMedia({ reducedMotion: 'reduce' });
-    await page
-      .getByRole('link', { name: article.article.title, exact: true })
-      .click();
+    await page.goto(origin + '/sheet-test-fixture');
     const dialog = page.getByRole('dialog');
     await dialog
       .getByRole('heading', { name: article.article.title, exact: true })
@@ -1834,11 +1910,14 @@ test('normalArticleSheetsStartHalfAndDragNearTopWithSheetOnlyAiDisclosure', asyn
     expect.soft(compact.readingHeight).toBeGreaterThan(24);
     await share.scrollIntoViewIfNeeded();
     expect.soft(await share.isVisible(), '작은 화면 공유 접근').toBe(true);
-    await dialog.getByRole('link', { name: '닫기', exact: true }).click();
+    await dialog.getByRole('button', { name: '닫기', exact: true }).click();
     await expect.poll(() => page.getByRole('dialog').count()).toBe(0);
     expect
       .soft(
-        await page.locator('[data-article-background]').getAttribute('inert'),
+        await page
+          .locator('[data-article-background]')
+          .first()
+          .getAttribute('inert'),
       )
       .toBeNull();
   } finally {

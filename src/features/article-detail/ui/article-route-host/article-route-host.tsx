@@ -38,16 +38,14 @@ export function ArticleRouteHost({
   const sourcePath =
     '/' +
     backgroundSegments.filter((segment) => !segment.startsWith('(')).join('/');
-  const inline = active && sourcePath === '/incidents';
+  const inline = active;
   const listScroll = useRef(0);
   const previousInline = useRef(false);
   const opener = useRef<HTMLElement | null>(null);
   const previousActive = useRef(false);
   const [height, setMeasuredHeight] = useState(0);
-  const [expanded, setExpanded] = useState(false);
-  const setHeight = useCallback((height: number, expanded = false) => {
+  const setHeight = useCallback((height: number) => {
     setMeasuredHeight(height);
-    setExpanded(expanded);
   }, []);
   const [mapArticles, registerMapArticles] = useState<LocatedArticle[]>([]);
   const openArticle = useCallback(
@@ -73,7 +71,7 @@ export function ArticleRouteHost({
 
   useLayoutEffect(() => {
     if (inline && !previousInline.current) window.scrollTo(0, 0);
-    if (!inline && previousInline.current && pathname === '/incidents')
+    if (!inline && previousInline.current && pathname !== '/')
       window.scrollTo(0, listScroll.current);
     previousInline.current = inline;
   }, [inline, pathname]);
@@ -99,7 +97,7 @@ export function ArticleRouteHost({
         /^\/incidents\/[a-f0-9]{64}$/.test(link.getAttribute('href') ?? '')
       ) {
         opener.current = link;
-        if (pathname === '/incidents') listScroll.current = window.scrollY;
+        if (pathname !== '/') listScroll.current = window.scrollY;
       }
     },
     [active, pathname],
@@ -131,12 +129,7 @@ export function ArticleRouteHost({
 
   return (
     <ArticleSheetContext value={value}>
-      <AppShell
-        backgroundPath={active ? sourcePath : pathname}
-        inert={active && !inline}
-        hideHeader={active && sourcePath === '/' && expanded}
-        onClickCapture={captureOpener}
-      >
+      <AppShell backgroundPath={pathname} onClickCapture={captureOpener}>
         <div
           hidden={inline}
           inert={inline || undefined}

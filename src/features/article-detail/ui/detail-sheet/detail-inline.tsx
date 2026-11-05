@@ -27,7 +27,7 @@ export function DetailInline({
       data-article-inline=""
       aria-labelledby={titleId}
       tabIndex={-1}
-      className="flex min-w-0 flex-col gap-4 pb-5 outline-none [overflow-wrap:anywhere]"
+      className="flex min-h-dvh min-w-0 flex-col bg-surface outline-none [overflow-wrap:anywhere]"
       onKeyDown={(event) => {
         if (event.key === 'Escape' && !event.defaultPrevented) {
           event.preventDefault();
@@ -35,11 +35,18 @@ export function DetailInline({
         }
       }}
     >
-      <nav aria-label="기사 상세 탐색" className="flex items-center">
+      <nav
+        aria-label="기사 상세 탐색"
+        className="flex items-center justify-between border-0 border-b border-solid border-border px-4 py-3"
+      >
         <Link
-          href="/incidents"
+          href={route?.active ? route.sourcePath : '/incidents'}
           scroll={false}
-          aria-label="목록으로"
+          aria-label={
+            route?.active && route.sourcePath !== '/incidents'
+              ? '이전 화면으로'
+              : '목록으로'
+          }
           className="ui-control inline-flex min-h-11 items-center gap-2 rounded-lg px-2 text-sm font-bold text-text"
           onClick={(event) => {
             if (
@@ -55,11 +62,25 @@ export function DetailInline({
             }
           }}
         >
-          <span aria-hidden="true">←</span> 목록으로
+          <span aria-hidden="true" className="text-xl">
+            ←
+          </span>{' '}
+          사건 상세
+        </Link>
+        <Link
+          href="/"
+          aria-label="닫기"
+          className="ui-control grid size-11 place-items-center rounded-lg text-2xl text-text"
+        >
+          <span aria-hidden="true">×</span>
         </Link>
       </nav>
-      {children}
-      {footer}
+      <div className="flex flex-1 flex-col gap-4 p-4">{children}</div>
+      {footer && (
+        <div className="px-4 pt-4 pb-[max(24px,env(safe-area-inset-bottom))]">
+          {footer}
+        </div>
+      )}
     </section>
   );
 }

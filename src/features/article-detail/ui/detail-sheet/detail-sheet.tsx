@@ -57,14 +57,7 @@ type DetailSheetProps = {
 };
 
 export function DetailSheet(props: DetailSheetProps) {
-  const route = useArticleSheetRoute();
-
-  if (
-    route?.active &&
-    route.sourcePath === '/incidents' &&
-    !props.onClose &&
-    props.active !== false
-  )
+  if (!props.onClose && props.active !== false)
     return (
       <DetailInline titleId={props.titleId} footer={props.footer}>
         {props.children}
