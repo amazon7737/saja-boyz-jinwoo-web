@@ -10,6 +10,8 @@ import { Notice } from '@/components/feedback/notice';
 import { LoadingSpinner } from '@/components/feedback/loading-spinner';
 import { categoryLabels } from '@/features/incidents/model/labels';
 
+import { ReportImagePreview } from './report-image-preview';
+
 const requiredFields = [
   'category',
   'occurredAt',
@@ -543,9 +545,14 @@ export default function ReportPage() {
                     key={`${index}-${file.name}`}
                     className="flex items-center justify-between gap-2"
                   >
-                    <span className="min-w-0 [overflow-wrap:anywhere]">
-                      {file.name}
-                    </span>
+                    <div className="flex min-w-0 items-center gap-3">
+                      {!confirmedReportId && file.type.startsWith('image/') && (
+                        <ReportImagePreview file={file} />
+                      )}
+                      <span className="min-w-0 [overflow-wrap:anywhere]">
+                        {file.name}
+                      </span>
+                    </div>
                     <button
                       className="shrink-0 cursor-pointer rounded-[10px] border border-solid border-border bg-surface px-3 py-2 text-muted"
                       type="button"

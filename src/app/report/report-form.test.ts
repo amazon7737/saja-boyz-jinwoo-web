@@ -144,6 +144,80 @@ void [
   expectFieldError,
 ];
 
+test('reportImagePreviewRemainsForRetryAndReleasesAfterConfirmedReceipt', async () => {
+  const create = vi.fn(() => 'blob:local-preview');
+  const revoke = vi.fn();
+  const NativeURL = URL;
+  class MockURL extends NativeURL {
+    static createObjectURL = create;
+    static revokeObjectURL = revoke;
+  }
+  vi.stubGlobal('URL', MockURL);
+  fetchMock.mockRejectedValueOnce(new TypeError('network'));
+  fetchMock.mockResolvedValueOnce(receiptResponse(200));
+  await renderReport();
+  await fillValid();
+  const photo = testFile('현장.png', 'image/png');
+  await selectFiles([photo]);
+  const image = () => container.querySelector('img[src="blob:local-preview"]');
+  expect(create).toHaveBeenCalledWith(photo);
+  expect(image()).not.toBeNull();
+
+  await checkInput();
+  expect(container.querySelector('[role="alert"]')?.textContent).toContain(
+    '접수 여부를 확인하지 못했어요',
+  );
+  expect(field('title').value).toBe('도로 점검 제보');
+  expect(
+    container.querySelector('button[aria-label="현장.png 삭제"]'),
+  ).not.toBeNull();
+  expect(image()).not.toBeNull();
+  expect(revoke).not.toHaveBeenCalledWith('blob:local-preview');
+  const first = fetchMock.mock.calls[0][1];
+  assert(first?.body instanceof FormData);
+  expect(first.body.getAll('attachments')).toEqual([photo]);
+  const requestKey = new Headers(first.headers).get('Idempotency-Key');
+  expect(requestKey).toBeTruthy();
+
+  await checkInput();
+  const retry = fetchMock.mock.calls[1][1];
+  assert(retry?.body instanceof FormData);
+  expect(retry.body.getAll('attachments')).toEqual([photo]);
+  expect(new Headers(retry.headers).get('Idempotency-Key')).toBe(requestKey);
+  expect(container.querySelector('[role="status"]')?.textContent).toContain(
+    receipt.report_id,
+  );
+  expect(image()).toBeNull();
+  expect(revoke).toHaveBeenCalledTimes(1);
+  expect(revoke).toHaveBeenCalledWith('blob:local-preview');
+});
+
+test('reportImagePreviewReleasesItsObjectUrlWhenRemoved', async () => {
+  const create = vi.fn(() => 'blob:local-preview');
+  const revoke = vi.fn();
+  const NativeURL = URL;
+  class MockURL extends NativeURL {
+    static createObjectURL = create;
+    static revokeObjectURL = revoke;
+  }
+  vi.stubGlobal('URL', MockURL);
+  await renderReport();
+  const photo = testFile('현장.png', 'image/png');
+  await selectFiles([photo]);
+  expect(create).toHaveBeenCalledWith(photo);
+  expect(
+    container.querySelector('img[src="blob:local-preview"]'),
+  ).not.toBeNull();
+  expect(container.textContent).toContain('현장.png');
+  expect(fetchMock).not.toHaveBeenCalled();
+  const remove = container.querySelector('button[aria-label="현장.png 삭제"]');
+  assert(remove instanceof HTMLButtonElement);
+  await act(async () => remove.click());
+  expect(container.querySelector('img[src="blob:local-preview"]')).toBeNull();
+  expect(revoke).toHaveBeenCalledWith('blob:local-preview');
+  expect(fetchMock).not.toHaveBeenCalled();
+});
+
 test('reportAttachments: valid files can be selected removed and selected again', async () => {
   await renderReport();
   const image = testFile('road.jpg', 'image/jpeg', 10 * 1024 * 1024);
