@@ -861,3 +861,91 @@ test('singleMapMarkerShowsArticlePreviewBeforeOpeningDetail', async () => {
   expect(fixture.setZoom).not.toHaveBeenCalled();
   expect(fixture.fitBounds).not.toHaveBeenCalled();
 });
+test('mapPreviewShowsSelectedArticleDetailsAndSafeSourceBeforeNavigation', async () => {
+  const item = {
+    ...data.items[0],
+    image_status: 'ready',
+    image_url: `/images/${data.items[0].article_id}.jpg`,
+    article: {
+      ...data.items[0].article,
+      title: '장림동 <b>공장</b> 화재',
+      description: '부산 사하구에서 불이 났습니다.',
+      originallink: 'javascript:alert(1)',
+      link: 'https://publisher.example.invalid/story',
+    },
+  };
+  const openArticle = vi.fn();
+  const route: ArticleSheetRoute = {
+    active: false,
+    sourcePath: '/',
+    height: 0,
+    mapArticles: [item],
+    openArticle,
+    close: vi.fn(),
+    setHeight: vi.fn(),
+    registerMapArticles: vi.fn(),
+    retry: vi.fn(),
+  };
+  const fixture = await mount({ ...data, total: 1, items: [item] }, route);
+  const marker = (
+    fixture.positions[0] as { icon: { content: HTMLButtonElement } }
+  ).icon.content;
+  marker.focus();
+  const initialUrl = window.location.href;
+
+  await act(async () => fixture.selected[0]());
+
+  const preview = document.querySelector<HTMLElement>(
+    '[role="dialog"][aria-label="선택한 기사"]',
+  )!;
+  expect(preview).not.toBeNull();
+  expect(preview.textContent).toContain('장림동 공장 화재');
+  expect(preview.querySelector('b')).toBeNull();
+  expect(preview.textContent).toContain(item.location.label);
+  expect(preview.textContent).toContain(item.article.description);
+  expect(preview.querySelector('time')?.getAttribute('datetime')).toBe(
+    '2026-10-13T23:00:00.000Z',
+  );
+  const image = preview.querySelector<HTMLImageElement>(
+    `img[src="${data.apiOrigin}${item.image_url}"]`,
+  );
+  expect(image).not.toBeNull();
+  expect(image?.getAttribute('width')).toBe('361');
+  expect(image?.getAttribute('height')).toBe('140');
+  expect(preview.textContent).toContain('AI로 생성된 이미지입니다.');
+  const source = preview.querySelector<HTMLAnchorElement>(
+    'a[href="https://publisher.example.invalid/story"]',
+  );
+  expect(source?.getAttribute('target')).toBe('_blank');
+  expect(source?.getAttribute('rel')).toContain('noopener');
+  expect(preview.querySelector('a[href^="javascript:"]')).toBeNull();
+
+  const detail = preview.querySelector<HTMLAnchorElement>(
+    `a[href="/incidents/${item.article_id}"]`,
+  );
+  expect(detail?.textContent).toContain('자세히 보기');
+  expect(window.location.href).toBe(initialUrl);
+  expect(openArticle).not.toHaveBeenCalled();
+  const preventNavigation = (event: MouseEvent) => event.preventDefault();
+  document.addEventListener('click', preventNavigation);
+  try {
+    await act(async () => detail!.click());
+    expect(openArticle).toHaveBeenCalledOnce();
+    expect(openArticle).toHaveBeenCalledWith(item.article_id);
+    await fixture.draw({ ...route, active: true });
+    expect(document.querySelector('[aria-label="선택한 기사"]')).toBeNull();
+    await fixture.draw(route);
+    expect(document.querySelector('[aria-label="선택한 기사"]')).toBe(preview);
+    expect(document.activeElement).toBe(detail);
+    await act(async () =>
+      preview
+        .querySelector<HTMLButtonElement>(
+          'button[aria-label="기사 선택 닫기"]',
+        )!
+        .click(),
+    );
+    expect(document.activeElement).toBe(marker);
+  } finally {
+    document.removeEventListener('click', preventNavigation);
+  }
+});

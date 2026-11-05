@@ -11,6 +11,7 @@ import {
   articleText,
   publicationDate,
   publicationText,
+  safeSourceUrl,
 } from '@/features/article-list/model/article-presentation';
 import { ArticleImage } from '@/features/article-list/ui/article-image/article-image';
 
@@ -47,7 +48,12 @@ export function MapArticleSheet({
       onHeightChange={onHeightChange}
       active={active && !preview}
     >
-      <h1 id={titleId} className="m-0 text-sm font-bold text-muted">
+      <h1
+        id={titleId}
+        className={
+          items.length === 1 ? 'sr-only' : 'm-0 text-sm font-bold text-muted'
+        }
+      >
         선택한 위치의 기사 {items.length}건
       </h1>
       {items.map((item) => {
@@ -59,12 +65,27 @@ export function MapArticleSheet({
             ? new URL(item.image_url, apiOrigin).href
             : null;
 
+        const sourceUrl =
+          safeSourceUrl(item.article.originallink) ??
+          safeSourceUrl(item.article.link);
+        const single = items.length === 1;
+
         return (
           <article
             key={item.article_id}
-            className="flex shrink-0 flex-col gap-3 rounded-lg border border-solid border-border bg-background p-2.5"
+            className={
+              single
+                ? 'flex min-w-0 shrink-0 flex-col gap-4'
+                : 'flex shrink-0 flex-col gap-3 rounded-lg border border-solid border-border bg-background p-2.5'
+            }
           >
-            <h2 className="m-0 text-[15px]/[21px] font-extrabold text-text [overflow-wrap:anywhere]">
+            <h2
+              className={
+                single
+                  ? 'm-0 text-[18px]/[normal] font-extrabold text-text [overflow-wrap:anywhere]'
+                  : 'm-0 text-[15px]/[21px] font-extrabold text-text [overflow-wrap:anywhere]'
+              }
+            >
               {route && items.length === 1 ? (
                 articleText(item.article.title)
               ) : (
@@ -93,7 +114,13 @@ export function MapArticleSheet({
                 </Link>
               )}
             </h2>
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+            <div
+              className={
+                single
+                  ? 'flex flex-col gap-1'
+                  : 'flex flex-wrap items-center gap-x-3 gap-y-1'
+              }
+            >
               <p className="m-0 text-[13px]/[18px] font-medium text-muted">
                 <IconText
                   icon="pin"
@@ -106,6 +133,13 @@ export function MapArticleSheet({
               <p className="m-0 text-[12px]/4 text-slate-400">
                 {Number.isNaN(publishedAt.getTime()) ? (
                   '발행 시각 미확인'
+                ) : single ? (
+                  <IconText icon="calendar" size="compact">
+                    <span className="sr-only">기사 발행 </span>
+                    <time dateTime={publishedAt.toISOString()}>
+                      {publicationText(publishedAt)}
+                    </time>
+                  </IconText>
                 ) : (
                   <>
                     기사 발행{' '}
@@ -116,14 +150,50 @@ export function MapArticleSheet({
                 )}
               </p>
             </div>
-            <div className="flex items-start gap-3">
-              <div className="w-20 shrink-0">
-                <ArticleImage key={imageUrl} src={imageUrl} showAiCaption />
+            <div
+              className={
+                single ? 'flex flex-col gap-3' : 'flex items-start gap-3'
+              }
+            >
+              <div className={single ? 'w-full' : 'w-20 shrink-0'}>
+                <ArticleImage
+                  key={imageUrl}
+                  src={imageUrl}
+                  showAiCaption
+                  wide={single}
+                />
               </div>
               <p className="m-0 min-w-0 text-[13px]/[1.5] text-muted [overflow-wrap:anywhere]">
                 {articleText(item.article.description)}
               </p>
             </div>
+            {single &&
+              (sourceUrl ? (
+                <div className="flex min-w-0 items-center gap-1.5 py-1 text-[12px]/[15px] text-muted">
+                  <span className="shrink-0">출처:</span>
+                  <a
+                    href={sourceUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    title={`기사 원문 · ${new URL(sourceUrl).hostname}`}
+                    className="ui-link inline-flex min-w-0 items-center gap-1.5"
+                  >
+                    <IconText
+                      icon="link"
+                      size="compact"
+                      position="end"
+                      textClassName="truncate underline decoration-slate-300 underline-offset-2"
+                    >
+                      <span className="sr-only">기사 원문 · </span>
+                      {new URL(sourceUrl).hostname}
+                    </IconText>
+                  </a>
+                </div>
+              ) : (
+                <p className="m-0 py-1 text-[12px]/[15px] text-muted">
+                  원문 링크 없음
+                </p>
+              ))}
             <p className="m-0 text-[11px]/4 text-muted">
               {item.location.precision === 'address'
                 ? '기사에 언급된 주소 기준 위치'
