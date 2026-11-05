@@ -2577,3 +2577,96 @@ test('reportAttachmentTilesAreHorizontalAndKeepAccessibleFileControls', async ()
     }
   }
 }, 120000);
+
+test('reportFieldFocusAndErrorsRemainAccessible', async () => {
+  const context = await browser!.newContext({
+    viewport: { width: 320, height: 568 },
+  });
+  contexts.push(context);
+  const page = await context.newPage();
+  let posts = 0;
+  page.on('request', (request) => {
+    if (
+      request.method() === 'POST' &&
+      new URL(request.url()).pathname === '/reports'
+    )
+      posts++;
+  });
+  await page.goto(origin + '/report');
+  const fields = [
+    page.getByLabel('카테고리 선택', { exact: true }),
+    page.getByLabel('발생 날짜 및 시간 (한국시간)', { exact: true }),
+    page.getByLabel('제보 제목', { exact: true }),
+    page.getByLabel('발생 위치', { exact: true }),
+    page.getByLabel('상세내용', { exact: true }),
+  ];
+  const attachment = page.getByLabel('사진/동영상 첨부', { exact: true });
+  const upload = attachment.locator('..');
+  await page.getByRole('link', { name: '제보 닫기' }).focus();
+  await page.keyboard.press('Tab');
+  expect(
+    await fields[0].evaluate((node) => document.activeElement === node),
+  ).toBe(true);
+  expect(
+    await fields[0].evaluate((node) => {
+      const style = getComputedStyle(node);
+      return (
+        style.outlineStyle !== 'none' && parseFloat(style.outlineWidth) >= 2
+      );
+    }),
+  ).toBe(true);
+
+  for (const field of fields) {
+    await field.focus();
+    expect(await field.getAttribute('aria-invalid')).toBeNull();
+    const focus = await field.evaluate((node) => {
+      const style = getComputedStyle(node);
+      return { border: style.borderTopColor, shadow: style.boxShadow };
+    });
+    expect(focus.border).toBe('rgb(234, 26, 45)');
+    expect(focus.shadow).not.toBe('none');
+  }
+  await attachment.focus();
+  expect(
+    await upload.evaluate((node) => getComputedStyle(node).borderTopColor),
+  ).toBe('rgb(234, 26, 45)');
+
+  await page.getByRole('button', { name: '제보 접수', exact: true }).click();
+  for (const field of fields) {
+    expect(await field.getAttribute('aria-invalid')).toBe('true');
+    const error = await field.evaluate((node) => {
+      const id = node.getAttribute('aria-describedby');
+      const style = getComputedStyle(node);
+      return {
+        message: id ? document.getElementById(id)?.textContent : null,
+        border: style.borderTopColor,
+        background: style.backgroundColor,
+      };
+    });
+    expect(error.message).toContain('필수 항목이에요');
+    expect(error.border).toBe('rgb(234, 26, 45)');
+    expect(error.background).toBe('rgb(255, 245, 245)');
+  }
+  expect(posts).toBe(0);
+
+  await attachment.setInputFiles({
+    name: '허용되지않음.svg',
+    mimeType: 'image/svg+xml',
+    buffer: Buffer.from('<svg/>'),
+  });
+  expect(await attachment.getAttribute('aria-invalid')).toBe('true');
+  const attachmentError = await attachment.evaluate((node) => {
+    const id = node.getAttribute('aria-describedby');
+    const parent = node.parentElement!;
+    const style = getComputedStyle(parent);
+    return {
+      message: id ? document.getElementById(id)?.textContent : null,
+      border: style.borderTopColor,
+      background: style.backgroundColor,
+    };
+  });
+  expect(attachmentError.message).toContain('JPEG');
+  expect(attachmentError.border).toBe('rgb(234, 26, 45)');
+  expect(attachmentError.background).toBe('rgb(255, 245, 245)');
+  expect(posts).toBe(0);
+}, 120000);
