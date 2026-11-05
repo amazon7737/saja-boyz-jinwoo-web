@@ -580,7 +580,9 @@ test('searchAlignmentPreservesFullTargetsAndWorkingControls', async () => {
       submit: box(form.querySelector('button[type="submit"]')!),
       input: box(form.querySelector('input[name="q"]')!),
       row: box(row),
-      clock: box(row.querySelector('a svg')!),
+      clock: box(
+        document.querySelector('section[aria-label="최근 검색"] h2 svg')!,
+      ),
       remove: box(remove),
       removeGlyph: box(remove.querySelector('span')!),
       chip: box(document.querySelector('#suggested-keywords + div > a')!),
@@ -598,12 +600,18 @@ test('searchAlignmentPreservesFullTargetsAndWorkingControls', async () => {
   expect
     .soft(sizes.submit.right, '검색 버튼과 입력이 겹치지 않음')
     .toBeLessThanOrEqual(sizes.input.left + 0.5);
-  expect.soft(sizes.clock.width, '시계glyph가 본문을 밀지 않음').toBe(14);
+  expect.soft(sizes.clock.width, '최근 검색 제목의 시계 크기').toBe(16);
   expect.soft(sizes.remove.width, '최근검색 삭제 타깃32px 유지').toBe(32);
   expect.soft(sizes.remove.height).toBe(32);
   expect
-    .soft(sizes.removeGlyph.right, '삭제X 시각 위치는 행 오른쪽')
-    .toBeCloseTo(sizes.row.right, 0);
+    .soft(
+      Math.abs(
+        (sizes.removeGlyph.left + sizes.removeGlyph.right) / 2 -
+          (sizes.remove.left + sizes.remove.right) / 2,
+      ),
+      '삭제 아이콘이 조작 영역 가운데 정렬',
+    )
+    .toBeLessThanOrEqual(1);
   expect
     .soft(sizes.chip.width, '아이콘 추천칩은Figma89px에정렬')
     .toBeCloseTo(89, 0);
@@ -939,8 +947,13 @@ test('inlineIconsPreserveSpacingAndAccessibleControls', async () => {
     ),
   );
   await page.goto(origin + '/search');
-  const recent = page.getByRole('link', { name: '간격 검증', exact: true });
-  await checkRow(recent, '간격 검증', 14, 8);
+  const recentHeading = page
+    .getByRole('region', { name: '최근 검색', exact: true })
+    .getByRole('heading', { name: '최근 검색', exact: true });
+  await checkRow(recentHeading, '최근 검색', 16, 4);
+  expect(
+    await page.getByRole('link', { name: '간격 검증', exact: true }).count(),
+  ).toBe(1);
   expect(
     (await page
       .getByRole('button', { name: '간격 검증 삭제', exact: true })
@@ -2388,4 +2401,98 @@ test('reportLayoutKeepsControlsReadableAndReachableOnSmallScreens', async () => 
   expect(
     await page.getByText('접수번호:', { exact: false }).textContent(),
   ).toContain('a'.repeat(32));
+}, 120000);
+// Append to proxy-navigation.test.ts, which provides a test-only Next server
+// and an isolated headless browser context.
+test('recentSearchChipsScrollAndRemainKeyboardAccessible', async () => {
+  const context = await browser!.newContext({
+    viewport: { width: 320, height: 568 },
+  });
+  contexts.push(context);
+  const terms = [
+    '서울 소방서',
+    '서교동 화재',
+    '강남역',
+    '싱크홀',
+    '북한 무인기',
+    '아주 길게 입력한 최근 검색어 확인 예시',
+  ];
+  await context.addInitScript((keywords) => {
+    localStorage.setItem('hh:recent-searches:v1', JSON.stringify(keywords));
+  }, terms);
+  const page = await context.newPage();
+  await page.goto(origin + '/search');
+
+  const section = page.getByRole('region', { name: '최근 검색' });
+  const chips = section.locator('li');
+  await expect.poll(() => chips.count()).toBe(terms.length);
+  const horizontal = await section.locator('ul').evaluate((list) => {
+    const items = Array.from(list.querySelectorAll('li'));
+    const first = items[0].getBoundingClientRect();
+    const second = items[1].getBoundingClientRect();
+    return {
+      overflow: list.scrollWidth > list.clientWidth,
+      sameRow: Math.abs(first.top - second.top) < 1,
+      ordered: first.right < second.left,
+    };
+  });
+  expect(horizontal).toEqual({ overflow: true, sameRow: true, ordered: true });
+
+  const firstLink = section.getByRole('link', { name: terms[0], exact: true });
+  expect(await firstLink.getAttribute('href')).toBe(
+    '/search?q=' + encodeURIComponent(terms[0]),
+  );
+  await firstLink.focus();
+  await page.keyboard.press('Tab');
+  const firstDelete = section.getByRole('button', {
+    name: terms[0] + ' 삭제',
+    exact: true,
+  });
+  expect(
+    await firstDelete.evaluate((node) => document.activeElement === node),
+  ).toBe(true);
+  const visibleHitTarget = async (button: typeof firstDelete) =>
+    button.evaluate((node) => {
+      const rect = node.getBoundingClientRect();
+      const clip = node.closest('ul')!.getBoundingClientRect();
+      const hit = document.elementFromPoint(
+        rect.left + rect.width / 2,
+        rect.top + rect.height / 2,
+      );
+      return (
+        rect.width >= 32 &&
+        rect.height >= 32 &&
+        rect.left >= clip.left &&
+        rect.right <= clip.right &&
+        rect.top >= clip.top &&
+        rect.bottom <= clip.bottom &&
+        (hit === node || node.contains(hit))
+      );
+    });
+  expect(await visibleHitTarget(firstDelete)).toBe(true);
+
+  const lastLink = section.getByRole('link', {
+    name: terms.at(-1),
+    exact: true,
+  });
+  await lastLink.focus();
+  await expect
+    .poll(() => section.locator('ul').evaluate((list) => list.scrollLeft))
+    .toBeGreaterThan(0);
+  await page.keyboard.press('Tab');
+  const lastDelete = section.getByRole('button', {
+    name: terms.at(-1) + ' 삭제',
+    exact: true,
+  });
+  expect(
+    await lastDelete.evaluate((node) => document.activeElement === node),
+  ).toBe(true);
+  expect(await visibleHitTarget(lastDelete)).toBe(true);
+  await page.keyboard.press('Enter');
+  await expect.poll(() => chips.count()).toBe(terms.length - 1);
+  expect(
+    await page.evaluate(() =>
+      JSON.parse(localStorage.getItem('hh:recent-searches:v1') ?? '[]'),
+    ),
+  ).toEqual(terms.slice(0, -1));
 }, 120000);
