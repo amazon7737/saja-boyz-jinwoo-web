@@ -596,7 +596,7 @@ test('searchAlignmentPreservesFullTargetsAndWorkingControls', async () => {
       chip: box(document.querySelector('#suggested-keywords + div > a')!),
     };
   });
-  expect.soft(sizes.form.height, '시각 검색바37px 유지').toBeCloseTo(37, 0);
+  expect.soft(sizes.form.height, '시각 검색바44px 유지').toBeCloseTo(44, 0);
   expect.soft(sizes.submit.width, '검색 실제 클릭 영역44px 유지').toBe(44);
   expect.soft(sizes.submit.height).toBe(44);
   expect
@@ -2669,4 +2669,97 @@ test('reportFieldFocusAndErrorsRemainAccessible', async () => {
   expect(attachmentError.border).toBe('rgb(234, 26, 45)');
   expect(attachmentError.background).toBe('rgb(255, 245, 245)');
   expect(posts).toBe(0);
+}, 120000);
+// Append to proxy-navigation.test.ts: uses its isolated Next server and browser.
+test('searchInputCanClearDraftAndSubmitAfterComposition', async () => {
+  const context = await browser!.newContext({
+    viewport: { width: 320, height: 568 },
+  });
+  contexts.push(context);
+  const page = await context.newPage();
+  await page.goto(origin + '/search');
+
+  const form = page.locator('form[action="/search"]');
+  const input = page.getByRole('searchbox', { name: '기사 키워드 검색' });
+  const formHeight = await form.evaluate(
+    (element) => element.getBoundingClientRect().height,
+  );
+  expect(formHeight).toBeCloseTo(44, 0);
+  expect((await form.getAttribute('method'))?.toLowerCase()).toBe('get');
+
+  await input.fill('서울 & 화재');
+  const clearDraft = page.getByRole('button', {
+    name: '검색어 초기화',
+    exact: true,
+  });
+  await clearDraft.click();
+  expect(await input.inputValue()).toBe('');
+  expect(
+    await input.evaluate((element) => document.activeElement === element),
+  ).toBe(true);
+  expect(
+    await page.getByRole('button', { name: '검색어 초기화' }).count(),
+  ).toBe(0);
+
+  await input.fill('한글 화재');
+  await input.evaluate((element: HTMLInputElement) => {
+    element.dispatchEvent(
+      new CompositionEvent('compositionstart', { bubbles: true }),
+    );
+    element.form!.requestSubmit();
+  });
+  expect(new URL(page.url()).searchParams.has('q')).toBe(false);
+  await input.evaluate((element) =>
+    element.dispatchEvent(
+      new CompositionEvent('compositionend', { bubbles: true }),
+    ),
+  );
+  await input.press('Enter');
+  await page.waitForURL(
+    (url) =>
+      url.pathname === '/search' && url.searchParams.get('q') === '한글 화재',
+  );
+  expect(
+    await page
+      .getByRole('searchbox', { name: '기사 키워드 검색' })
+      .inputValue(),
+  ).toBe('한글 화재');
+  const reset = page.getByRole('link', { name: '검색어 초기화', exact: true });
+  expect(await reset.getAttribute('href')).toBe('/search');
+
+  // Clearing an edited field on a results page must retain the original
+  // navigation back to the initial search screen.
+  await input.fill('');
+  expect(await reset.count()).toBe(1);
+  await input.fill('두 번째 검색');
+  await input.press('Enter');
+  await page.waitForURL(
+    (url) =>
+      url.pathname === '/search' &&
+      url.searchParams.get('q') === '두 번째 검색',
+  );
+  expect(await input.inputValue()).toBe('두 번째 검색');
+  await page.goBack();
+  await page.waitForURL(
+    (url) =>
+      url.pathname === '/search' && url.searchParams.get('q') === '한글 화재',
+  );
+  await expect.poll(() => input.inputValue()).toBe('한글 화재');
+
+  await reset.click();
+  await page.waitForURL((url) => url.pathname === '/search' && !url.search);
+  expect(await input.inputValue()).toBe('');
+
+  const noJsContext = await browser!.newContext({ javaScriptEnabled: false });
+  contexts.push(noJsContext);
+  const noJs = await noJsContext.newPage();
+  await noJs.goto(origin + '/search');
+  await noJs
+    .getByRole('searchbox', { name: '기사 키워드 검색' })
+    .fill('서울 & 화재');
+  await noJs.getByRole('button', { name: '검색', exact: true }).click();
+  await noJs.waitForURL(
+    (url) =>
+      url.pathname === '/search' && url.searchParams.get('q') === '서울 & 화재',
+  );
 }, 120000);

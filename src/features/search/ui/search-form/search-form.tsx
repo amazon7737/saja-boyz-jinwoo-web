@@ -2,7 +2,14 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useState, useTransition, type ReactNode } from 'react';
+import {
+  useEffect,
+  useRef,
+  useState,
+  useTransition,
+  type ReactNode,
+  type RefObject,
+} from 'react';
 
 import { Icon } from '@/components/ui/icon/icon';
 import { LoadingSpinner } from '@/components/feedback/loading-spinner';
@@ -21,10 +28,11 @@ export function SearchForm({
   const prompt = useRollingSearchPrompt('기사 키워드 검색');
   const [pending, startTransition] = useTransition();
   const [revision, setRevision] = useState(0);
+  const composingRef = useRef(false);
 
   return (
     <div className="flex flex-col gap-5 pb-5 text-sm [&_article_a]:scroll-mt-3 [&_article_a]:scroll-mb-[calc(84px_+_env(safe-area-inset-bottom))]">
-      <div className="flex h-[37px] items-center gap-3">
+      <div className="flex h-11 items-center gap-3">
         <Link
           href="/"
           aria-label="지도로 돌아가기"
@@ -38,7 +46,7 @@ export function SearchForm({
           aria-busy={pending}
           onSubmit={(event) => {
             event.preventDefault();
-            if (pending) return;
+            if (pending || composingRef.current) return;
             const params = new URLSearchParams();
 
             for (const [name, value] of new FormData(event.currentTarget))
@@ -52,7 +60,7 @@ export function SearchForm({
               else router.push(href);
             });
           }}
-          className="flex h-[37px] min-w-0 flex-1 items-center rounded-card border-[1.5px] border-solid border-brand bg-surface pl-0 pr-0 shadow-[0_4px_8px_rgb(0_0_0/5%)]"
+          className="flex h-11 min-w-0 flex-1 items-center rounded-card border-[1.5px] border-solid border-brand bg-surface pl-0 pr-0 shadow-[0_4px_8px_rgb(0_0_0/5%)]"
         >
           <button
             type="submit"
@@ -69,25 +77,13 @@ export function SearchForm({
               <Icon name="search" />
             )}
           </button>
-          <input
+          <SearchInput
             key={keyword}
-            type="search"
-            name="q"
-            defaultValue={keyword}
-            readOnly={pending}
-            aria-label="기사 키워드 검색"
-            placeholder={prompt}
-            className="h-full min-h-0 min-w-0 flex-1 border-0 bg-transparent p-0 text-[14px]/[17px] font-semibold text-text placeholder:font-normal"
+            keyword={keyword}
+            prompt={prompt}
+            pending={pending}
+            composingRef={composingRef}
           />
-          {keyword && (
-            <Link
-              href="/search"
-              aria-label="검색어 초기화"
-              className="ui-control grid size-11 shrink-0 place-items-center text-muted"
-            >
-              ✕
-            </Link>
-          )}
         </form>
       </div>
       {pending && <SearchLoading initial={false} />}
@@ -100,5 +96,77 @@ export function SearchForm({
         {children}
       </div>
     </div>
+  );
+}
+
+function SearchInput({
+  keyword,
+  prompt,
+  pending,
+  composingRef,
+}: {
+  keyword: string;
+  prompt: string;
+  pending: boolean;
+  composingRef: RefObject<boolean>;
+}) {
+  const [hasValue, setHasValue] = useState(Boolean(keyword));
+  const input = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    return () => {
+      composingRef.current = false;
+    };
+  }, [composingRef]);
+
+  return (
+    <>
+      <input
+        ref={input}
+        type="search"
+        name="q"
+        defaultValue={keyword}
+        onChange={(event) => setHasValue(Boolean(event.currentTarget.value))}
+        onCompositionStart={() => {
+          composingRef.current = true;
+        }}
+        onCompositionEnd={() => {
+          composingRef.current = false;
+        }}
+        onBlur={() => {
+          composingRef.current = false;
+        }}
+        readOnly={pending}
+        aria-label="기사 키워드 검색"
+        placeholder={prompt}
+        className="h-full min-h-0 min-w-0 flex-1 border-0 bg-transparent p-0 text-[14px]/[17px] font-semibold text-text placeholder:font-normal"
+      />
+      {keyword ? (
+        <Link
+          href="/search"
+          aria-label="검색어 초기화"
+          className="ui-control grid size-11 shrink-0 place-items-center text-muted"
+        >
+          ✕
+        </Link>
+      ) : hasValue ? (
+        <button
+          type="button"
+          aria-label="검색어 초기화"
+          disabled={pending}
+          onClick={() => {
+            if (input.current) {
+              input.current.value = '';
+              input.current.focus();
+            }
+
+            setHasValue(false);
+          }}
+          className="ui-control grid size-11 shrink-0 cursor-pointer place-items-center border-0 bg-transparent p-0 text-muted"
+        >
+          ✕
+        </button>
+      ) : null}
+    </>
   );
 }
