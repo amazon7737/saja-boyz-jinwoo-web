@@ -18,6 +18,7 @@ import {
   DetailLocation,
   RelatedArticles,
 } from '@/features/article-detail/ui/detail-context/detail-context';
+import { DetailMap } from '@/features/article-detail/ui/detail-map/detail-map';
 import { DetailRetry } from '@/features/article-detail/ui/detail-retry/detail-retry';
 import { DetailSheet } from '@/features/article-detail/ui/detail-sheet/detail-sheet';
 
@@ -207,6 +208,7 @@ export default async function IncidentDetailPage({
         <p className="m-0 py-1 text-[12px]/[15px] text-muted">원문 링크 없음</p>
       )}
       <RelatedArticles id={id} />
+      <DetailMap id={id} />
     </DetailSheet>
   );
 }

@@ -41,7 +41,17 @@ export type NaverMaps = {
   LatLng: new (latitude: number, longitude: number) => unknown;
   Map: new (
     element: HTMLElement,
-    options: { center: unknown; zoom: number },
+    options: {
+      center: unknown;
+      zoom: number;
+      draggable?: boolean;
+      scrollWheel?: boolean;
+      pinchZoom?: boolean;
+      keyboardShortcuts?: boolean;
+      disableDoubleClickZoom?: boolean;
+      disableDoubleTapZoom?: boolean;
+      disableTwoFingerTapZoom?: boolean;
+    },
   ) => MapInstance;
 };
 
