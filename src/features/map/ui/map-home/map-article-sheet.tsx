@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 import { createPortal } from 'react-dom';
 import { useId, useState } from 'react';
@@ -79,76 +80,104 @@ export function MapArticleSheet({
                 : 'flex shrink-0 flex-col gap-3 rounded-lg border border-solid border-border bg-background p-2.5'
             }
           >
-            <h2
-              className={
-                single
-                  ? 'm-0 text-[18px]/[normal] font-extrabold text-text [overflow-wrap:anywhere]'
-                  : 'm-0 text-[15px]/[21px] font-extrabold text-text [overflow-wrap:anywhere]'
-              }
-            >
-              {route && items.length === 1 ? (
-                articleText(item.article.title)
-              ) : (
-                <Link
-                  scroll={false}
-                  href={'/incidents/' + item.article_id}
-                  onClick={(event) => {
-                    if (
-                      !route ||
-                      event.defaultPrevented ||
-                      event.button !== 0 ||
-                      event.metaKey ||
-                      event.ctrlKey ||
-                      event.shiftKey ||
-                      event.altKey ||
-                      event.currentTarget.target === '_blank'
-                    )
-                      return;
-
-                    event.preventDefault();
-                    event.currentTarget.focus({ preventScroll: true });
-                    setPreviewId(item.article_id);
-                  }}
-                >
-                  {articleText(item.article.title)}
-                </Link>
-              )}
-            </h2>
-            <div
-              className={
-                single
-                  ? 'flex flex-col gap-1'
-                  : 'flex flex-wrap items-center gap-x-3 gap-y-1'
-              }
-            >
-              <p className="m-0 text-[13px]/[18px] font-medium text-muted">
-                <IconText
-                  icon="pin"
-                  iconClassName="text-brand"
-                  textClassName="[overflow-wrap:anywhere]"
-                >
-                  {item.location.label}
-                </IconText>
-              </p>
-              <p className="m-0 text-[12px]/4 text-slate-400">
-                {Number.isNaN(publishedAt.getTime()) ? (
-                  '발행 시각 미확인'
-                ) : single ? (
-                  <IconText icon="calendar" size="compact">
-                    <span className="sr-only">기사 발행 </span>
-                    <time dateTime={publishedAt.toISOString()}>
-                      {publicationText(publishedAt)}
-                    </time>
-                  </IconText>
+            <div className={single ? 'flex flex-col gap-3' : 'contents'}>
+              <h2
+                className={
+                  single
+                    ? 'm-0 text-[18px]/[normal] font-extrabold text-text [overflow-wrap:anywhere]'
+                    : 'm-0 text-[15px]/[21px] font-extrabold text-text [overflow-wrap:anywhere]'
+                }
+              >
+                {route && items.length === 1 ? (
+                  articleText(item.article.title)
                 ) : (
-                  <>
-                    기사 발행{' '}
-                    <time dateTime={publishedAt.toISOString()}>
-                      {publicationText(publishedAt)}
-                    </time>
-                  </>
+                  <Link
+                    scroll={false}
+                    href={'/incidents/' + item.article_id}
+                    onClick={(event) => {
+                      if (
+                        !route ||
+                        event.defaultPrevented ||
+                        event.button !== 0 ||
+                        event.metaKey ||
+                        event.ctrlKey ||
+                        event.shiftKey ||
+                        event.altKey ||
+                        event.currentTarget.target === '_blank'
+                      )
+                        return;
+
+                      event.preventDefault();
+                      event.currentTarget.focus({ preventScroll: true });
+                      setPreviewId(item.article_id);
+                    }}
+                  >
+                    {articleText(item.article.title)}
+                  </Link>
                 )}
-              </p>
+              </h2>
+              <div
+                className={
+                  single
+                    ? 'flex flex-col gap-1'
+                    : 'flex flex-wrap items-center gap-x-3 gap-y-1'
+                }
+              >
+                <p className="m-0 text-[13px]/[18px] font-medium text-muted">
+                  {single ? (
+                    <span className="inline-flex min-w-0 items-center gap-1">
+                      <Image
+                        src="/figma/preview-location.svg"
+                        alt=""
+                        width={16}
+                        height={16}
+                        unoptimized
+                        className="size-4 shrink-0"
+                      />
+                      <span className="min-w-0 [overflow-wrap:anywhere]">
+                        {item.location.label}
+                      </span>
+                    </span>
+                  ) : (
+                    <IconText
+                      icon="pin"
+                      iconClassName="text-brand"
+                      textClassName="[overflow-wrap:anywhere]"
+                    >
+                      {item.location.label}
+                    </IconText>
+                  )}
+                </p>
+                <p className="m-0 text-[12px]/4 text-slate-400">
+                  {Number.isNaN(publishedAt.getTime()) ? (
+                    '발행 시각 미확인'
+                  ) : single ? (
+                    <span className="inline-flex min-w-0 items-center gap-1">
+                      <Image
+                        src="/figma/preview-date.svg"
+                        alt=""
+                        width={16}
+                        height={16}
+                        unoptimized
+                        className="size-4 shrink-0"
+                      />
+                      <span>
+                        <span className="sr-only">기사 발행 </span>
+                        <time dateTime={publishedAt.toISOString()}>
+                          {publicationText(publishedAt)}
+                        </time>
+                      </span>
+                    </span>
+                  ) : (
+                    <>
+                      기사 발행{' '}
+                      <time dateTime={publishedAt.toISOString()}>
+                        {publicationText(publishedAt)}
+                      </time>
+                    </>
+                  )}
+                </p>
+              </div>
             </div>
             <div
               className={

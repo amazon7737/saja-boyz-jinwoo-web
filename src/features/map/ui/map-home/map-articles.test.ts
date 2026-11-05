@@ -298,7 +298,7 @@ test('shows the selected article in the Figma sheet with its real image and publ
     close?.querySelector<HTMLElement>('span')?.style.backgroundImage,
   ).toContain('/article-detail/close.svg');
   expect(sheet?.querySelector('h2 a')?.textContent).toBe('장림동 공장 화재');
-  expect(sheet?.querySelector('article img')?.getAttribute('src')).toBe(
+  expect(sheet?.querySelector('article figure img')?.getAttribute('src')).toBe(
     `https://news.example.com/images/${'a'.repeat(64)}.jpg`,
   );
   expect(sheet?.textContent).toContain('AI로 생성된 이미지입니다.');
@@ -861,6 +861,41 @@ test('singleMapMarkerShowsArticlePreviewBeforeOpeningDetail', async () => {
   expect(fixture.setZoom).not.toHaveBeenCalled();
   expect(fixture.fitBounds).not.toHaveBeenCalled();
 });
+test('singlePreviewAlignsLocationAndDateLikeFigma', async () => {
+  const fixture = await mount();
+  await act(async () => fixture.selected[0]());
+  const preview = document.querySelector<HTMLElement>(
+    '[role="dialog"][aria-label="선택한 기사"]',
+  )!;
+  const article = preview.querySelector('article')!;
+  const title = article.querySelector('h2')!;
+  const location = [...article.querySelectorAll('p')].find((node) =>
+    node.textContent?.includes(data.items[0].location.label),
+  )!;
+  const date = article.querySelector('time')!.closest('p')!;
+  const locationIcon = location.querySelector(
+    'img[src="/figma/preview-location.svg"]',
+  );
+  const dateIcon = date.querySelector('img[src="/figma/preview-date.svg"]');
+  for (const icon of [locationIcon, dateIcon]) {
+    expect(icon).not.toBeNull();
+    expect(icon?.getAttribute('width')).toBe('16');
+    expect(icon?.getAttribute('height')).toBe('16');
+    expect(icon?.getAttribute('alt')).toBe('');
+    expect(icon?.parentElement?.classList.contains('gap-1')).toBe(true);
+    expect(icon?.parentElement?.classList.contains('items-center')).toBe(true);
+  }
+  expect(title.parentElement).toBe(location.parentElement?.parentElement);
+  expect(title.parentElement?.classList.contains('gap-3')).toBe(true);
+  expect(location.parentElement?.classList.contains('gap-1')).toBe(true);
+  expect(article.textContent).toContain(
+    '지역 대표 위치 · 실제 발생 지점과 다를 수 있습니다',
+  );
+  expect(article.querySelector('time')?.getAttribute('datetime')).toBe(
+    '2026-10-13T23:00:00.000Z',
+  );
+});
+
 test('mapPreviewShowsSelectedArticleDetailsAndSafeSourceBeforeNavigation', async () => {
   const item = {
     ...data.items[0],
