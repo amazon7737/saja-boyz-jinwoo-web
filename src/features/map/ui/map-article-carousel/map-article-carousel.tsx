@@ -4,13 +4,18 @@ import { IconText } from '@/components/ui/icon-text/icon-text';
 import { Notice } from '@/components/feedback/notice';
 
 import { MapCarouselCard } from '../map-carousel-card/map-carousel-card';
-import type { MapArticleResult } from '../../model/map-article.types';
+import type {
+  LocatedArticle,
+  MapArticleResult,
+} from '../../model/map-article.types';
 import { recentMapArticles } from '../../model/map-carousel-articles';
 
 export function MapArticleCarousel({
   articles,
+  onSelect,
 }: {
   articles: MapArticleResult;
+  onSelect(item: LocatedArticle, opener: HTMLAnchorElement): void;
 }) {
   return (
     <section
@@ -48,6 +53,7 @@ export function MapArticleCarousel({
               key={item.article_id}
               item={item}
               apiOrigin={articles.apiOrigin}
+              onSelect={onSelect}
             />
           ))}
       </div>

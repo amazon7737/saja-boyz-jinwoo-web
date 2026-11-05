@@ -121,6 +121,7 @@ export function MapHome({
     null,
   );
   const canvas = useRef<HTMLDivElement>(null);
+  const mapRegion = useRef<HTMLElement>(null);
   const controlClearance = useRef<HTMLDivElement>(null);
   const carouselOverlay = useRef<HTMLDivElement>(null);
   const noticeViewport = useRef<HTMLDivElement>(null);
@@ -131,7 +132,11 @@ export function MapHome({
   const clearSelection = useRef<((restoreFocus?: boolean) => void) | null>(
     null,
   );
-  const restoreSelectionFocus = useRef<HTMLButtonElement | null>(null);
+  const restoreSelectionFocus = useRef<HTMLElement | null>(null);
+  const carouselSelection = useRef<{
+    id: string;
+    opener: HTMLAnchorElement;
+  } | null>(null);
   const automaticLocation = useRef<{
     started: boolean;
     request?: Promise<LocationResult>;
@@ -150,13 +155,15 @@ export function MapHome({
   }, [filteredArticles, registerMapArticles]);
 
   useEffect(() => {
-    if (selectedArticles.length || !restoreSelectionFocus.current) return;
+    if (detailOpen || selectedArticles.length || !restoreSelectionFocus.current)
+      return;
     const target = restoreSelectionFocus.current;
 
     restoreSelectionFocus.current = null;
     // 시트의 포커스 가드와 배경 inert가 해제된 commit 뒤에 복귀한다.
     if (target.isConnected) target.focus({ preventScroll: true });
-  }, [selectedArticles]);
+    else mapRegion.current?.focus({ preventScroll: true });
+  }, [detailOpen, selectedArticles]);
 
   useLayoutEffect(() => {
     if (!locating && !locationError && restoreLocateFocus.current) {
@@ -436,8 +443,9 @@ export function MapHome({
       clearSelection.current = (restoreFocus = false) => {
         for (const entry of articleMarkers) entry.setSelected(false);
         restoreSelectionFocus.current = restoreFocus
-          ? (selectedMarker ?? null)
+          ? (carouselSelection.current?.opener ?? selectedMarker ?? null)
           : null;
+        carouselSelection.current = null;
         selectedMarker = undefined;
         selectedPoint = undefined;
       };
@@ -510,10 +518,18 @@ export function MapHome({
             : undefined;
         const restoreMarkerFocus = document.activeElement === selectedMarker;
 
+        const selectedCarouselArticle = carouselSelection.current
+          ? items.find(
+              (item) => item.article_id === carouselSelection.current?.id,
+            )
+          : undefined;
+
         if (retainedSelection) {
           setSelectedArticles(retainedSelection.items);
+        } else if (selectedCarouselArticle) {
+          setSelectedArticles([selectedCarouselArticle]);
         } else {
-          clearSelection.current?.();
+          clearSelection.current?.(Boolean(carouselSelection.current));
           setSelectedArticles([]);
         }
 
@@ -737,7 +753,12 @@ export function MapHome({
   return (
     <>
       <SiteStructuredData />
-      <section aria-label="주변 지도" className="relative">
+      <section
+        ref={mapRegion}
+        aria-label="주변 지도"
+        tabIndex={-1}
+        className="relative"
+      >
         <div
           role="group"
           aria-label="기사 필터"
@@ -789,7 +810,14 @@ export function MapHome({
               )}
             </button>
             {ready && articles && articles.items.length > 0 && (
-              <MapArticleCarousel articles={filteredArticles!} />
+              <MapArticleCarousel
+                articles={filteredArticles!}
+                onSelect={(item, opener) => {
+                  clearSelection.current?.();
+                  carouselSelection.current = { id: item.article_id, opener };
+                  setSelectedArticles([item]);
+                }}
+              />
             )}
           </div>
         </div>

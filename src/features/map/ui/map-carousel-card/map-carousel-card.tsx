@@ -12,9 +12,11 @@ import type { LocatedArticle } from '../../model/map-article.types';
 export function MapCarouselCard({
   item,
   apiOrigin,
+  onSelect,
 }: {
   item: LocatedArticle;
   apiOrigin: string;
+  onSelect(item: LocatedArticle, opener: HTMLAnchorElement): void;
 }) {
   const publishedAt = publicationDate(item.article.pubDate);
   const imageUrl =
@@ -40,6 +42,21 @@ export function MapCarouselCard({
           <Link
             scroll={false}
             href={`/incidents/${item.article_id}`}
+            onClick={(event) => {
+              if (
+                event.defaultPrevented ||
+                event.button !== 0 ||
+                event.metaKey ||
+                event.ctrlKey ||
+                event.shiftKey ||
+                event.altKey ||
+                event.currentTarget.target === '_blank'
+              )
+                return;
+              event.preventDefault();
+              event.currentTarget.focus({ preventScroll: true });
+              onSelect(item, event.currentTarget);
+            }}
             className="after:absolute after:inset-0 after:z-10 after:rounded-card after:content-['']"
           >
             {articleText(item.article.title)}

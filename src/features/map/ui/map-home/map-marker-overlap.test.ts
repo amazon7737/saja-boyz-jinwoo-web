@@ -601,3 +601,34 @@ test('mapPaneProjectionNormalizesCameraCenterBeforeViewportSizing', async () => 
   expect(fixture.setCenter).not.toHaveBeenCalled();
   expect(fixture.setZoom).not.toHaveBeenCalled();
 });
+
+test('carouselPreviewSurvivesMarkerRegroupingOnZoom', async () => {
+  const first = nearby(1);
+  const fixture = await mount([first, nearby(2), item(3)]);
+  expect(counts(fixture)).toEqual(['1', '2']);
+  const card = carousel().querySelector<HTMLAnchorElement>(
+    `a[href="/incidents/${first.article_id}"]`,
+  )!;
+  const stop = (event: MouseEvent) => event.preventDefault();
+  document.addEventListener('click', stop);
+  try {
+    await act(async () => card.click());
+    const preview = document.querySelector<HTMLElement>(
+      '[aria-label="선택한 기사"]',
+    )!;
+    expect(preview).not.toBeNull();
+    expect(preview.textContent).toContain(first.article.title);
+    await fixture.changeZoom(15);
+    expect(counts(fixture)).toEqual(['1', '1', '1']);
+    expect(document.querySelector('[aria-label="선택한 기사"]')).toBe(preview);
+    expect(preview.textContent).toContain(first.article.title);
+    await click('기사 선택 닫기', preview);
+    expect(document.activeElement).toBe(card);
+    expect(fixture.created).toHaveBeenCalledTimes(1);
+    expect(fixture.destroy).not.toHaveBeenCalled();
+    expect(fixture.setCenter).not.toHaveBeenCalled();
+    expect(fixture.setZoom).not.toHaveBeenCalled();
+  } finally {
+    document.removeEventListener('click', stop);
+  }
+});
