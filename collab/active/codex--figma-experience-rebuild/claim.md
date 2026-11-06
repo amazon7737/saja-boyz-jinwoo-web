@@ -2,9 +2,9 @@
 branch: codex/figma-experience-rebuild
 owner: easter721
 started: 2026-11-05
-status: active
+status: done
 goal: feat(ui): 최신 피그마 화면과 자연스러운 상호작용 구현
-next: 상세 조회 경합 및 확인된 미구현 항목 수정
+next: PR 62의 원격 검사·리뷰와 운영 API 배포 상태 확인
 base: dev
 ---
 
