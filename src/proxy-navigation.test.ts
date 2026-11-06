@@ -417,7 +417,7 @@ test('listFocusRemainsVisibleWhileTabbingAndReturningFromDetail', async () => {
     for (const width of [320, 393, 1440]) {
       const page = await openList(width);
       await page.emulateMedia({ reducedMotion: 'reduce' });
-      const links = page.locator('article a');
+      const links = page.locator('article a:visible');
       expect(await links.count()).toBe(28);
       async function visible(index: number, direction: string) {
         await page.evaluate(

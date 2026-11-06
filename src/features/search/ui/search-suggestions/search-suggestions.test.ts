@@ -5,6 +5,7 @@ import { afterEach, expect, test, vi } from 'vitest';
 import { SearchSuggestions } from './search-suggestions';
 
 vi.mock('next/link', () => ({ default: 'a' }));
+vi.mock('next/image', () => ({ default: 'img' }));
 
 afterEach(() => {
   vi.useRealTimers();
@@ -43,7 +44,16 @@ test('debounces Korean composition, aborts obsolete requests, and ignores late r
   await act(async () => vi.advanceTimersByTime(350));
   await act(async () =>
     deferred[1](
-      Response.json({ items: [{ id: 'b'.repeat(64), title: '교통 기사' }] }),
+      Response.json({
+        items: [
+          {
+            id: 'b'.repeat(64),
+            title: '교통 기사',
+            publishedAt: null,
+            imageUrl: null,
+          },
+        ],
+      }),
     ),
   );
   expect(host.textContent).toContain('교통 기사');
@@ -52,7 +62,16 @@ test('debounces Korean composition, aborts obsolete requests, and ignores late r
   );
   await act(async () =>
     deferred[0](
-      Response.json({ items: [{ id: 'a'.repeat(64), title: '지난 기사' }] }),
+      Response.json({
+        items: [
+          {
+            id: 'a'.repeat(64),
+            title: '지난 기사',
+            publishedAt: null,
+            imageUrl: null,
+          },
+        ],
+      }),
     ),
   );
   expect(host.textContent).not.toContain('지난 기사');
@@ -101,11 +120,13 @@ test('highlights literal queries without changing article titles or accessible l
   const id = 'c'.repeat(64);
   vi.stubGlobal(
     'fetch',
-    vi
-      .fn()
-      .mockImplementation(() =>
-        Promise.resolve(Response.json({ items: [{ id, title }] })),
+    vi.fn().mockImplementation(() =>
+      Promise.resolve(
+        Response.json({
+          items: [{ id, title, publishedAt: null, imageUrl: null }],
+        }),
       ),
+    ),
   );
   const host = document.createElement('div');
   const root = createRoot(host);
@@ -127,7 +148,7 @@ test('highlights literal queries without changing article titles or accessible l
     await act(async () => vi.advanceTimersByTime(350));
     const link = host.querySelector('li a');
 
-    expect(link?.textContent).toBe(title);
+    expect(link?.textContent).toContain(title);
     expect(link?.getAttribute('href')).toBe(`/incidents/${id}`);
     expect(
       [...link!.querySelectorAll('mark')].map((mark) => mark.textContent),
@@ -147,7 +168,11 @@ test('keeps the status region mounted and wraps long titles without losing the a
   const id = 'd'.repeat(64);
   vi.stubGlobal(
     'fetch',
-    vi.fn().mockResolvedValue(Response.json({ items: [{ id, title }] })),
+    vi.fn().mockResolvedValue(
+      Response.json({
+        items: [{ id, title, publishedAt: null, imageUrl: null }],
+      }),
+    ),
   );
   const host = document.createElement('div');
   const root = createRoot(host);
@@ -175,9 +200,77 @@ test('keeps the status region mounted and wraps long titles without losing the a
   const link = host.querySelector('li a');
   expect(host.querySelector('[aria-live="polite"]')).toBe(status);
   expect(status?.textContent).toBe('일치하는 기사 1개');
-  expect(link?.textContent).toBe(title);
+  expect(link?.textContent).toContain(title);
   expect(link?.getAttribute('href')).toBe(`/incidents/${id}`);
-  expect(link?.classList.contains('[overflow-wrap:anywhere]')).toBe(true);
-  expect(link?.classList.contains('min-w-0')).toBe(true);
+  expect(
+    link?.closest('h3')?.classList.contains('[overflow-wrap:anywhere]'),
+  ).toBe(true);
+  expect(link?.closest('h3')?.classList.contains('min-w-0')).toBe(true);
+  await act(async () => root.unmount());
+});
+
+test('shows up to two cards without repeated titles and never revives an older result while loading', async () => {
+  vi.useFakeTimers();
+  vi.setSystemTime(new Date('2026-10-15T07:00:00Z'));
+  vi.stubGlobal('IS_REACT_ACT_ENVIRONMENT', true);
+  const items = Array.from({ length: 6 }, (_, i) => ({
+    id: String(i).repeat(64),
+    title: `화재 기사 ${i}`,
+    publishedAt: '2026-10-15T06:00:00.000Z',
+    imageUrl:
+      i === 0
+        ? `https://news.example.com/images/${String(i).repeat(64)}.jpg`
+        : null,
+  }));
+  let finish: ((response: Response) => void) | undefined;
+  const fetcher = vi
+    .fn()
+    .mockResolvedValueOnce(Response.json({ items }))
+    .mockImplementation(
+      () =>
+        new Promise<Response>((resolve) => {
+          finish = resolve;
+        }),
+    );
+  vi.stubGlobal('fetch', fetcher);
+  const host = document.createElement('div');
+  const root = createRoot(host);
+  const render = async (query: string, keyword = '') =>
+    act(async () =>
+      root.render(
+        createElement(SearchSuggestions, { query, keyword, composing: false }),
+      ),
+    );
+  await render('화재');
+  await act(async () => vi.advanceTimersByTime(350));
+  expect(fetcher).toHaveBeenCalledTimes(1);
+  expect(host.querySelectorAll('a')).toHaveLength(6);
+  expect(
+    host.querySelectorAll('[aria-labelledby="search-suggestions-title"] li'),
+  ).toHaveLength(4);
+  expect(
+    host.querySelectorAll('[aria-labelledby="matching-articles-title"] li'),
+  ).toHaveLength(2);
+  expect(host.querySelectorAll('h2')).toHaveLength(2);
+  expect(
+    host.querySelectorAll(`a[href="/incidents/${items[0].id}"]`),
+  ).toHaveLength(1);
+  expect(host.querySelector('img')?.getAttribute('src')).toBe(
+    `https://news.example.com/images/${items[0].id}.jpg`,
+  );
+  expect(host.textContent).toContain('1시간 전');
+  expect(host.querySelector('time')?.getAttribute('title')).toContain(
+    '기사 발행 2026-10-15',
+  );
+  await render('교통');
+  expect(host.textContent).not.toContain('화재 기사');
+  await render('화재');
+  expect(host.textContent).not.toContain('화재 기사');
+  await act(async () => vi.advanceTimersByTime(350));
+  expect(host.textContent).not.toContain('화재 기사');
+  await render('화재', '화재');
+  expect(host.textContent).not.toContain('화재 기사');
+  await act(async () => finish?.(Response.json({ items })));
+  expect(host.textContent).not.toContain('화재 기사');
   await act(async () => root.unmount());
 });
