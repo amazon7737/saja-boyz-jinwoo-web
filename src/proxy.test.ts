@@ -42,3 +42,27 @@ test('internal document and Next data endpoints cannot be requested directly', (
     expect(response.status).toBe(404);
   }
 });
+
+test('article document rewrite preserves the original server origin without trusting Host', () => {
+  vi.stubEnv('__NEXT_NO_MIDDLEWARE_URL_NORMALIZE', '1');
+  try {
+    const id = 'a'.repeat(64);
+    const request = new NextRequest(
+      'http://127.0.0.1:3456/incidents/' + id + '?q=a%2Bb',
+      {
+        headers: {
+          host: 'attacker.invalid',
+          'x-forwarded-host': 'attacker.invalid',
+        },
+      },
+    );
+    const destination = new URL(
+      proxy(request).headers.get('x-middleware-rewrite')!,
+    );
+    expect(destination.origin).toBe('http://127.0.0.1:3456');
+    expect(destination.pathname).toBe('/article-document/' + id);
+    expect(destination.search).toBe('?q=a%2Bb');
+  } finally {
+    vi.unstubAllEnvs();
+  }
+});

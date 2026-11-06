@@ -3697,3 +3697,110 @@ test('articleSheetIgnoresOtherPointerClickDuringDrag', async () => {
     article.article.description = savedDescription;
   }
 }, 60000);
+
+test('articleDocumentAndRscWorkWithExplicitLoopbackHostname', async () => {
+  const reservation = createServer();
+  const port = await listen(reservation);
+  await new Promise<void>((resolve) => reservation.close(() => resolve()));
+  const apiPort = (api.address() as AddressInfo).port;
+  const next = join(process.cwd(), 'node_modules/next/dist/bin/next');
+  const child = spawn(
+    process.execPath,
+    [next, 'start', '--hostname', '127.0.0.1', '--port', String(port)],
+    {
+      cwd: directory,
+      env: {
+        ...process.env,
+        NEWS_API_BASE_URL: 'http://127.0.0.1:' + apiPort,
+        NEXT_TELEMETRY_DISABLED: '1',
+      },
+      stdio: ['ignore', 'pipe', 'pipe'],
+    },
+  );
+  let output = '';
+  child.stdout?.on('data', (chunk) => {
+    output += String(chunk);
+  });
+  child.stderr?.on('data', (chunk) => {
+    output += String(chunk);
+  });
+  const base = 'http://127.0.0.1:' + port;
+  const originalItems = listArticles;
+  listArticles = [article];
+  try {
+    await ready(base, child, () => output);
+    const before = detailRequests.length;
+    const success = await fetch(base + '/incidents/' + id + '?source=share');
+    const html = await success.text();
+    expect(success.status).toBe(200);
+    expect(detailRequests.length - before).toBe(1);
+    expect(success.headers.get('cache-control')).toContain('no-store');
+    expect(success.headers.get('x-middleware-rewrite')).toBe(
+      '/article-document/' + id + '?source=share',
+    );
+    expect(html).toContain(article.article.title);
+    expect(html).toContain('https://hyunghyung.vercel.app/incidents/' + id);
+    const successHead = await fetch(base + '/incidents/' + id, {
+      method: 'HEAD',
+    });
+    expect(successHead.status).toBe(200);
+    expect(await successHead.text()).toBe('');
+    expect((await fetch(base + '/incidents/' + missingId)).status).toBe(404);
+    expect(
+      (await fetch(base + '/incidents/' + missingId, { method: 'HEAD' }))
+        .status,
+    ).toBe(404);
+    failDetail = true;
+    const unavailable = await fetch(base + '/incidents/' + id);
+    expect(unavailable.status).toBe(503);
+    expect(await unavailable.text()).not.toContain('QA_PRIVATE_DETAIL');
+    const unavailableHead = await fetch(base + '/incidents/' + id, {
+      method: 'HEAD',
+    });
+    expect(unavailableHead.status).toBe(503);
+    expect(await unavailableHead.text()).toBe('');
+    failDetail = false;
+    const spoofedHeaders: HeadersInit[] = [
+      { host: 'attacker.invalid' },
+      { 'x-forwarded-host': 'attacker.invalid' },
+      { 'x-forwarded-host': 'attacker.invalid', 'x-forwarded-proto': 'https' },
+    ];
+    for (const headers of spoofedHeaders) {
+      const response = await fetch(base + '/incidents/' + id, { headers });
+      expect(response.status).toBe(200);
+      expect(response.headers.get('x-middleware-rewrite')).toBe(
+        '/article-document/' + id,
+      );
+    }
+    const rsc = await fetch(base + '/incidents/' + id, {
+      headers: { rsc: '1' },
+    });
+    expect(rsc.headers.get('content-type')).toContain('text/x-component');
+    for (const path of [
+      '/article-document/' + id,
+      '/article-document/%61' + id.slice(1),
+      '/_next/data/fake/article-document/' + id + '.json',
+    ])
+      expect((await fetch(base + path)).status).toBe(404);
+    const context = await browser!.newContext();
+    contexts.push(context);
+    const page = await context.newPage();
+    const errors: string[] = [];
+    page.on('pageerror', (error) => errors.push(error.message));
+    await page.goto(base + '/incidents');
+    await page
+      .getByRole('link', { name: article.article.title, exact: true })
+      .click();
+    await page
+      .locator('[data-article-inline]')
+      .getByRole('heading', { name: article.article.title })
+      .waitFor();
+    await page.goBack();
+    await page.waitForURL(base + '/incidents');
+    expect(errors).toEqual([]);
+  } finally {
+    failDetail = false;
+    listArticles = originalItems;
+    await stop(child);
+  }
+}, 60000);

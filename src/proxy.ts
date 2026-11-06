@@ -16,7 +16,9 @@ export function proxy(request: NextRequest) {
   const match = pathname.match(/^\/incidents\/([^/]+)$/);
 
   if (!match) return NextResponse.next();
-  const next = request.nextUrl.clone();
+  // skipProxyUrlNormalize preserves the server origin in request.url.
+  // NextURL normalizes loopback hosts and can turn this into an external rewrite.
+  const next = new URL(request.url);
 
   next.pathname = '/article-document/' + match[1];
 
