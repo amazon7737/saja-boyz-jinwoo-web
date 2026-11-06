@@ -599,6 +599,7 @@ test('searchAlignmentPreservesFullTargetsAndWorkingControls', async () => {
     return {
       form: box(form),
       submit: box(form.querySelector('button[type="submit"]')!),
+      searchIcon: box(form.querySelector('button[type="submit"] svg')!),
       input: box(form.querySelector('input[name="q"]')!),
       row: box(row),
       clock: box(
@@ -611,6 +612,8 @@ test('searchAlignmentPreservesFullTargetsAndWorkingControls', async () => {
   expect.soft(sizes.form.height, '시각 검색바44px 유지').toBeCloseTo(44, 0);
   expect.soft(sizes.submit.width, '검색 실제 클릭 영역46px 유지').toBe(46);
   expect.soft(sizes.submit.height).toBe(44);
+  expect.soft(sizes.searchIcon.width, '검색 아이콘 24px').toBe(24);
+  expect.soft(sizes.searchIcon.height, '검색 아이콘 24px').toBe(24);
   expect
     .soft(
       Math.abs(sizes.input.x - sizes.form.x - 47.5),

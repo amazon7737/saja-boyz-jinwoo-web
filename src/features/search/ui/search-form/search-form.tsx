@@ -86,7 +86,7 @@ export function SearchForm({
                 <LoadingSpinner />
               </span>
             ) : (
-              <Icon name="search" className="size-6" />
+              <Icon name="search" className={styles.icon} />
             )}
           </button>
           <SearchInput
