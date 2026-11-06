@@ -15,7 +15,7 @@ export async function GET(request: Request) {
 
   const items = await Promise.all(
     ids.map(async (id) => {
-      const result = await loadDetail(id);
+      const result = await loadDetail(id, request.signal);
 
       if (result.status !== 'success') return { id, status: result.status };
       const { item, apiOrigin } = result;

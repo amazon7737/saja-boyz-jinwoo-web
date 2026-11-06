@@ -10,7 +10,7 @@ import { usePopularRanking } from '../../model/use-rolling-search-prompt';
 import { PopularArticleCard } from './popular-article-card';
 
 type Card = { id: string; item: ArticleCollectionItem; apiOrigin: string };
-type Result = { key: string; cards: Card[]; failed: boolean };
+type Result = { key: string; attempt: number; cards: Card[]; failed: boolean };
 
 function record(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === 'object' && !Array.isArray(value);
@@ -112,9 +112,9 @@ export function PopularArticles() {
           else failed = true;
         }
 
-        if (active) setResult({ key, cards, failed });
+        if (active) setResult({ key, attempt, cards, failed });
       } catch {
-        if (active) setResult({ key, cards: [], failed: true });
+        if (active) setResult({ key, attempt, cards: [], failed: true });
       } finally {
         clearTimeout(timer);
       }
@@ -127,7 +127,8 @@ export function PopularArticles() {
     };
   }, [key, ranking.status, attempt]);
 
-  const active = result?.key === key ? result : null;
+  const active =
+    result?.key === key && result.attempt === attempt ? result : null;
   const loading =
     ranking.status === 'loading' ||
     (ranking.status === 'ready' && Boolean(key) && !active);

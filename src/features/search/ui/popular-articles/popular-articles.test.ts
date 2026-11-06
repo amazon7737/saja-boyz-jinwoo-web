@@ -209,3 +209,42 @@ test('popularArticleCardHydratesWithStableTimeBeforeShowingRelativeTime', async 
     '기사 발행',
   );
 });
+
+test('popularArticlesShowsSkeletonUntilRetriedDetailsSettle', async () => {
+  let finishRetry!: (response: Response) => void;
+  const fetcher = vi
+    .fn()
+    .mockResolvedValueOnce(
+      Response.json({ titles: ranking.map((x) => x.title), items: ranking }),
+    )
+    .mockResolvedValueOnce(
+      Response.json({
+        items: [card(first, '첫 번째'), { id: second, status: 'error' }],
+      }),
+    )
+    .mockImplementationOnce(
+      () =>
+        new Promise<Response>((resolve) => {
+          finishRetry = resolve;
+        }),
+    );
+  vi.stubGlobal('fetch', fetcher);
+  const host = await mount();
+  expect(host.querySelectorAll('article')).toHaveLength(1);
+  expect(host.querySelector('[role="alert"]')).not.toBeNull();
+  await act(async () => host.querySelector('button')!.click());
+  expect(host.querySelectorAll('article')).toHaveLength(0);
+  expect(host.querySelector('[role="alert"]')).toBeNull();
+  expect(
+    host.querySelector('[role="status"][aria-busy="true"]'),
+  ).not.toBeNull();
+  await act(async () =>
+    finishRetry(
+      Response.json({
+        items: [card(first, '첫 번째'), card(second, '두 번째')],
+      }),
+    ),
+  );
+  expect(host.querySelectorAll('article')).toHaveLength(2);
+  expect(host.querySelector('[role="alert"]')).toBeNull();
+});

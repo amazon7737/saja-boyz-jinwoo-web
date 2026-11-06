@@ -53,3 +53,75 @@ test('popularCardsProxyValidatesIdsAndReturnsSanitizedDetailsInOrder', async () 
   }
   expect(fetcher).toHaveBeenCalledTimes(2);
 });
+
+test('popularCardsPropagatesCallerCancellationToEveryDetailRequest', async () => {
+  vi.stubEnv('NEWS_API_BASE_URL', 'https://news.example.invalid');
+  const controller = new AbortController();
+  const signals: AbortSignal[] = [];
+  const fetcher = vi.fn((_input: RequestInfo | URL, options: RequestInit) => {
+    const signal = options.signal!;
+    signals.push(signal);
+    return new Promise<Response>((_resolve, reject) => {
+      signal.addEventListener('abort', () => reject(signal.reason), {
+        once: true,
+      });
+    });
+  });
+  vi.stubGlobal('fetch', fetcher);
+  const params = new URLSearchParams();
+  params.append('id', id);
+  params.append('id', id2);
+  const request = new Request(
+    'https://example.invalid/api/search-popular-cards?' + params,
+    { signal: controller.signal },
+  );
+  const pending = GET(request);
+  expect(fetcher).toHaveBeenCalledTimes(2);
+  expect(signals).toHaveLength(2);
+  expect(signals.every((signal) => !signal.aborted)).toBe(true);
+  controller.abort();
+  expect(signals.every((signal) => signal.aborted)).toBe(true);
+  const json = await (await pending).json();
+  expect(json.items.map((item: { status: string }) => item.status)).toEqual([
+    'error',
+    'error',
+  ]);
+});
+
+test('popularCardsRetainsTheFiveSecondDeadlineWhenCallerDoesNotCancel', async () => {
+  vi.stubEnv('NEWS_API_BASE_URL', 'https://news.example.invalid');
+  const deadline = new AbortController();
+  const timeout = vi
+    .spyOn(AbortSignal, 'timeout')
+    .mockReturnValue(deadline.signal);
+  const caller = new AbortController();
+  const signals: AbortSignal[] = [];
+  vi.stubGlobal(
+    'fetch',
+    vi.fn((_input: RequestInfo | URL, options: RequestInit) => {
+      const signal = options.signal!;
+      signals.push(signal);
+      return new Promise<Response>((_resolve, reject) => {
+        signal.addEventListener('abort', () => reject(signal.reason), {
+          once: true,
+        });
+      });
+    }),
+  );
+  try {
+    const request = new Request(
+      'https://example.invalid/api/search-popular-cards?id=' + id,
+      { signal: caller.signal },
+    );
+    const pending = GET(request);
+    expect(timeout).toHaveBeenCalledWith(5000);
+    expect(signals).toHaveLength(1);
+    deadline.abort();
+    expect(signals[0].aborted).toBe(true);
+    expect(caller.signal.aborted).toBe(false);
+    const json = await (await pending).json();
+    expect(json.items[0].status).toBe('error');
+  } finally {
+    timeout.mockRestore();
+  }
+});

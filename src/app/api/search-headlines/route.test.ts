@@ -79,3 +79,34 @@ test('searchHeadlinesWithoutServerConfigurationDoesNotFetch', async () => {
   expect(response.status).toBe(503);
   expect(request).not.toHaveBeenCalled();
 });
+
+test('searchHeadlinesDeduplicatesIdsWhilePreservingTheFirstRankForTitlesAndCards', async () => {
+  vi.stubEnv('NEWS_API_BASE_URL', 'https://news.example.test');
+  vi.stubGlobal(
+    'fetch',
+    vi.fn().mockResolvedValue(
+      Response.json({
+        date: '2026-11-01',
+        timezone: 'Asia/Seoul',
+        items: [
+          {
+            article_id: 'a'.repeat(64),
+            title: '<b>첫 번째</b>',
+            views_today: 8,
+          },
+          { article_id: 'a'.repeat(64), title: '중복된 제목', views_today: 7 },
+          { article_id: 'b'.repeat(64), title: '두 번째', views_today: 2 },
+        ],
+      }),
+    ),
+  );
+  const response = await GET();
+  expect(response.status).toBe(200);
+  expect(await response.json()).toEqual({
+    titles: ['첫 번째', '두 번째'],
+    items: [
+      { article_id: 'a'.repeat(64), title: '첫 번째', views_today: 8 },
+      { article_id: 'b'.repeat(64), title: '두 번째', views_today: 2 },
+    ],
+  });
+});

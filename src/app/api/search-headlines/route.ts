@@ -49,6 +49,7 @@ export async function GET() {
       return Response.json({ titles: [] }, { status: 503, headers });
     }
 
+    const seen = new Set<string>();
     const items = payload.items
       .map((item: Record<string, unknown>) => ({
         article_id: item.article_id as string,
@@ -58,7 +59,12 @@ export async function GET() {
             : '',
         views_today: item.views_today as number,
       }))
-      .filter((item) => item.title);
+      .filter((item) => {
+        if (seen.has(item.article_id)) return false;
+        seen.add(item.article_id);
+
+        return Boolean(item.title);
+      });
     const titles = items.map((item) => item.title);
 
     return Response.json({ titles, items }, { headers });
