@@ -38,6 +38,11 @@ let root: Root;
 
 beforeEach(() => {
   vi.stubEnv('NEWS_API_BASE_URL', apiOrigin);
+  fetchMock.mockImplementation(async (input) => {
+    if (String(input) === '/api/incidents/' + id + '/location')
+      return Response.json({ location: null, related: [] });
+    throw new Error('Unexpected fetch in article detail test');
+  });
   vi.stubGlobal('fetch', fetchMock);
   vi.stubGlobal('IS_REACT_ACT_ENVIRONMENT', true);
   window.history.replaceState(null, '', '/');
@@ -283,7 +288,11 @@ test('articleDetailShareUrl', async () => {
   expect(
     container.querySelector('input[aria-label="공유 링크"]'),
   ).not.toBeNull();
-  expect(fetchMock).toHaveBeenCalledTimes(1);
+  expect(fetchMock).toHaveBeenCalledTimes(2);
+  expect(String(fetchMock.mock.calls[0][0])).toBe(apiOrigin + '/news/' + id);
+  expect(String(fetchMock.mock.calls[1][0])).toBe(
+    '/api/incidents/' + id + '/location',
+  );
 });
 
 test('articleDetailLinksFromListAndSearch', async () => {
