@@ -245,13 +245,6 @@ function ModalDetailSheet({
     drag.current = null;
     suppressClick.current = current.moved;
 
-    if (!current.moved) {
-      setDragHeight(null);
-      setDragging(false);
-
-      return;
-    }
-
     finishDrag(
       current.initialExpanded,
       current.initialExpanded
@@ -446,6 +439,12 @@ function ModalDetailSheet({
           aria-expanded={expanded}
           className="ui-control relative flex h-5 w-full touch-none after:absolute after:inset-x-0 after:-inset-y-3 after:content-[''] cursor-grab items-start justify-center border-0 bg-transparent p-0 active:cursor-grabbing"
           onClick={(event) => {
+            if (drag.current) {
+              event.preventDefault();
+
+              return;
+            }
+
             if (event.detail > 0 && suppressClick.current) {
               suppressClick.current = false;
 
@@ -497,6 +496,11 @@ function ModalDetailSheet({
               initialExpanded: expanded,
               moved: false,
             };
+            // Stop any in-flight snap at the height under the pointer.
+            flushSync(() => {
+              setDragHeight(heights.startHeight);
+              setDragging(true);
+            });
             event.currentTarget.setPointerCapture?.(event.pointerId);
           }}
           onPointerMove={(event) => {
@@ -525,8 +529,11 @@ function ModalDetailSheet({
             suppressClick.current = current.moved;
 
             if (!current.moved) {
-              setDragHeight(null);
               setDragging(false);
+              // A native touch click follows pointerup; keep the moving
+              // handle under that click, then release if no click arrives.
+              clearTimeout(settleTimer.current);
+              settleTimer.current = setTimeout(() => setDragHeight(null), 240);
 
               return;
             }

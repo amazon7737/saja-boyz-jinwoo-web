@@ -3300,3 +3300,397 @@ test('detailLocationClientAbortReachesTheUpstreamRequest', async () => {
     }
   }
 }, 120000);
+
+test('articleSheetTouchInterruptsSnapWithoutJumpAndCanRetoggle', async () => {
+  const savedDescription = article.article.description;
+  article.article.description = '실제 드래그 실험을 위한 긴 기사. '.repeat(300);
+  try {
+    const page = await openList(393);
+    await page.emulateMedia({ reducedMotion: 'no-preference' });
+    await page.goto(origin + '/sheet-test-fixture');
+    const sheet = page.getByRole('dialog');
+    const handle = sheet.locator('button[aria-expanded]');
+    await sheet
+      .getByRole('heading', { name: article.article.title, exact: true })
+      .waitFor();
+    await sheet.evaluate(async (element) => {
+      await Promise.all(
+        element
+          .getAnimations()
+          .map((animation) => animation.finished.catch(() => undefined)),
+      );
+    });
+    const client = await page.context().newCDPSession(page);
+    await client.send('Animation.enable');
+    await client.send('Animation.setPlaybackRate', { playbackRate: 1 });
+    await handle.evaluate((el) => {
+      const events: unknown[] = [];
+      (window as unknown as { touchEvents: unknown[] }).touchEvents = events;
+      for (const type of [
+        'pointerdown',
+        'pointermove',
+        'pointerup',
+        'pointercancel',
+        'click',
+      ])
+        el.addEventListener(
+          type,
+          (event) => {
+            const e = event as PointerEvent;
+            const rect = el.getBoundingClientRect();
+            events.push({
+              type,
+              pointerType: e.pointerType,
+              trusted: e.isTrusted,
+              detail: e.detail,
+              y: e.clientY,
+              gripY: rect.y,
+              gripBottom: rect.bottom,
+            });
+          },
+          true,
+        );
+    });
+    await handle.click();
+    await client.send('Animation.setPlaybackRate', { playbackRate: 0 });
+    await page.evaluate(() => {
+      (window as unknown as { touchEvents: unknown[] }).touchEvents.length = 0;
+    });
+    const sample = await page.evaluate(() => {
+      const element = document.querySelector<HTMLElement>('[role="dialog"]')!;
+      const grip = element.querySelector<HTMLElement>('button[aria-expanded]')!;
+      const animation = element
+        .getAnimations()
+        .find((a) => a.playState === 'running');
+      const rect = grip.getBoundingClientRect();
+      return {
+        x: rect.x + rect.width / 2,
+        y: rect.y + rect.height / 2,
+        ySheet: element.getBoundingClientRect().y,
+        animationRunning: Boolean(animation),
+        animationTime: animation?.currentTime,
+      };
+    });
+    await client.send('Input.dispatchTouchEvent', {
+      type: 'touchStart',
+      touchPoints: [{ x: sample.x, y: sample.y }],
+    });
+    await client.send('Animation.setPlaybackRate', { playbackRate: 1 });
+    const down = (await sheet.boundingBox())!;
+    await page.waitForTimeout(60);
+    const held = (await sheet.boundingBox())!;
+    await client.send('Input.dispatchTouchEvent', {
+      type: 'touchMove',
+      touchPoints: [{ x: sample.x, y: sample.y - 20 }],
+    });
+    await page.evaluate(
+      () =>
+        new Promise<void>((r) =>
+          requestAnimationFrame(() => requestAnimationFrame(() => r())),
+        ),
+    );
+    const moved = (await sheet.boundingBox())!;
+    await client.send('Input.dispatchTouchEvent', {
+      type: 'touchEnd',
+      touchPoints: [],
+    });
+    const events = await page.evaluate(
+      () =>
+        (
+          window as unknown as {
+            touchEvents: Array<{
+              type: string;
+              pointerType: string;
+              trusted: boolean;
+              y: number;
+              gripY: number;
+              gripBottom: number;
+            }>;
+          }
+        ).touchEvents,
+    );
+    const downEvent = events.find((event) => event.type === 'pointerdown');
+    expect(sample.animationRunning, 'the sheet is still transitioning').toBe(
+      true,
+    );
+    expect(downEvent?.pointerType).toBe('touch');
+    expect(downEvent?.trusted).toBe(true);
+    expect(downEvent!.y).toBeGreaterThanOrEqual(downEvent!.gripY - 12);
+    expect(downEvent!.y).toBeLessThanOrEqual(downEvent!.gripBottom + 12);
+    expect(
+      Math.abs(held.y - down.y),
+      'holding the moving handle freezes the sheet',
+    ).toBeLessThan(4);
+    expect(
+      Math.abs(moved.y - (down.y - 20)),
+      'the sheet follows the touch while held',
+    ).toBeLessThan(5);
+    await sheet.evaluate(async (element) => {
+      await Promise.all(
+        element
+          .getAnimations()
+          .map((animation) => animation.finished.catch(() => undefined)),
+      );
+    });
+    await handle.click();
+    expect(await sheet.getAttribute('data-expanded')).toBe('false');
+    await client.send('Animation.setPlaybackRate', { playbackRate: 0 });
+    const tap = await handle.boundingBox();
+    if (!tap) throw new Error('transitioning handle is not visible');
+    await client.send('Input.dispatchTouchEvent', {
+      type: 'touchStart',
+      touchPoints: [{ x: tap.x + tap.width / 2, y: tap.y + tap.height / 2 }],
+    });
+    await client.send('Animation.setPlaybackRate', { playbackRate: 1 });
+    await client.send('Input.dispatchTouchEvent', {
+      type: 'touchEnd',
+      touchPoints: [],
+    });
+    await expect.poll(() => sheet.getAttribute('data-expanded')).toBe('true');
+    const finalEvents = await page.evaluate(
+      () =>
+        (
+          window as unknown as {
+            touchEvents: Array<{
+              type: string;
+              pointerType: string;
+              trusted: boolean;
+            }>;
+          }
+        ).touchEvents,
+    );
+    expect(
+      finalEvents.filter(
+        (event) =>
+          event.type === 'pointerdown' &&
+          event.pointerType === 'touch' &&
+          event.trusted,
+      ),
+    ).toHaveLength(2);
+    expect(
+      finalEvents.some(
+        (event) =>
+          event.type === 'click' &&
+          event.pointerType === 'touch' &&
+          event.trusted,
+      ),
+    ).toBe(true);
+    await client.send('Animation.setPlaybackRate', { playbackRate: 1 });
+  } finally {
+    article.article.description = savedDescription;
+  }
+}, 60000);
+
+test.each(['pointercancel', 'lostpointercapture'])(
+  'articleSheetCancelDuringCollapseResumesSmoothly: %s',
+  async (kind) => {
+    const savedDescription = article.article.description;
+    article.article.description = '취소 동작 검증을 위한 긴 기사. '.repeat(300);
+    try {
+      const page = await openList(393);
+      await page.emulateMedia({ reducedMotion: 'no-preference' });
+      await page.goto(origin + '/sheet-test-fixture');
+      const sheet = page.getByRole('dialog');
+      const handle = sheet.locator('button[aria-expanded]');
+      await sheet
+        .getByRole('heading', { name: article.article.title, exact: true })
+        .waitFor();
+      await sheet.evaluate(async (e) => {
+        await Promise.all(
+          e.getAnimations().map((a) => a.finished.catch(() => undefined)),
+        );
+      });
+      await handle.click();
+      await sheet.evaluate(async (e) => {
+        await Promise.all(
+          e.getAnimations().map((a) => a.finished.catch(() => undefined)),
+        );
+      });
+      const client = await page.context().newCDPSession(page);
+      await client.send('Animation.enable');
+      await handle.evaluate((el) => {
+        const state = { pointerId: 0, events: [] as string[] };
+        (window as unknown as { cancelAudit: typeof state }).cancelAudit =
+          state;
+        for (const type of [
+          'pointerdown',
+          'gotpointercapture',
+          'pointercancel',
+          'lostpointercapture',
+        ])
+          el.addEventListener(type, (event) => {
+            const pointer = event as PointerEvent;
+            state.pointerId = pointer.pointerId;
+            state.events.push(type);
+          });
+      });
+      await handle.click();
+      await page.evaluate(() => {
+        const state = (
+          window as unknown as {
+            cancelAudit: { pointerId: number; events: string[] };
+          }
+        ).cancelAudit;
+        state.pointerId = 0;
+        state.events = [];
+      });
+      await client.send('Animation.setPlaybackRate', { playbackRate: 0 });
+      const box = await handle.boundingBox();
+      if (!box) throw new Error('no handle');
+      await client.send('Input.dispatchTouchEvent', {
+        type: 'touchStart',
+        touchPoints: [{ x: box.x + box.width / 2, y: box.y + box.height / 2 }],
+      });
+      await client.send('Input.dispatchTouchEvent', {
+        type: 'touchMove',
+        touchPoints: [
+          { x: box.x + box.width / 2, y: box.y + box.height / 2 - 2 },
+        ],
+      });
+      await expect
+        .poll(async () =>
+          page.evaluate(
+            () =>
+              (window as unknown as { cancelAudit: { events: string[] } })
+                .cancelAudit.events,
+          ),
+        )
+        .toContain('gotpointercapture');
+      await client.send('Animation.setPlaybackRate', { playbackRate: 1 });
+      const before = await sheet.boundingBox();
+      await client.send('Animation.setPlaybackRate', { playbackRate: 0 });
+      if (kind === 'pointercancel') {
+        await client.send('Input.dispatchTouchEvent', {
+          type: 'touchCancel',
+          touchPoints: [],
+        });
+      } else {
+        const pointerId = await page.evaluate(
+          () =>
+            (window as unknown as { cancelAudit: { pointerId: number } })
+              .cancelAudit.pointerId,
+        );
+        expect(pointerId).toBeGreaterThan(0);
+        await handle.evaluate(
+          (el, id) => el.releasePointerCapture(id),
+          pointerId,
+        );
+        await client.send('Input.dispatchTouchEvent', {
+          type: 'touchMove',
+          touchPoints: [
+            { x: box.x + box.width / 2, y: box.y + box.height / 2 },
+          ],
+        });
+      }
+      await page.evaluate(
+        () =>
+          new Promise<void>((r) =>
+            requestAnimationFrame(() => requestAnimationFrame(() => r())),
+          ),
+      );
+      const cancelEvents = await page.evaluate(
+        () =>
+          (window as unknown as { cancelAudit: { events: string[] } })
+            .cancelAudit.events,
+      );
+      expect(cancelEvents).toContain('pointerdown');
+      expect(cancelEvents).toContain(kind);
+      if (kind === 'lostpointercapture')
+        await client.send('Input.dispatchTouchEvent', {
+          type: 'touchCancel',
+          touchPoints: [],
+        });
+      const after = await sheet.boundingBox();
+      await client.send('Animation.setPlaybackRate', { playbackRate: 1 });
+      if (!before || !after) throw new Error('missing sheet');
+      expect(
+        Math.abs(after.height - before.height),
+        '취소 직후 높이 불연속',
+      ).toBeLessThan(4);
+      await expect
+        .poll(async () => (await sheet.boundingBox())?.height ?? 0, {
+          timeout: 3000,
+        })
+        .toBeCloseTo(852 * 0.5352, 0);
+      expect(await sheet.getAttribute('data-expanded')).toBe('false');
+    } finally {
+      article.article.description = savedDescription;
+    }
+  },
+  60000,
+);
+
+test('articleSheetIgnoresOtherPointerClickDuringDrag', async () => {
+  const savedDescription = article.article.description;
+  article.article.description = '다중 포인터 검증을 위한 긴 기사. '.repeat(300);
+  try {
+    const page = await openList(393);
+    await page.emulateMedia({ reducedMotion: 'no-preference' });
+    await page.goto(origin + '/sheet-test-fixture');
+    const sheet = page.getByRole('dialog');
+    const handle = sheet.locator('button[aria-expanded]');
+    await sheet
+      .getByRole('heading', { name: article.article.title, exact: true })
+      .waitFor();
+    await sheet.evaluate(async (e) => {
+      await Promise.all(
+        e.getAnimations().map((a) => a.finished.catch(() => undefined)),
+      );
+    });
+    const client = await page.context().newCDPSession(page);
+    await handle.evaluate((el) => {
+      (window as unknown as { otherPointerClicks: number }).otherPointerClicks =
+        0;
+      el.addEventListener(
+        'click',
+        (event) => {
+          if (event.isTrusted)
+            (window as unknown as { otherPointerClicks: number })
+              .otherPointerClicks++;
+        },
+        true,
+      );
+    });
+    const box = await handle.boundingBox();
+    if (!box) throw new Error('no handle');
+    const x = box.x + box.width / 2,
+      y = box.y + box.height / 2;
+    await client.send('Input.dispatchTouchEvent', {
+      type: 'touchStart',
+      touchPoints: [{ x, y }],
+    });
+    await client.send('Input.dispatchTouchEvent', {
+      type: 'touchMove',
+      touchPoints: [{ x, y: y - 50 }],
+    });
+    await page.evaluate(
+      () =>
+        new Promise<void>((r) =>
+          requestAnimationFrame(() => requestAnimationFrame(() => r())),
+        ),
+    );
+    const current = await handle.boundingBox();
+    if (!current) throw new Error('no moved handle');
+    await page.mouse.click(
+      current.x + current.width / 2,
+      current.y + current.height / 2,
+    );
+    const expanded = await sheet.getAttribute('data-expanded');
+    expect(
+      await page.evaluate(
+        () =>
+          (window as unknown as { otherPointerClicks: number })
+            .otherPointerClicks,
+      ),
+    ).toBe(1);
+    await client.send('Input.dispatchTouchEvent', {
+      type: 'touchEnd',
+      touchPoints: [],
+    });
+    expect(expanded, '다른 포인터의 클릭이 드래그 중 상태를 바꾸지 않음').toBe(
+      'false',
+    );
+  } finally {
+    article.article.description = savedDescription;
+  }
+}, 60000);
