@@ -176,6 +176,12 @@ function startLoad(clientId: string): SdkLoad | undefined {
     clearTimeout(load.timeout);
     load.observer?.disconnect();
     load.state = 'failed';
+
+    if (sdkWindow.navermap_authFailure === load.auth) {
+      if (load.previousAuth) sdkWindow.navermap_authFailure = load.previousAuth;
+      else delete sdkWindow.navermap_authFailure;
+    }
+
     sdkScript.remove();
     for (const subscriber of [...load.subscribers])
       reportSubscriberError(subscriber);

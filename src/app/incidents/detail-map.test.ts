@@ -156,7 +156,7 @@ test('detailMapUsesVerifiedCoordinateAndCleansUpOnlyItsOwnMap', async () => {
   expect(Reflect.get(window, 'navermap_authFailure')).toBe(auth);
 });
 
-test('detailMapKeepsArticleWhenTheSharedSdkIsUnavailable', async () => {
+test('detailMapKeepsArticleAndOffersRetryWhenTheSdkFails', async () => {
   const route: ArticleSheetRoute = {
     active: true,
     sourcePath: '/',
@@ -175,14 +175,16 @@ test('detailMapKeepsArticleWhenTheSharedSdkIsUnavailable', async () => {
   const section = container.querySelector<HTMLElement>(
     'section[aria-label="기사에서 확인한 위치"]',
   );
+  const script = document.querySelector<HTMLScriptElement>(
+    'script[src*="oapi.map.naver.com"]',
+  );
+  expect(script).not.toBeNull();
+  await act(async () => script!.dispatchEvent(new Event('error')));
   expect(section?.textContent).toContain('위치 지도를 불러오지 못했어요');
   expect(section?.textContent).toContain(
     '지역 대표 위치로, 실제 발생 지점과 다를 수 있습니다',
   );
-  expect(
-    section?.querySelector<HTMLAnchorElement>('a[href="/"]')?.textContent,
-  ).toBe('지도에서 다시 시도');
-  expect(section?.querySelector('button')).toBeNull();
+  expect(section?.querySelector('button')?.textContent).toBe('다시 시도');
   expect(container.querySelector('h1')?.textContent).toBe(
     article.article.title,
   );
@@ -246,4 +248,61 @@ test('detailMapShowsFallbackWhenSharedSdkIsRemovedAfterLoading', async () => {
   expect(removeMarker).toHaveBeenCalledWith(null);
   expect(destroy).toHaveBeenCalledOnce();
   expect(Reflect.get(window, 'navermap_authFailure')).toBe(auth);
+});
+
+test('directDetailLoadsLocationAndRetriesTheMapSdk', async () => {
+  const destroy = vi.fn();
+  const makeMap = vi.fn(function () {
+    return { destroy, setSize: vi.fn() };
+  });
+  const makeMarker = vi.fn(function () {
+    return { setMap: vi.fn() };
+  });
+  vi.stubGlobal(
+    'fetch',
+    vi.fn(async (input: RequestInfo | URL) =>
+      String(input).startsWith('/api/incidents/')
+        ? Response.json({ location: located.location, related: [] })
+        : Response.json(article),
+    ),
+  );
+  const tree = await DetailPage({ params: Promise.resolve({ id }) });
+  await act(async () => root.render(tree));
+  const section = container.querySelector<HTMLElement>(
+    'section[aria-label="기사에서 확인한 위치"]',
+  );
+  expect(section?.textContent).toContain('서울 검증 지역');
+  expect(container.querySelector('h1')?.textContent).toBe(
+    article.article.title,
+  );
+  const originalScript = document.querySelector<HTMLScriptElement>(
+    'script[src*="oapi.map.naver.com"]',
+  );
+  expect(originalScript).not.toBeNull();
+  await act(async () => originalScript!.dispatchEvent(new Event('error')));
+  expect(section?.textContent).toContain('위치 지도를 불러오지 못했어요');
+  const retry = [...section!.querySelectorAll('button')].find((button) =>
+    button.textContent?.includes('다시'),
+  );
+  expect(retry).toBeDefined();
+  await act(async () => retry!.click());
+  const retryScript = document.querySelector<HTMLScriptElement>(
+    'script[src*="oapi.map.naver.com"]',
+  );
+  expect(retryScript).not.toBeNull();
+  expect(retryScript).not.toBe(originalScript);
+  vi.stubGlobal('naver', {
+    maps: {
+      Map: makeMap,
+      Marker: makeMarker,
+      LatLng: class {},
+      Size: class {},
+      Point: class {},
+    },
+  });
+  await act(async () => retryScript!.dispatchEvent(new Event('load')));
+  expect(makeMap).toHaveBeenCalledOnce();
+  expect(makeMarker).toHaveBeenCalledOnce();
+  expect(section?.textContent).toContain('실제 발생 지점과 다를 수 있습니다');
+  expect(section?.textContent).not.toContain('위치 지도를 불러오지 못했어요');
 });
