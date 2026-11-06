@@ -69,6 +69,8 @@ const article = {
     link: '',
   },
 };
+let holdList = false;
+const waitingLists: ServerResponse[] = [];
 let holdMap = false;
 let mapArticlesFixture: unknown = { total: 0, items: [] };
 let holdDetails = false;
@@ -108,6 +110,10 @@ const api = createServer((request, response) => {
     return;
   }
   if (url.pathname === '/news') {
+    if (holdList) {
+      waitingLists.push(response);
+      return;
+    }
     const offset = Number(url.searchParams.get('offset') ?? 0);
     if (url.searchParams.get('keyword') === '재검색') newsOffsets.push(offset);
     const limit = Number(url.searchParams.get('limit') ?? 20);
@@ -3965,3 +3971,287 @@ test('mapSelectionRendersVisibleDotAndGroupRingWithAccessibleRestoration', async
     await context.close();
   }
 }, 30000);
+
+test('articleListIsVisibleWithoutJavascriptAndInInitialBotHtml', async () => {
+  for (const userAgent of [
+    'Mozilla/5.0 Chrome/140.0.0.0 Safari/537.36',
+    'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)',
+    'Mozilla/5.0 (compatible; bingbot/2.0; +http://www.bing.com/bingbot.htm)',
+  ]) {
+    const context = await browser!.newContext({
+      javaScriptEnabled: false,
+      userAgent,
+      viewport: { width: 320, height: 852 },
+    });
+    contexts.push(context);
+    const page = await context.newPage();
+    const response = await page.goto(origin + '/incidents');
+    const html = await response!.text();
+    expect(response?.status()).toBe(200);
+    expect(html).toContain(article.article.title);
+    const card = page.locator('article:visible').first();
+    expect(
+      await card
+        .getByRole('link', { name: article.article.title, exact: true })
+        .isVisible(),
+    ).toBe(true);
+    expect(
+      await card
+        .getByRole('link', { name: '기사 원문', exact: true })
+        .isVisible(),
+    ).toBe(true);
+    expect(
+      await card
+        .getByText(article.article.description, { exact: true })
+        .isVisible(),
+    ).toBe(true);
+    expect(
+      await page.locator('[role="status"][aria-busy="true"]').count(),
+    ).toBe(0);
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      ),
+    ).toBe(true);
+    const bounds = await card.evaluate((element) => {
+      const source = element.querySelector<HTMLAnchorElement>(
+        'a[href^="https://"]',
+      )!;
+      const time = element.querySelector<HTMLElement>('time')!;
+      const row = source.parentElement!.getBoundingClientRect();
+      const left = source.getBoundingClientRect();
+      const right = time.getBoundingClientRect();
+      return {
+        rowRight: row.right,
+        leftRight: left.right,
+        rightLeft: right.left,
+        rightRight: right.right,
+      };
+    });
+    expect(bounds.leftRight).toBeLessThanOrEqual(bounds.rightLeft);
+    expect(bounds.rightRight).toBeLessThanOrEqual(bounds.rowRight + 0.5);
+    await context.close();
+  }
+}, 60000);
+
+test('articleListNavigationShowsSkeletonWhileTheServerIsPending', async () => {
+  const context = await browser!.newContext({
+    viewport: { width: 393, height: 852 },
+  });
+  contexts.push(context);
+  await context.route('**/*', async (route) => {
+    const h = route.request().headers();
+    if (h['next-router-prefetch'] || h.purpose === 'prefetch')
+      await route.abort();
+    else await route.continue();
+  });
+  const page = await context.newPage();
+  try {
+    await page.goto(origin + '/');
+    await page
+      .getByRole('navigation', { name: '주 메뉴' })
+      .getByRole('link', { name: '목록', exact: true })
+      .waitFor();
+    holdList = true;
+    await page
+      .getByRole('navigation', { name: '주 메뉴' })
+      .getByRole('link', { name: '목록', exact: true })
+      .click();
+    await expect
+      .poll(() => waitingLists.length, { timeout: 5000 })
+      .toBeGreaterThan(0);
+    const loading = page.locator('[data-list-navigation-pending]');
+    await expect.poll(() => loading.isVisible()).toBe(true);
+    expect(
+      await loading.locator('[role="status"][aria-busy="true"]').count(),
+    ).toBe(1);
+    holdList = false;
+    for (const response of waitingLists.splice(0))
+      response.end(
+        JSON.stringify({ total: listArticles.length, items: listArticles }),
+      );
+    await page.waitForURL(origin + '/incidents');
+    await page
+      .getByRole('link', { name: article.article.title, exact: true })
+      .waitFor();
+    expect(await page.locator('[data-list-navigation-pending]').count()).toBe(
+      0,
+    );
+  } finally {
+    holdList = false;
+    for (const response of waitingLists.splice(0))
+      if (!response.destroyed)
+        response.end(
+          JSON.stringify({ total: listArticles.length, items: listArticles }),
+        );
+  }
+}, 60000);
+
+test('articleListSharedLinksExposePendingOnDifferentSourcePages', async () => {
+  for (const [path, name] of [
+    ['/about', '기사 목록'],
+    ['/archive', '최신 기사 목록'],
+    ['/not-a-page', '사건 목록'],
+  ]) {
+    const context = await browser!.newContext({
+      viewport: { width: 393, height: 852 },
+    });
+    contexts.push(context);
+    await context.route('**/*', async (route) => {
+      const h = route.request().headers();
+      if (h['next-router-prefetch'] || h.purpose === 'prefetch')
+        await route.abort();
+      else await route.continue();
+    });
+    const page = await context.newPage();
+    try {
+      await page.goto(origin + path);
+      const link = page
+        .locator('main')
+        .getByRole('link', { name, exact: true });
+      await link.waitFor();
+      await link.focus();
+      holdList = true;
+      const click = link.click();
+      await expect
+        .poll(() => waitingLists.length, { timeout: 5000 })
+        .toBeGreaterThan(0);
+      const pending = page.locator('[data-list-navigation-pending]');
+      await expect
+        .poll(() => pending.isVisible(), { timeout: 3000 })
+        .toBe(true);
+      await expect
+        .poll(() =>
+          page.locator('main').evaluate((node) => (node as HTMLElement).inert),
+        )
+        .toBe(true);
+      holdList = false;
+      for (const response of waitingLists.splice(0))
+        response.end(
+          JSON.stringify({ total: listArticles.length, items: listArticles }),
+        );
+      await click;
+      await page.waitForURL(origin + '/incidents');
+      await page
+        .getByRole('link', { name: article.article.title, exact: true })
+        .waitFor();
+      expect(await page.locator('[data-list-navigation-pending]').count()).toBe(
+        0,
+      );
+      expect(
+        await page
+          .locator('main')
+          .evaluate((node) => (node as HTMLElement).inert),
+      ).toBe(false);
+    } finally {
+      holdList = false;
+      for (const response of waitingLists.splice(0))
+        if (!response.destroyed)
+          response.end(
+            JSON.stringify({ total: listArticles.length, items: listArticles }),
+          );
+      await context.close();
+    }
+  }
+}, 120000);
+
+test('articleListLinkKeepsNoJsAndModifiedClickBehaviour', async () => {
+  const nojs = await browser!.newContext({ javaScriptEnabled: false });
+  contexts.push(nojs);
+  const p = await nojs.newPage();
+  await p.goto(origin + '/about');
+  const nojsLink = p.getByRole('link', { name: '기사 목록', exact: true });
+  expect(await nojsLink.getAttribute('href')).toBe('/incidents');
+  expect(await p.locator('[data-list-navigation-pending]').count()).toBe(0);
+  await nojsLink.click();
+  await p.waitForURL(origin + '/incidents');
+  expect(
+    await p
+      .getByRole('link', { name: article.article.title, exact: true })
+      .isVisible(),
+  ).toBe(true);
+  await nojs.close();
+  const context = await browser!.newContext();
+  contexts.push(context);
+  const page = await context.newPage();
+  await page.goto(origin + '/about');
+  const link = page.getByRole('link', { name: '기사 목록', exact: true });
+  const [popup] = await Promise.all([
+    context.waitForEvent('page'),
+    link.click({
+      modifiers: [process.platform === 'darwin' ? 'Meta' : 'Control'],
+    }),
+  ]);
+  await popup.waitForURL(origin + '/incidents');
+  expect(new URL(page.url()).pathname).toBe('/about');
+  expect(await page.locator('[data-list-navigation-pending]').count()).toBe(0);
+  expect(
+    await page.locator('main').evaluate((node) => (node as HTMLElement).inert),
+  ).toBe(false);
+  await context.close();
+}, 60000);
+
+test('fixedNavigationDoesNotCoverContentLinks', async () => {
+  for (const width of [320, 393, 1440]) {
+    for (const [path, name] of [
+      ['/about', '기사 목록'],
+      ['/archive', '최신 기사 목록'],
+      ['/not-a-page', '사건 목록'],
+    ]) {
+      const context = await browser!.newContext({
+        javaScriptEnabled: false,
+        hasTouch: true,
+        viewport: { width, height: 700 },
+      });
+      contexts.push(context);
+      const page = await context.newPage();
+      try {
+        await page.goto(origin + path);
+        const link = page
+          .locator('main')
+          .getByRole('link', { name, exact: true });
+        await link.evaluate((element) =>
+          element.scrollIntoView({ block: 'end' }),
+        );
+        const visible = await link.evaluate((element) => {
+          const rect = element.getBoundingClientRect();
+          const top = document.elementFromPoint(
+            (rect.left + rect.right) / 2,
+            (rect.top + rect.bottom) / 2,
+          );
+          return top === element || element.contains(top);
+        });
+        expect(visible, path + ' at ' + width).toBe(true);
+        await link.tap({ timeout: 3000 });
+        await page.waitForURL(origin + '/incidents');
+        await page.goto(origin + path);
+        let reached = false;
+        for (let step = 0; step < 30; step++) {
+          await page.keyboard.press('Tab');
+          if (
+            await link.evaluate((element) => document.activeElement === element)
+          ) {
+            reached = true;
+            break;
+          }
+        }
+        expect(reached).toBe(true);
+        expect(
+          await link.evaluate((element) => {
+            const rect = element.getBoundingClientRect();
+            const top = document.elementFromPoint(
+              (rect.left + rect.right) / 2,
+              (rect.top + rect.bottom) / 2,
+            );
+            return top === element || element.contains(top);
+          }),
+          'keyboard ' + path + ' at ' + width,
+        ).toBe(true);
+        await page.keyboard.press('Enter');
+        await page.waitForURL(origin + '/incidents');
+      } finally {
+        await context.close();
+      }
+    }
+  }
+}, 60000);

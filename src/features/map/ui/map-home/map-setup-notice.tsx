@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 
+import { ListLink } from '@/components/layout/list-link/list-link';
 import { SiteStructuredData } from '@/components/layout/site-structured-data/site-structured-data';
 import { Notice } from '@/components/feedback/notice';
 
@@ -22,7 +23,7 @@ export function MapSetupNotice() {
               <button type="button" onClick={() => window.location.reload()}>
                 다시 시도
               </button>
-              <Link href="/incidents">기사 목록</Link>
+              <ListLink>기사 목록</ListLink>
               <Link href="/search">검색</Link>
             </>
           }

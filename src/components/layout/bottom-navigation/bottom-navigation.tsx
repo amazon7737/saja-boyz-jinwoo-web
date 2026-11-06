@@ -1,6 +1,8 @@
 import Image from 'next/image';
 import Link from 'next/link';
 
+import { ListLink } from '@/components/layout/list-link/list-link';
+
 export function BottomNavigation({ pathname }: { pathname: string }) {
   const isList = pathname === '/incidents';
   const mapCurrent =
@@ -37,8 +39,7 @@ export function BottomNavigation({ pathname }: { pathname: string }) {
       >
         <Image src="/navigation/report.svg" alt="" width={24} height={24} />
       </Link>
-      <Link
-        href="/incidents"
+      <ListLink
         aria-current={isList ? 'page' : undefined}
         className={`${tabClassName} ${isList ? 'text-brand' : 'text-[#94a3b8]'}`}
       >
@@ -53,7 +54,7 @@ export function BottomNavigation({ pathname }: { pathname: string }) {
           height={20}
         />
         <span>목록</span>
-      </Link>
+      </ListLink>
     </nav>
   );
 }

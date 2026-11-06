@@ -1,8 +1,18 @@
 'use client';
 
+import { useRouter as useCompatRouter } from 'next/compat/router';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useLayoutEffect, useRef, type ReactNode } from 'react';
+import { flushSync } from 'react-dom';
+import {
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from 'react';
+
+import { ListNavigationPending } from '@/components/feedback/list-navigation-pending';
 
 import { useArticleSheetRoute } from '../../model/article-sheet-context';
 
@@ -18,6 +28,41 @@ export function DetailInline({
   closeLabel?: string;
 }) {
   const route = useArticleSheetRoute();
+  const pagesRouter = useCompatRouter();
+  const [legacyPending, setLegacyPending] = useState(false);
+
+  useEffect(() => {
+    if (!pagesRouter) return;
+    const reset = () => setLegacyPending(false);
+    const navigation = (window as Window & { navigation?: EventTarget })
+      .navigation;
+    let signal: AbortSignal | undefined;
+    const onNavigate = (event: Event) => {
+      signal?.removeEventListener('abort', reset);
+      signal = (event as Event & { signal?: AbortSignal }).signal;
+      signal?.addEventListener('abort', reset, { once: true });
+    };
+
+    pagesRouter.events.on('routeChangeError', reset);
+    pagesRouter.events.on('routeChangeComplete', reset);
+    window.addEventListener('pageshow', reset);
+    navigation?.addEventListener('navigate', onNavigate);
+
+    return () => {
+      signal?.removeEventListener('abort', reset);
+      pagesRouter.events.off('routeChangeError', reset);
+      pagesRouter.events.off('routeChangeComplete', reset);
+      window.removeEventListener('pageshow', reset);
+      navigation?.removeEventListener('navigate', onNavigate);
+    };
+  }, [pagesRouter]);
+
+  useEffect(() => {
+    if (!legacyPending) return;
+    const timeout = setTimeout(() => setLegacyPending(false), 30_000);
+
+    return () => clearTimeout(timeout);
+  }, [legacyPending]);
   const panel = useRef<HTMLElement>(null);
 
   const detailFocus = route?.detailFocus;
@@ -85,6 +130,16 @@ export function DetailInline({
             ) {
               event.preventDefault();
               route.close();
+            } else if (
+              pagesRouter &&
+              event.button === 0 &&
+              !event.metaKey &&
+              !event.ctrlKey &&
+              !event.shiftKey &&
+              !event.altKey &&
+              !event.defaultPrevented
+            ) {
+              flushSync(() => setLegacyPending(true));
             }
           }}
         >
@@ -92,6 +147,9 @@ export function DetailInline({
             ←
           </span>{' '}
           사건 상세
+          {(!route?.active || route.sourcePath === '/incidents') && (
+            <ListNavigationPending pendingOverride={legacyPending} />
+          )}
         </Link>
         <Link
           data-article-control="close"

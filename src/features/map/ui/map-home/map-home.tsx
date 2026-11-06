@@ -1,9 +1,9 @@
 'use client';
 
 import Image from 'next/image';
-import Link from 'next/link';
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 
+import { ListLink } from '@/components/layout/list-link/list-link';
 import { SiteStructuredData } from '@/components/layout/site-structured-data/site-structured-data';
 import { useArticleSheetRoute } from '@/features/article-detail/model/article-sheet-context';
 import { LoadingSpinner } from '@/components/feedback/loading-spinner';
@@ -876,7 +876,7 @@ export function MapHome({
                         기사 위치 다시 불러오기
                       </button>
                     ) : (
-                      <Link href="/incidents">전체 기사 목록 보기</Link>
+                      <ListLink>전체 기사 목록 보기</ListLink>
                     )
                   }
                 >

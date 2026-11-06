@@ -308,7 +308,7 @@ test('articleRequestTimeout', async () => {
 }, 10000);
 
 test('articleLoading', async () => {
-  const load = () => import('../(browse)/@background/incidents/loading');
+  const load = () => import('@/components/feedback/list-loading');
   expect(load).toBeTypeOf('function');
   const loadingModule = await load();
   assert(isLoadingModule(loadingModule));

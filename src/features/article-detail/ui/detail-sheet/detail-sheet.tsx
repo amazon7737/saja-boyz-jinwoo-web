@@ -12,6 +12,8 @@ import {
   type MouseEvent,
 } from 'react';
 
+import { ListLink } from '@/components/layout/list-link/list-link';
+
 import { DetailInline } from './detail-inline';
 import { useArticleSheetRoute } from '../../model/article-sheet-context';
 
@@ -561,14 +563,13 @@ function ModalDetailSheet({
           className="relative z-10 flex h-6 items-center justify-end"
         >
           {!onClose && (
-            <Link
-              href="/incidents"
+            <ListLink
               scroll={false}
               aria-label="목록으로"
               className="sr-only focus:not-sr-only focus:mr-auto focus:text-sm"
             >
               목록으로
-            </Link>
+            </ListLink>
           )}
           {onClose ? (
             <button

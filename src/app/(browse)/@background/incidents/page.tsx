@@ -1,5 +1,4 @@
-import Link from 'next/link';
-
+import { ListLink } from '@/components/layout/list-link/list-link';
 import { Notice } from '@/components/feedback/notice';
 import { PaginatedArticleList } from '@/features/article-list/ui/article-list/paginated-article-list';
 import { fetchArticleList } from '@/features/article-list/api/fetch-articles';
@@ -20,7 +19,7 @@ export default async function IncidentsPage() {
         <Notice
           role="alert"
           title="주변 소식을 다시 이어볼까요?"
-          action={<Link href="/incidents">다시 시도</Link>}
+          action={<ListLink>다시 시도</ListLink>}
         >
           기사를 불러오지 못했어요
           <p>연결을 확인한 뒤 다시 눌러주세요.</p>
