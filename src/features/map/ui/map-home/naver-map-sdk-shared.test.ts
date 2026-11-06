@@ -44,3 +44,27 @@ test('sharedNaverSdkKeepsTheRemainingConsumerAndRestoresPriorCallback', () => {
   expect(script.isConnected).toBe(true);
   expect(Reflect.get(window, 'navermap_authFailure')).toBe(prior);
 });
+
+test('sharedNaverSdkReleasesDuplicateSubscriberRegistrationsIndependently', () => {
+  const subscribe = Reflect.get(sdk, 'subscribeNaverMaps') as Subscribe;
+  const previous = vi.fn();
+  Reflect.set(window, 'navermap_authFailure', previous);
+  const subscriber = { ready: vi.fn(), error: vi.fn() };
+  const releaseFirst = subscribe('same-client', subscriber);
+  const releaseSecond = subscribe('same-client', subscriber);
+  try {
+    const script = document.querySelector<HTMLScriptElement>(
+      'script[src*="oapi.map.naver.com"]',
+    )!;
+    releaseFirst();
+    expect(Reflect.get(window, 'navermap_authFailure')).not.toBe(previous);
+    const maps = { Map: vi.fn(), Marker: vi.fn() } as unknown as NaverMaps;
+    Reflect.set(window, 'naver', { maps });
+    script.dispatchEvent(new Event('load'));
+    expect(subscriber.ready).toHaveBeenCalledExactlyOnceWith(maps);
+  } finally {
+    releaseFirst();
+    releaseSecond();
+  }
+  expect(Reflect.get(window, 'navermap_authFailure')).toBe(previous);
+});

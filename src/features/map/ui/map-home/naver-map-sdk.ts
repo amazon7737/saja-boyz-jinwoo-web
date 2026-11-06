@@ -239,21 +239,26 @@ export function subscribeNaverMaps(
   const load = currentLoad ?? startLoad(key);
 
   if (!load) return reportFailureLater();
-  load.subscribers.add(subscriber);
+  const registration: SdkSubscriber = {
+    ready: (maps) => subscriber.ready(maps),
+    error: () => subscriber.error(),
+  };
+
+  load.subscribers.add(registration);
 
   if (load.state === 'ready') {
     queueMicrotask(() => {
       const maps = (window as SdkWindow).naver?.maps;
 
       if (subscribed && currentLoad === load && load.state === 'ready' && maps)
-        reportReady(subscriber, maps);
+        reportReady(registration, maps);
     });
   }
 
   return () => {
     if (!subscribed) return;
     subscribed = false;
-    load.subscribers.delete(subscriber);
+    load.subscribers.delete(registration);
     if (!load.subscribers.size) stopLoad(load);
   };
 }
