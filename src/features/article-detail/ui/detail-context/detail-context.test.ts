@@ -75,9 +75,9 @@ test('articleSheetVerifiedContext', () => {
   expect(view.textContent).toContain('검증 지역 A');
   expect(view.textContent).toContain('지역 대표 위치');
   expect(view.textContent).toContain('실제 발생 지점과 다를 수 있습니다');
-  const section = view.querySelector('section[aria-label="주변 핫한 사건"]');
+  const section = view.querySelector('section[aria-label="같은 지역 기사"]');
   expect(section?.querySelector('h2')?.textContent?.trim()).toBe(
-    '주변 핫한 사건',
+    '같은 지역 기사',
   );
   expect(section?.textContent).toContain('같은 지역 검증 기사');
   expect(

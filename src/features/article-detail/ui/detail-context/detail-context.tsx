@@ -76,9 +76,9 @@ export function RelatedArticles({ id }: { id: string }) {
   if (!related.length) return null;
 
   return (
-    <section aria-label="주변 핫한 사건" className="flex flex-col gap-2.5">
+    <section aria-label="같은 지역 기사" className="flex flex-col gap-2.5">
       <h2 className="m-0 text-[12px]/[15px] font-bold text-muted">
-        주변 핫한 사건
+        같은 지역 기사
       </h2>
       <ul className="m-0 flex list-none flex-col gap-2.5 p-0">
         {related.map((item) => {
