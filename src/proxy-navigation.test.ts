@@ -70,6 +70,7 @@ const article = {
   },
 };
 let holdMap = false;
+let mapArticlesFixture: unknown = { total: 0, items: [] };
 let holdDetails = false;
 let failDetail = false;
 let detailDelay = 0;
@@ -101,7 +102,7 @@ const api = createServer((request, response) => {
   }
   if (url.pathname === '/map/articles') {
     if (holdMap) waitingMap.push(response);
-    else response.end(JSON.stringify({ total: 0, items: [] }));
+    else response.end(JSON.stringify(mapArticlesFixture));
     return;
   }
   if (url.pathname === '/news') {
@@ -3189,3 +3190,86 @@ test('articleDocument503RetryWithoutNavigationApiRecoversAfterThirtySeconds', as
     await client.detach();
   }
 }, 30000);
+
+test('detailLocationApiReturnsOnlyVerifiedTargetAndRelatedArticles', async () => {
+  const otherId = 'b'.repeat(64);
+  const unrelatedId = 'c'.repeat(64);
+  const evidence = { field: 'description', text: '내부 이동 검증용 기사' };
+  const location = {
+    latitude: 37.5,
+    longitude: 127.1,
+    label: '서울 검증 지역',
+    precision: 'region',
+    evidence,
+  };
+  const item = (articleId: string, label: string, latitude: number) => ({
+    ...article,
+    collection_id: 'detail-location-fixture',
+    article_id: articleId,
+    location_status: 'resolved',
+    location_reason: null,
+    location: { ...location, label, latitude },
+  });
+  mapArticlesFixture = {
+    total: 3,
+    items: [
+      item(id, location.label, location.latitude),
+      item(otherId, location.label, location.latitude),
+      item(unrelatedId, '다른 지역', 35),
+    ],
+  };
+  try {
+    const response = await fetch(origin + '/api/incidents/' + id + '/location');
+    expect(response.status).toBe(200);
+    expect(response.headers.get('cache-control')).toContain('no-store');
+    const text = await response.text();
+    const body = JSON.parse(text) as {
+      location: {
+        latitude: number;
+        longitude: number;
+        label: string;
+        precision: string;
+      } | null;
+      related: Array<{ articleId: string }>;
+    };
+    expect(body.location).toEqual({
+      latitude: 37.5,
+      longitude: 127.1,
+      label: '서울 검증 지역',
+      precision: 'region',
+    });
+    expect(body.related.map((item) => item.articleId)).toEqual([otherId]);
+    expect(text).not.toContain(unrelatedId);
+    expect(text).not.toContain('fixture.invalid');
+    expect(text).not.toContain('127.0.0.1');
+    expect(text).not.toContain('evidence');
+  } finally {
+    mapArticlesFixture = { total: 0, items: [] };
+  }
+}, 120000);
+
+test('detailLocationClientAbortReachesTheUpstreamRequest', async () => {
+  holdMap = true;
+  const controller = new AbortController();
+  const start = waitingMap.length;
+  const pending = fetch(origin + '/api/incidents/' + id + '/location', {
+    signal: controller.signal,
+  }).catch((error: unknown) => error);
+
+  try {
+    await expect
+      .poll(() => waitingMap.length - start, { timeout: 5000 })
+      .toBe(1);
+    const upstream = waitingMap[start];
+    controller.abort();
+    await pending;
+    await expect.poll(() => upstream.destroyed, { timeout: 2000 }).toBe(true);
+  } finally {
+    holdMap = false;
+    controller.abort();
+    for (const response of waitingMap.splice(start)) {
+      if (!response.destroyed)
+        response.end(JSON.stringify({ total: 0, items: [] }));
+    }
+  }
+}, 120000);
