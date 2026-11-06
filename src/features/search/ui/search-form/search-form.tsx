@@ -16,6 +16,7 @@ import { LoadingSpinner } from '@/components/feedback/loading-spinner';
 
 import { useRollingSearchPrompt } from '../../model/use-rolling-search-prompt';
 import { SearchLoading } from '../search-loading/search-loading';
+import { SearchSuggestions } from '../search-suggestions/search-suggestions';
 
 export function SearchForm({
   keyword,
@@ -29,6 +30,15 @@ export function SearchForm({
   const [pending, startTransition] = useTransition();
   const [revision, setRevision] = useState(0);
   const composingRef = useRef(false);
+  const [lastKeyword, setLastKeyword] = useState(keyword);
+  const [query, setQuery] = useState(keyword);
+
+  if (lastKeyword !== keyword) {
+    setLastKeyword(keyword);
+    setQuery(keyword);
+  }
+
+  const [composing, setComposing] = useState(false);
 
   return (
     <div className="flex flex-col gap-5 pb-5 text-sm [&_article_a]:scroll-mt-3 [&_article_a]:scroll-mb-[calc(84px_+_env(safe-area-inset-bottom))]">
@@ -83,9 +93,18 @@ export function SearchForm({
             prompt={prompt}
             pending={pending}
             composingRef={composingRef}
+            setQuery={setQuery}
+            setComposing={setComposing}
           />
         </form>
       </div>
+      {!pending && (
+        <SearchSuggestions
+          query={query}
+          keyword={keyword}
+          composing={composing}
+        />
+      )}
       {pending && <SearchLoading initial={false} />}
       <div
         key={revision}
@@ -104,11 +123,15 @@ function SearchInput({
   prompt,
   pending,
   composingRef,
+  setQuery,
+  setComposing,
 }: {
   keyword: string;
   prompt: string;
   pending: boolean;
   composingRef: RefObject<boolean>;
+  setQuery: (value: string) => void;
+  setComposing: (value: boolean) => void;
 }) {
   const [hasValue, setHasValue] = useState(Boolean(keyword));
   const input = useRef<HTMLInputElement>(null);
@@ -126,15 +149,22 @@ function SearchInput({
         type="search"
         name="q"
         defaultValue={keyword}
-        onChange={(event) => setHasValue(Boolean(event.currentTarget.value))}
+        onChange={(event) => {
+          setHasValue(Boolean(event.currentTarget.value));
+          setQuery(event.currentTarget.value);
+        }}
         onCompositionStart={() => {
           composingRef.current = true;
+          setComposing(true);
         }}
-        onCompositionEnd={() => {
+        onCompositionEnd={(event) => {
           composingRef.current = false;
+          setComposing(false);
+          setQuery(event.currentTarget.value);
         }}
         onBlur={() => {
           composingRef.current = false;
+          setComposing(false);
         }}
         readOnly={pending}
         aria-label="기사 키워드 검색"
@@ -161,6 +191,7 @@ function SearchInput({
             }
 
             setHasValue(false);
+            setQuery('');
           }}
           className="ui-control grid size-11 shrink-0 cursor-pointer place-items-center border-0 bg-transparent p-0 text-muted"
         >
