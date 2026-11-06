@@ -17,7 +17,7 @@ import { MapUnavailableFilter } from '../map-unavailable-filter/map-unavailable-
 import { createArticleMarker } from './map-article-marker';
 import { MapArticleSheet } from './map-article-sheet';
 import {
-  naverMapScriptUrl,
+  subscribeNaverMaps,
   type MapInstance,
   type MarkerInstance,
   type NaverMaps,
@@ -373,8 +373,6 @@ export function MapHome({
         refreshDisplay?.();
       }
     };
-    const sdkWindow = window as Window & { navermap_authFailure?: () => void };
-    const previousAuthFailure = sdkWindow.navermap_authFailure;
     const initialize = () => {
       const maps = (window as Window & { naver?: { maps: NaverMaps } }).naver
         ?.maps;
@@ -645,49 +643,13 @@ export function MapHome({
 
       window.addEventListener('resize', resize);
 
-      clearTimeout(timeout);
       setReady(true);
     };
-
-    const url = naverMapScriptUrl(clientId);
-
-    for (const element of document.querySelectorAll('script[src]')) {
-      const scriptUrl = new URL((element as HTMLScriptElement).src);
-
-      if (
-        scriptUrl.origin === url.origin &&
-        scriptUrl.pathname === url.pathname &&
-        scriptUrl.searchParams.get('ncpKeyId') !== clientId
-      ) {
-        element.remove();
-      }
-    }
-
-    let script = [...document.querySelectorAll('script')].find(
-      (element) => element.src === url.href,
-    );
-    const existing = Boolean(script);
-
-    if (!script) {
-      script = document.createElement('script');
-      script.src = url.href;
-      script.async = true;
-      const loadingScript = script;
-
-      script.addEventListener(
-        'load',
-        () => {
-          loadingScript.dataset.naverMapLoaded = 'true';
-        },
-        { once: true },
-      );
-    }
 
     const fail = () => {
       if (disposed || loadFailed) return;
       loadFailed = true;
       automaticLocation.current.request = undefined;
-      clearTimeout(timeout);
       locate.current = null;
       updateArticles.current = null;
       clearSelection.current = null;
@@ -702,20 +664,14 @@ export function MapHome({
       marker = undefined;
       map?.destroy();
       map = undefined;
-      script.remove();
       setReady(false);
       setFailed(true);
     };
 
-    sdkWindow.navermap_authFailure = fail;
-    const timeout = setTimeout(fail, 10_000);
-
-    script.addEventListener('load', initialize);
-    script.addEventListener('error', fail);
-    if (!existing) document.head.append(script);
-    // StrictMode can reuse a pending script while an older SDK global remains.
-    // Only a completed load on this script allows immediate SDK reuse.
-    if (script.dataset.naverMapLoaded === 'true') queueMicrotask(initialize);
+    const unsubscribe = subscribeNaverMaps(clientId, {
+      ready: initialize,
+      error: fail,
+    });
 
     return () => {
       disposed = true;
@@ -727,18 +683,7 @@ export function MapHome({
       clearControls();
       clearArticles();
       marker?.setMap(null);
-      clearTimeout(timeout);
-
-      if (sdkWindow.navermap_authFailure === fail) {
-        if (previousAuthFailure === undefined) {
-          delete sdkWindow.navermap_authFailure;
-        } else {
-          sdkWindow.navermap_authFailure = previousAuthFailure;
-        }
-      }
-
-      script.removeEventListener('load', initialize);
-      script.removeEventListener('error', fail);
+      unsubscribe();
       if (map) captureMapViewport(clientId, map);
       map?.destroy();
     };

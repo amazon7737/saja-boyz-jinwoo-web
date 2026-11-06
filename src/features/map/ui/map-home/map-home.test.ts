@@ -237,6 +237,35 @@ test('mapSdkFailureRetriesAndRecovers', async () => {
   ).toHaveLength(1);
 });
 
+test('mapSharesSdkAuthenticationFailureAndRetriesWithAnotherConsumer', async () => {
+  const { subscribeNaverMaps } = await import('./naver-map-sdk');
+  const other = { ready: vi.fn(), error: vi.fn() };
+  const release = subscribeNaverMaps('map-test-id', other);
+  const sharedAuthenticationFailure = Reflect.get(
+    window,
+    'navermap_authFailure',
+  );
+
+  try {
+    await mount();
+    expect(Reflect.get(window, 'navermap_authFailure')).toBe(
+      sharedAuthenticationFailure,
+    );
+    await act(async () => sharedAuthenticationFailure());
+    expect(other.error).toHaveBeenCalledTimes(1);
+    expect(container.querySelector('[role="alert"]')?.textContent).toMatch(
+      /지도/,
+    );
+    release();
+    await act(async () => button('다시 시도').click());
+    const fixture = await loaded();
+    expect(fixture.created).toHaveBeenCalledTimes(1);
+    expect(container.querySelector('[role="alert"]')).toBeNull();
+  } finally {
+    release();
+  }
+});
+
 test('mapSdkTimeoutAndAuthenticationFailureAreVisible', async () => {
   vi.useFakeTimers();
   await mount();

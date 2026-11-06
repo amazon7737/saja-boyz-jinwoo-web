@@ -87,6 +87,7 @@ type SdkLoad = {
 };
 
 let currentLoad: SdkLoad | undefined;
+const ownedScripts = new WeakSet<HTMLScriptElement>();
 
 function reportSubscriberError(subscriber: SdkSubscriber) {
   try {
@@ -124,7 +125,7 @@ function startLoad(clientId: string): SdkLoad | undefined {
   const scripts = [
     ...document.querySelectorAll<HTMLScriptElement>('script[src]'),
   ];
-  const differentKey = scripts.some((element) => {
+  const differentKey = scripts.filter((element) => {
     const source = new URL(element.src);
 
     return (
@@ -134,7 +135,9 @@ function startLoad(clientId: string): SdkLoad | undefined {
     );
   });
 
-  if (differentKey) return undefined;
+  if (differentKey.some((element) => !ownedScripts.has(element)))
+    return undefined;
+  for (const element of differentKey) element.remove();
   let script = scripts.find((element) => element.src === url.href);
   const existing = Boolean(script);
 
@@ -142,6 +145,7 @@ function startLoad(clientId: string): SdkLoad | undefined {
     script = document.createElement('script');
     script.src = url.href;
     script.async = true;
+    ownedScripts.add(script);
   }
 
   const sdkScript = script;
