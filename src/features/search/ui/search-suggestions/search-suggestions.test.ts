@@ -274,3 +274,49 @@ test('shows up to two cards without repeated titles and never revives an older r
   expect(host.textContent).not.toContain('화재 기사');
   await act(async () => root.unmount());
 });
+
+test('highlights the final input word in both suggestions and matching cards', async () => {
+  vi.useFakeTimers();
+  vi.stubGlobal('IS_REACT_ACT_ENVIRONMENT', true);
+  const title = '서울 한복판 화재 AI ai Ai aI C++';
+  const items = Array.from({ length: 6 }, (_, i) => ({
+    id: String(i).repeat(64),
+    title: `${title} ${i}`,
+    publishedAt: null,
+    imageUrl: null,
+  }));
+  vi.stubGlobal(
+    'fetch',
+    vi.fn().mockImplementation(() => Promise.resolve(Response.json({ items }))),
+  );
+  const host = document.createElement('div');
+  const root = createRoot(host);
+
+  for (const [query, matches] of [
+    ['서울 화재', ['화재']],
+    [' 서울  \t화재  ', ['화재']],
+    ['서울 ai', ['AI', 'ai', 'Ai', 'aI']],
+    ['서울 c++', ['C++']],
+  ] as const) {
+    await act(async () =>
+      root.render(
+        createElement(SearchSuggestions, {
+          query,
+          keyword: '',
+          composing: false,
+        }),
+      ),
+    );
+    await act(async () => vi.advanceTimersByTime(350));
+    const links = host.querySelectorAll('li a');
+    expect(links).toHaveLength(6);
+    for (const link of links) {
+      expect(link.textContent).toMatch(/^서울 한복판 화재 AI ai Ai aI C\+\+/);
+      expect(
+        [...link.querySelectorAll('mark')].map((mark) => mark.textContent),
+      ).toEqual(matches);
+      expect(link.getAttribute('href')).toMatch(/^\/incidents\/[a-f0-9]{64}$/);
+    }
+  }
+  await act(async () => root.unmount());
+});

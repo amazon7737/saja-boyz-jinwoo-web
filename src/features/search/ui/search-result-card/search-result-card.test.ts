@@ -63,3 +63,25 @@ test('searchHighlightIgnoresCaseAndPreservesOriginalLiteralText', () => {
     expect(host.querySelectorAll('mark')).toHaveLength(0);
   }
 });
+
+test('submitted multiword search keeps matching the full phrase', () => {
+  const item: ArticleCollectionItem = {
+    article_id: 'a'.repeat(64),
+    image_status: 'disabled',
+    image_url: null,
+    article: {
+      title: '서울 한복판 화재',
+      description: '서울 화재 소식',
+      pubDate: '2026-10-15T06:00:00Z',
+      link: 'https://example.com/news',
+      originallink: 'https://example.com/news',
+    },
+  };
+  const host = document.createElement('div');
+  host.innerHTML = renderToStaticMarkup(
+    createElement(SearchResultCard, { item, keyword: '서울 화재' }),
+  );
+  expect(host.querySelector('h2')?.textContent).toBe(item.article.title);
+  expect(host.querySelectorAll('h2 mark')).toHaveLength(0);
+  expect(host.querySelector('article > p mark')?.textContent).toBe('서울 화재');
+});

@@ -69,6 +69,7 @@ export function SearchSuggestions({
     items: Suggestion[];
   } | null>(null);
   const normalized = query.trim();
+  const highlightQuery = normalized.split(/\s+/).at(-1) ?? '';
   const requestKey = JSON.stringify([composing, keyword, normalized]);
   const [previousKey, setPreviousKey] = useState(requestKey);
 
@@ -161,7 +162,7 @@ export function SearchSuggestions({
                   href={`/incidents/${item.id}`}
                   className="ui-control block min-h-[33px] min-w-0 rounded-sm py-2 text-[14px]/[17px] text-text [overflow-wrap:anywhere]"
                 >
-                  {highlightedText(item.title, normalized)}
+                  {highlightedText(item.title, highlightQuery)}
                 </Link>
               </li>
             ))}
@@ -188,7 +189,7 @@ export function SearchSuggestions({
                   publishedAt={item.publishedAt}
                   imageUrl={item.imageUrl}
                   now={now}
-                  keyword={normalized}
+                  keyword={highlightQuery}
                 />
               </li>
             ))}
