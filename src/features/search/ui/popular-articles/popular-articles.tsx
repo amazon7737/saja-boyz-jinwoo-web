@@ -142,7 +142,7 @@ export function PopularArticles() {
         id="popular-articles"
         className="m-0 text-[12px]/[15px] font-bold text-muted"
       >
-        오늘 많이 본 기사
+        🔥 지금 핫한 사건<span className="sr-only"> · 오늘 조회순</span>
       </h2>
       {loading && (
         <ArticleSkeleton

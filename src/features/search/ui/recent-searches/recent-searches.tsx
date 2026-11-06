@@ -87,7 +87,7 @@ export function RecentSearches({ executedKeyword = '' }) {
           {keywords.map((keyword, index) => (
             <li
               key={`${keyword}-${index}`}
-              className="flex max-w-full shrink-0 items-center rounded-md border-[1.5px] border-solid border-border bg-slate-100 text-[12px]/[15px]"
+              className="flex max-w-full shrink-0 items-center rounded-md bg-slate-100 ring-1 ring-border ring-inset text-[12px]/[15px]"
             >
               <Link
                 href={`/search?q=${encodeURIComponent(keyword)}`}

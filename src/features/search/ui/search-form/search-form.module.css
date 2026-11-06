@@ -1,0 +1,12 @@
+.input::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+}
+
+.input:focus-visible {
+  outline: none;
+}
+
+.field:has(.input:focus-visible) {
+  outline: 3px solid var(--color-brand);
+  outline-offset: 4px;
+}

@@ -606,15 +606,14 @@ test('searchAlignmentPreservesFullTargetsAndWorkingControls', async () => {
       ),
       remove: box(remove),
       removeGlyph: box(remove.querySelector('span')!),
-      chip: box(document.querySelector('#suggested-keywords + div > a')!),
     };
   });
   expect.soft(sizes.form.height, '시각 검색바44px 유지').toBeCloseTo(44, 0);
-  expect.soft(sizes.submit.width, '검색 실제 클릭 영역44px 유지').toBe(44);
+  expect.soft(sizes.submit.width, '검색 실제 클릭 영역46px 유지').toBe(46);
   expect.soft(sizes.submit.height).toBe(44);
   expect
     .soft(
-      Math.abs(sizes.input.x - sizes.form.x - 37.5),
+      Math.abs(sizes.input.x - sizes.form.x - 47.5),
       'Figma 입력 시작점 · 테두리 반올림 1px 허용',
     )
     .toBeLessThanOrEqual(1);
@@ -633,9 +632,7 @@ test('searchAlignmentPreservesFullTargetsAndWorkingControls', async () => {
       '삭제 아이콘이 조작 영역 가운데 정렬',
     )
     .toBeLessThanOrEqual(1);
-  expect
-    .soft(sizes.chip.width, '아이콘 추천칩은Figma89px에정렬')
-    .toBeCloseTo(89, 0);
+  expect.soft(sizes.row.height, '최근 검색 칩 높이32px 유지').toBe(32);
   await page
     .getByRole('button', { name: '서울 소방서 삭제', exact: true })
     .click();
@@ -817,7 +814,6 @@ test('searchResultFocusStaysAboveNavigationAndReturnsToItsOpener', async () => {
         );
         const value = await links.nth(index).evaluate((element) => {
           const rect = element.getBoundingClientRect();
-          const nav = document.querySelector('nav[aria-label="주 메뉴"]')!;
           const hit = document.elementFromPoint(
             rect.x + rect.width / 2,
             rect.y + rect.height / 2,
@@ -826,7 +822,7 @@ test('searchResultFocusStaysAboveNavigationAndReturnsToItsOpener', async () => {
             focused: document.activeElement === element,
             top: rect.top,
             bottom: rect.bottom,
-            navTop: nav.getBoundingClientRect().top,
+            viewportBottom: window.innerHeight,
             hit: hit === element || element.contains(hit),
           };
         });
@@ -836,8 +832,8 @@ test('searchResultFocusStaysAboveNavigationAndReturnsToItsOpener', async () => {
           .soft(value.top, label + ' 상단 포커스 윤곽')
           .toBeGreaterThanOrEqual(7);
         expect
-          .soft(value.bottom, label + ' 하단 메뉴 위 포커스 윤곽')
-          .toBeLessThanOrEqual(value.navTop - 7);
+          .soft(value.bottom, label + ' 화면 하단 위 포커스 윤곽')
+          .toBeLessThanOrEqual(value.viewportBottom - 7);
         expect
           .soft(value.hit, label + ' 링크 중앙이 다른 요소에 가리지 않음')
           .toBe(true);

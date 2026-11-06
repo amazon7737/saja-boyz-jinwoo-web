@@ -148,17 +148,14 @@ export function SearchSuggestions({
           aria-labelledby="search-suggestions-title"
           className="flex flex-col gap-2"
         >
-          <h2
-            id="search-suggestions-title"
-            className="m-0 text-xs font-bold text-muted"
-          >
+          <h2 id="search-suggestions-title" className="sr-only">
             일치하는 기사
           </h2>
           <ul className="m-0 flex min-w-0 list-none flex-col gap-2 p-0">
             {suggestions.map((item) => (
               <li
                 key={item.id}
-                className="min-w-0 border-b border-solid border-border"
+                className="min-w-0 border-0 border-b border-solid border-border"
               >
                 <Link
                   href={`/incidents/${item.id}`}

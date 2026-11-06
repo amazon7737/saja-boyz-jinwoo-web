@@ -57,7 +57,7 @@ async function withShell(
 }
 
 test('foundationDedicatedScreensPreserveTheirContent', async () => {
-  for (const route of ['/report', `/incidents/${'a'.repeat(64)}`]) {
+  for (const route of ['/search', '/report', `/incidents/${'a'.repeat(64)}`]) {
     await withShell(route, async (host) => {
       expect(host.querySelector('header')).toBeNull();
       expect(host.querySelector('nav[aria-label="주 메뉴"]')).toBeNull();
@@ -76,7 +76,6 @@ test('foundationNavigationAnnouncesItsCurrentDestination', async () => {
   for (const [route, currentHref, currentValue] of [
     ['/', '/', 'page'],
     ['/incidents', '/incidents', 'page'],
-    ['/search', '/', 'location'],
   ]) {
     await withShell(route, (host) => {
       const nav = host.querySelector('nav[aria-label="주 메뉴"]');
@@ -157,7 +156,6 @@ test('foundationUnconnectedArticleFiltersCannotPretendToFilter', async () => {
 test('foundationNavigationDisplaysFigmaIconsForEachDestination', async () => {
   for (const [route, mapIcon, listIcon, currentHref, currentValue] of [
     ['/', 'map-active.svg', 'list-inactive.svg', '/', 'page'],
-    ['/search', 'map-active.svg', 'list-inactive.svg', '/', 'location'],
     ['/incidents', 'map-inactive.svg', 'list-active.svg', '/incidents', 'page'],
   ] as const) {
     await withShell(route, (host) => {

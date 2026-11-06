@@ -33,7 +33,7 @@ export function AppShell({
     ? `mx-auto min-h-dvh max-w-[640px] ${pathname.startsWith('/incidents/') ? 'bg-background' : 'bg-surface'} pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]`
     : isHome
       ? 'relative mx-auto min-h-dvh max-w-[640px]'
-      : `mx-auto min-h-dvh max-w-[640px] px-4 pb-[110px] ${isList ? '[&_main_a]:scroll-mt-[calc(124px_+_env(safe-area-inset-top))] [&_main_a]:scroll-mb-[calc(84px_+_env(safe-area-inset-bottom))]' : showHeader ? 'pt-[calc(12px_+_env(safe-area-inset-top))]' : 'pt-[calc(20px_+_env(safe-area-inset-top))]'}`;
+      : `mx-auto min-h-dvh max-w-[640px] px-4 ${pathname === '/search' ? 'pb-[calc(20px_+_env(safe-area-inset-bottom))]' : 'pb-[110px]'} ${isList ? '[&_main_a]:scroll-mt-[calc(124px_+_env(safe-area-inset-top))] [&_main_a]:scroll-mb-[calc(84px_+_env(safe-area-inset-bottom))]' : showHeader ? 'pt-[calc(12px_+_env(safe-area-inset-top))]' : 'pt-[calc(20px_+_env(safe-area-inset-top))]'}`;
 
   return (
     <div
@@ -55,7 +55,9 @@ export function AppShell({
       <main id="main-content" className={isHome ? 'relative z-0' : undefined}>
         <FeatureErrorBoundary>{children}</FeatureErrorBoundary>
       </main>
-      {!isDedicatedScreen && <BottomNavigation pathname={pathname} />}
+      {!isDedicatedScreen && pathname !== '/search' && (
+        <BottomNavigation pathname={pathname} />
+      )}
     </div>
   );
 }

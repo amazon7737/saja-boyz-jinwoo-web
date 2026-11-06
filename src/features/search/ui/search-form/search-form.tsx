@@ -17,6 +17,7 @@ import { LoadingSpinner } from '@/components/feedback/loading-spinner';
 import { useRollingSearchPrompt } from '../../model/use-rolling-search-prompt';
 import { SearchLoading } from '../search-loading/search-loading';
 import { SearchSuggestions } from '../search-suggestions/search-suggestions';
+import styles from './search-form.module.css';
 
 export function SearchForm({
   keyword,
@@ -39,9 +40,10 @@ export function SearchForm({
   }
 
   const [composing, setComposing] = useState(false);
+  const isEditing = query.trim() !== keyword.trim();
 
   return (
-    <div className="flex flex-col gap-5 pb-5 text-sm [&_article_a]:scroll-mt-3 [&_article_a]:scroll-mb-[calc(84px_+_env(safe-area-inset-bottom))]">
+    <div className="flex flex-col gap-5 pb-5 text-sm [&_article_a]:scroll-mt-3 [&_article_a]:scroll-mb-3">
       <div className="flex h-11 items-center gap-3">
         <Link
           href="/"
@@ -70,21 +72,21 @@ export function SearchForm({
               else router.push(href);
             });
           }}
-          className="flex h-11 min-w-0 flex-1 items-center rounded-card border-[1.5px] border-solid border-brand bg-surface pl-0 pr-0 shadow-[0_4px_8px_rgb(0_0_0/5%)]"
+          className={`${styles.field} flex h-11 min-w-0 flex-1 items-center rounded-card border-[1.5px] border-solid border-brand bg-surface pl-0 pr-0 shadow-[0_4px_8px_rgb(0_0_0/5%)]`}
         >
           <button
             type="submit"
             aria-label="검색"
             aria-busy={pending}
             disabled={pending}
-            className="-ml-2 flex size-11 shrink-0 cursor-pointer items-center justify-end rounded-xl border-0 bg-transparent p-0 pr-2 text-muted hover:opacity-80 active:opacity-60 motion-safe:transition-opacity"
+            className="flex h-11 w-[46px] shrink-0 cursor-pointer items-center justify-end rounded-xl border-0 bg-transparent p-0 pr-2 text-text hover:opacity-80 active:opacity-60 motion-safe:transition-opacity"
           >
             {pending ? (
               <span aria-hidden="true" className="size-3.5">
                 <LoadingSpinner />
               </span>
             ) : (
-              <Icon name="search" />
+              <Icon name="search" className="size-6" />
             )}
           </button>
           <SearchInput
@@ -108,9 +110,9 @@ export function SearchForm({
       {pending && <SearchLoading initial={false} />}
       <div
         key={revision}
-        hidden={pending}
-        inert={pending || undefined}
-        className={pending ? 'hidden' : 'flex flex-col gap-5'}
+        hidden={pending || isEditing}
+        inert={pending || isEditing || undefined}
+        className={pending || isEditing ? 'hidden' : 'flex flex-col gap-5'}
       >
         {children}
       </div>
@@ -169,7 +171,7 @@ function SearchInput({
         readOnly={pending}
         aria-label="기사 키워드 검색"
         placeholder={prompt}
-        className="h-full min-h-0 min-w-0 flex-1 border-0 bg-transparent p-0 text-[14px]/[17px] font-semibold text-text placeholder:font-normal"
+        className={`${styles.input} h-full min-h-0 min-w-0 flex-1 border-0 bg-transparent p-0 text-[14px]/[17px] font-semibold text-text placeholder:font-normal`}
       />
       {keyword ? (
         <Link
