@@ -1,0 +1,46 @@
+// @vitest-environment jsdom
+import { afterEach, expect, test, vi } from 'vitest';
+
+import * as sdk from './naver-map-sdk';
+import type { NaverMaps } from './naver-map-sdk';
+
+type Subscriber = { ready(maps: NaverMaps): void; error(): void };
+type Subscribe = (clientId: string, subscriber: Subscriber) => () => void;
+
+afterEach(() => {
+  document
+    .querySelectorAll('script[src*="oapi.map.naver.com"]')
+    .forEach((script) => script.remove());
+  Reflect.deleteProperty(window, 'naver');
+  Reflect.deleteProperty(window, 'navermap_authFailure');
+  vi.restoreAllMocks();
+});
+
+test('sharedNaverSdkKeepsTheRemainingConsumerAndRestoresPriorCallback', () => {
+  const subscribe = Reflect.get(sdk, 'subscribeNaverMaps') as
+    Subscribe | undefined;
+  expect(subscribe).toBeTypeOf('function');
+  if (!subscribe) throw new Error('공통 지도 SDK 로더가 없습니다');
+  const prior = vi.fn();
+  Reflect.set(window, 'navermap_authFailure', prior);
+  const first = { ready: vi.fn(), error: vi.fn() };
+  const second = { ready: vi.fn(), error: vi.fn() };
+  const releaseFirst = subscribe('same-client', first);
+  const releaseSecond = subscribe('same-client', second);
+  const scripts = document.querySelectorAll<HTMLScriptElement>(
+    'script[src*="oapi.map.naver.com"]',
+  );
+  expect(scripts).toHaveLength(1);
+  const script = scripts[0];
+  const maps = { Map: vi.fn(), Marker: vi.fn() } as unknown as NaverMaps;
+  Reflect.set(window, 'naver', { maps });
+  script.dispatchEvent(new Event('load'));
+  expect(first.ready).toHaveBeenCalledExactlyOnceWith(maps);
+  expect(second.ready).toHaveBeenCalledExactlyOnceWith(maps);
+  releaseFirst();
+  expect(script.isConnected).toBe(true);
+  expect(Reflect.get(window, 'navermap_authFailure')).not.toBe(prior);
+  releaseSecond();
+  expect(script.isConnected).toBe(true);
+  expect(Reflect.get(window, 'navermap_authFailure')).toBe(prior);
+});
