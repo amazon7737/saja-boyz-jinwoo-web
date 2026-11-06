@@ -30,9 +30,9 @@ export function ArticleRouteHost({
   children?: ReactNode;
   background?: ReactNode;
 }) {
-  const pathname = usePathname();
-  const backgroundSegments = useSelectedLayoutSegments('background');
-  const articleSegments = useSelectedLayoutSegments();
+  const pathname = usePathname() ?? '/';
+  const backgroundSegments = useSelectedLayoutSegments('background') ?? [];
+  const articleSegments = useSelectedLayoutSegments() ?? [];
   const router = useRouter();
   const active = articleSegments.includes('(.)incidents');
   const [sourceQuery, setSourceQuery] = useState('');

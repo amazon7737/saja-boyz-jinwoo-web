@@ -6,7 +6,7 @@ import type { ReactNode } from 'react';
 import { AppShell } from '../app-shell/app-shell';
 
 export function RouteShell({ children }: { children: ReactNode }) {
-  const segments = useSelectedLayoutSegments();
+  const segments = useSelectedLayoutSegments() ?? [];
   const isNotFound =
     segments[0] === '_not-found' || segments[0] === '/_not-found';
 

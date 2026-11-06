@@ -73,6 +73,8 @@ let holdMap = false;
 let mapArticlesFixture: unknown = { total: 0, items: [] };
 let holdDetails = false;
 let failDetail = false;
+let failAfterDetailRequest = Number.POSITIVE_INFINITY;
+let largePrivateDetail = false;
 let detailDelay = 0;
 let imageEnabled = false;
 function presentArticle(item: typeof article) {
@@ -125,8 +127,22 @@ const api = createServer((request, response) => {
       waitingDetails.push(response);
       return;
     }
-    if (failDetail) {
+    if (failDetail || detailRequests.length > failAfterDetailRequest) {
       response.writeHead(503).end('{"error":"QA_PRIVATE_DETAIL"}');
+      return;
+    }
+    if (largePrivateDetail) {
+      response.end(
+        JSON.stringify({
+          ...article,
+          secret: 'PRIVATE_UNEXPECTED_FIELD',
+          article: {
+            ...article.article,
+            description: '가'.repeat(180_000) + '끝표식',
+            private: 'PRIVATE_NESTED_FIELD',
+          },
+        }),
+      );
       return;
     }
     if (detailDelay)
@@ -249,15 +265,11 @@ export function SheetFixture({ item, id, apiOrigin }: { item: FixtureArticle | n
     console.error(error.stdout, error.stderr);
     throw error;
   });
-  app = spawn(
-    process.execPath,
-    [next, 'start', '--hostname', '127.0.0.1', '--port', String(appPort)],
-    {
-      cwd: directory,
-      env,
-      stdio: ['ignore', 'pipe', 'pipe'],
-    },
-  );
+  app = spawn(process.execPath, [next, 'start', '--port', String(appPort)], {
+    cwd: directory,
+    env,
+    stdio: ['ignore', 'pipe', 'pipe'],
+  });
   let output = '';
   app.stdout?.on('data', (chunk) => {
     output += String(chunk);
@@ -265,7 +277,7 @@ export function SheetFixture({ item, id, apiOrigin }: { item: FixtureArticle | n
   app.stderr?.on('data', (chunk) => {
     output += String(chunk);
   });
-  origin = 'http://127.0.0.1:' + appPort;
+  origin = 'http://localhost:' + appPort;
   await ready(origin, app, () => output);
   browser = await chromium.launch({ channel: 'chrome', headless: true });
 }, 120000);
@@ -311,9 +323,9 @@ test('realNextLinkNavigationSkipsDocumentProbeAndTimesOutOnlyOnce', async () => 
     expect
       .soft(
         detailRequests.length - beforeDocument,
-        'direct document keeps existence probe plus detail load',
+        'direct document loads the article once',
       )
-      .toBe(2);
+      .toBe(1);
     const missing = await fetch(origin + '/incidents/' + missingId);
     const missingHtml = await missing.text();
     expect(missing.status).toBe(404);
@@ -2887,6 +2899,25 @@ test('detailCloseIconKeepsAccessibleHitTargetAndReturnsToMap', async () => {
     await page.close();
   }
 }, 120000);
+
+test('articleDocumentReadsOnceAndOmitsUnexpectedUpstreamFields', async () => {
+  const before = detailRequests.length;
+  failAfterDetailRequest = before + 1;
+  largePrivateDetail = true;
+  try {
+    const response = await fetch(origin + '/incidents/' + id);
+    const html = await response.text();
+    expect(response.status).toBe(200);
+    expect(detailRequests.length - before).toBe(1);
+    expect(html).toContain('끝표식');
+    expect(html).not.toContain('PRIVATE_UNEXPECTED_FIELD');
+    expect(html).not.toContain('PRIVATE_NESTED_FIELD');
+    expect(html).toContain('https://hyunghyung.vercel.app/incidents/' + id);
+  } finally {
+    failAfterDetailRequest = Number.POSITIVE_INFINITY;
+    largePrivateDetail = false;
+  }
+}, 30000);
 
 test('articleDocumentUpstreamFailureReturns503WithNoJsRecovery', async () => {
   failDetail = true;

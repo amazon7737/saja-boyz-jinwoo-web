@@ -10,10 +10,12 @@ export function DetailInline({
   titleId,
   children,
   footer,
+  closeLabel = '닫기',
 }: {
   titleId: string;
   children?: ReactNode;
   footer?: ReactNode;
+  closeLabel?: string;
 }) {
   const route = useArticleSheetRoute();
   const panel = useRef<HTMLElement>(null);
@@ -94,7 +96,7 @@ export function DetailInline({
         <Link
           data-article-control="close"
           href="/"
-          aria-label="닫기"
+          aria-label={closeLabel}
           className="ui-control grid size-11 place-items-center rounded-lg text-2xl text-text"
         >
           <Image

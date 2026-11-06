@@ -60,7 +60,11 @@ type DetailSheetProps = {
 export function DetailSheet(props: DetailSheetProps) {
   if (!props.onClose && props.active !== false)
     return (
-      <DetailInline titleId={props.titleId} footer={props.footer}>
+      <DetailInline
+        titleId={props.titleId}
+        footer={props.footer}
+        closeLabel={props.closeLabel}
+      >
         {props.children}
       </DetailInline>
     );

@@ -21,7 +21,7 @@ export function AppShell({
   hideHeader?: boolean;
   onClickCapture?: MouseEventHandler<HTMLDivElement>;
 }) {
-  const currentPath = usePathname();
+  const currentPath = usePathname() ?? '/';
   const pathname = backgroundPath ?? currentPath;
   const isHome = pathname === '/';
   const isList = pathname === '/incidents';
