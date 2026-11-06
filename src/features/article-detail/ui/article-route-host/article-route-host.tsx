@@ -52,6 +52,7 @@ export function ArticleRouteHost({
     setMeasuredHeight(height);
   }, []);
   const [mapArticles, registerMapArticles] = useState<LocatedArticle[]>([]);
+  const [mapPreviewVisible, setMapPreviewVisible] = useState(false);
   const openArticle = useCallback(
     (id: string) => {
       setSourceQuery(pathname === '/search' ? window.location.search : '');
@@ -122,6 +123,7 @@ export function ArticleRouteHost({
       close,
       setHeight,
       registerMapArticles,
+      setMapPreviewVisible,
       retry,
     }),
     [
@@ -138,7 +140,11 @@ export function ArticleRouteHost({
 
   return (
     <ArticleSheetContext value={value}>
-      <AppShell backgroundPath={pathname} onClickCapture={captureOpener}>
+      <AppShell
+        backgroundPath={pathname}
+        onClickCapture={captureOpener}
+        hideMapControls={mapPreviewVisible}
+      >
         <div
           hidden={inline}
           inert={inline || undefined}

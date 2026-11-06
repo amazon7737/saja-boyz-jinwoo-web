@@ -101,6 +101,7 @@ export function MapHome({
   const sheetRoute = useArticleSheetRoute();
   const registerMapArticles = sheetRoute?.registerMapArticles;
   const detailOpen = sheetRoute?.active ?? false;
+  const setMapPreviewVisible = sheetRoute?.setMapPreviewVisible;
   const [selectionHeight, setSelectionHeight] = useState(0);
   const [selectedArticles, setSelectedArticles] = useState<LocatedArticle[]>(
     [],
@@ -132,6 +133,7 @@ export function MapHome({
   const clearSelection = useRef<((restoreFocus?: boolean) => void) | null>(
     null,
   );
+  const markCarouselSelection = useRef<((id: string) => void) | null>(null);
   const restoreSelectionFocus = useRef<HTMLElement | null>(null);
   const carouselSelection = useRef<{
     id: string;
@@ -147,6 +149,14 @@ export function MapHome({
   const [ready, setReady] = useState(false);
   const [failed, setFailed] = useState(false);
   const [attempt, setAttempt] = useState(0);
+  const showMapPreview =
+    ready && selectedArticles.length > 0 && !!articles && !detailOpen;
+
+  useLayoutEffect(() => {
+    setMapPreviewVisible?.(showMapPreview);
+
+    return () => setMapPreviewVisible?.(false);
+  }, [setMapPreviewVisible, showMapPreview]);
 
   useEffect(() => {
     registerMapArticles?.(filteredArticles?.items ?? []);
@@ -213,6 +223,8 @@ export function MapHome({
       marker: MarkerInstance;
       listener: unknown;
       setSelected(selected: boolean): void;
+      content: HTMLButtonElement;
+      ids: string[];
     }[] = [];
     let removeArticleListener: ((listener: unknown) => void) | undefined;
     const clearArticles = () => {
@@ -455,6 +467,16 @@ export function MapHome({
         selectedPoint = undefined;
       };
 
+      markCarouselSelection.current = (id) => {
+        const entry = articleMarkers.find((candidate) =>
+          candidate.ids.includes(id),
+        );
+
+        if (!entry) return;
+        entry.setSelected(true);
+        selectedMarker = entry.content;
+      };
+
       let currentItems: LocatedArticle[] = [];
       let displayGroups: ReturnType<typeof groupMapDisplayPoints> = new Map();
 
@@ -549,6 +571,7 @@ export function MapHome({
 
         displayGroups = nextGroups;
         clearArticles();
+        selectedMarker = undefined;
 
         for (const [
           point,
@@ -608,9 +631,18 @@ export function MapHome({
             marker: articleMarker,
             listener,
             setSelected: visual.setSelected,
+            content: visual.content,
+            ids: group.map((candidate) => candidate.article_id),
           });
 
-          if (retainedSelection && point === selectedPoint) {
+          if (
+            (retainedSelection && point === selectedPoint) ||
+            (selectedCarouselArticle &&
+              group.some(
+                (candidate) =>
+                  candidate.article_id === selectedCarouselArticle.article_id,
+              ))
+          ) {
             visual.setSelected(true);
             selectedMarker = visual.content;
             if (restoreMarkerFocus)
@@ -653,6 +685,7 @@ export function MapHome({
       locate.current = null;
       updateArticles.current = null;
       clearSelection.current = null;
+      markCarouselSelection.current = null;
       pending = false;
       setLocating(false);
       setLocationError('');
@@ -678,6 +711,7 @@ export function MapHome({
       locate.current = null;
       updateArticles.current = null;
       clearSelection.current = null;
+      markCarouselSelection.current = null;
       observer?.disconnect();
       window.removeEventListener('resize', resize);
       clearControls();
@@ -723,7 +757,9 @@ export function MapHome({
         <div
           role="group"
           aria-label="기사 필터"
-          className="absolute top-[calc(68px_+_env(safe-area-inset-top))] right-4 left-4 z-20 flex h-[30px] items-start gap-1.5"
+          hidden={showMapPreview}
+          inert={showMapPreview || undefined}
+          className={`absolute top-[calc(68px_+_env(safe-area-inset-top))] right-4 left-4 z-20 h-[30px] items-start gap-1.5 ${showMapPreview ? 'hidden' : 'flex'}`}
         >
           <MapAllFilters value={period} onChange={applyPeriod} />
           <MapPeriodFilter value={period} onChange={applyPeriod} />
@@ -776,6 +812,7 @@ export function MapHome({
                 onSelect={(item, opener) => {
                   clearSelection.current?.();
                   carouselSelection.current = { id: item.article_id, opener };
+                  markCarouselSelection.current?.(item.article_id);
                   setSelectedArticles([item]);
                 }}
               />

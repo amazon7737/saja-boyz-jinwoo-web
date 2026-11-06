@@ -1,10 +1,13 @@
 // file: src/features/map/ui/map-home/map-articles.test.ts
 // @vitest-environment jsdom
-import { act, createElement, type ReactNode } from 'react';
+import { act, createElement, useState, type ReactNode } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, expect, test, vi } from 'vitest';
 
 import { MapHome } from './map-home';
+import { AppShell } from '@/components/layout/app-shell/app-shell';
+
+vi.mock('next/navigation', () => ({ usePathname: () => '/' }));
 import { DetailSheet } from '@/features/article-detail/ui/detail-sheet/detail-sheet';
 import {
   ArticleSheetContext,
@@ -43,9 +46,37 @@ const data: MapArticleResult = {
   ],
 };
 
+function TestMapShell({ children }: { children: ReactNode }) {
+  const [visible, setMapPreviewVisible] = useState(false);
+  const route: ArticleSheetRoute = {
+    active: false,
+    sourcePath: '/',
+    height: 0,
+    mapArticles: [],
+    openArticle: vi.fn(),
+    close: vi.fn(),
+    setHeight: vi.fn(),
+    registerMapArticles: vi.fn(),
+    retry: vi.fn(),
+    setMapPreviewVisible,
+  };
+  const shellProps = {
+    backgroundPath: '/',
+    hideMapControls: visible,
+    children,
+  };
+
+  return createElement(
+    ArticleSheetContext,
+    { value: route },
+    createElement(AppShell, shellProps),
+  );
+}
+
 async function mount(
   result: MapArticleResult | null = data,
   sheetRoute: ArticleSheetRoute | null = null,
+  withShell = false,
 ) {
   vi.stubGlobal('IS_REACT_ACT_ENVIRONMENT', true);
   const positions: unknown[] = [];
@@ -78,7 +109,7 @@ async function mount(
       positions.push(options);
       if (options.icon?.content) {
         container
-          .querySelector('[aria-label="주변 지도"] > div')
+          .querySelector('[aria-label="주변 지도"] > div:nth-of-type(2)')
           ?.append(options.icon.content);
       }
     }
@@ -123,12 +154,25 @@ async function mount(
   ) => {
     await act(async () =>
       root!.render(
-        createElement(
-          ArticleSheetContext,
-          { value: route },
-          createElement(MapHome, { clientId: 'test', articles: nextResult }),
-          overlay,
-        ),
+        withShell
+          ? createElement(
+              TestMapShell,
+              null,
+              createElement(MapHome, {
+                clientId: 'test',
+                articles: nextResult,
+              }),
+              overlay,
+            )
+          : createElement(
+              ArticleSheetContext,
+              { value: route },
+              createElement(MapHome, {
+                clientId: 'test',
+                articles: nextResult,
+              }),
+              overlay,
+            ),
       ),
     );
   };
@@ -1242,4 +1286,198 @@ test('removingCarouselArticleKeepsDetailFocusUntilReturningToMap', async () => {
   } finally {
     document.removeEventListener('click', preventNavigation);
   }
+});
+
+test('실제 기사 미리보기에서만 지도 상단과 메뉴를 숨기고 닫으면 포커스와 필터를 복원한다', async () => {
+  const fixture = await mount(data, null, true);
+  const filter = container.querySelector<HTMLElement>(
+    '[aria-label="기사 필터"]',
+  )!;
+  const marker = (
+    fixture.positions[0] as { icon: { content: HTMLButtonElement } }
+  ).icon.content;
+  const header = () => container.querySelector('header');
+  const nav = () => container.querySelector('nav[aria-label="주 메뉴"]');
+  expect(header()).not.toBeNull();
+  expect(nav()).not.toBeNull();
+  expect(filter.hidden).toBe(false);
+  marker.focus();
+  await act(async () =>
+    marker.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }),
+    ),
+  );
+  expect(document.querySelector('[aria-label="선택한 기사"]')).not.toBeNull();
+  expect(header()).toBeNull();
+  expect(nav()).toBeNull();
+  expect(filter.hidden).toBe(true);
+  expect(filter.hasAttribute('inert')).toBe(true);
+  const close = document.querySelector<HTMLButtonElement>(
+    'button[aria-label="기사 선택 닫기"]',
+  )!;
+  expect(document.activeElement).toBe(close);
+  await act(async () =>
+    close.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }),
+    ),
+  );
+  expect(document.querySelector('[aria-label="선택한 기사"]')).toBeNull();
+  expect(header()).not.toBeNull();
+  expect(nav()).not.toBeNull();
+  expect(container.querySelector('[aria-label="기사 필터"]')).toBe(filter);
+  expect(filter.hidden).toBe(false);
+  expect(document.activeElement).toBe(marker);
+});
+
+test('선택 결과가 사라진 빈 기사 그룹에서는 지도 컨트롤을 계속 보여준다', async () => {
+  const fixture = await mount(data, null, true);
+  await fixture.draw(null, undefined, { ...data, total: 0, items: [] });
+  await act(async () => fixture.selected[0]());
+  expect(document.querySelector('[aria-label="선택한 기사"]')).toBeNull();
+  expect(container.querySelector('header')).not.toBeNull();
+  expect(container.querySelector('nav[aria-label="주 메뉴"]')).not.toBeNull();
+  expect(
+    container.querySelector<HTMLElement>('[aria-label="기사 필터"]')?.hidden,
+  ).toBe(false);
+});
+test('carousel selection marks only the matching group through data refresh and restores focus', async () => {
+  const selected = data.items[0];
+  const companion = {
+    ...selected,
+    article_id: 'b'.repeat(64),
+    article: { ...selected.article, title: '같은 지역 두 번째 기사' },
+  };
+  const elsewhere = {
+    ...selected,
+    article_id: 'c'.repeat(64),
+    article: { ...selected.article, title: '다른 지역 기사' },
+    location: {
+      ...selected.location,
+      label: '다른 지역',
+      latitude: 36,
+      longitude: 127,
+    },
+  };
+  const items = [selected, companion, elsewhere];
+  const route: ArticleSheetRoute = {
+    active: false,
+    sourcePath: '/',
+    height: 0,
+    mapArticles: items,
+    openArticle: vi.fn(),
+    close: vi.fn(),
+    setHeight: vi.fn(),
+    registerMapArticles: vi.fn(),
+    retry: vi.fn(),
+  };
+  const fixture = await mount({ ...data, total: items.length, items }, route);
+  const marker = (
+    fixture.positions[0] as { icon: { content: HTMLButtonElement } }
+  ).icon.content;
+  const other = (
+    fixture.positions[1] as { icon: { content: HTMLButtonElement } }
+  ).icon.content;
+  const card = container.querySelector<HTMLAnchorElement>(
+    `section[aria-label="지도 기사"] a[href="/incidents/${selected.article_id}"]`,
+  )!;
+  const prevent = (event: MouseEvent) => event.preventDefault();
+  document.addEventListener('click', prevent);
+  try {
+    card.focus();
+    await act(async () => card.click());
+    expect(marker.getAttribute('aria-pressed')).toBe('true');
+    expect(marker.textContent).toBe('2');
+    expect(marker.style.boxShadow).toContain('0 0 0 4px');
+    expect(marker.getAttribute('aria-label')).toContain('지역 대표 위치');
+    expect(marker.getAttribute('aria-label')).toContain('기사 2건');
+    expect(other.getAttribute('aria-pressed')).toBe('false');
+    const preview = document.querySelector<HTMLElement>(
+      '[aria-label="선택한 기사"]',
+    )!;
+    expect(preview.textContent).toContain('장림동 공장 화재');
+    expect(preview.textContent).not.toContain('같은 지역 두 번째 기사');
+
+    const refreshed = items.map((item) => ({
+      ...item,
+      article: { ...item.article },
+    }));
+    await fixture.draw(route, undefined, {
+      ...data,
+      total: items.length,
+      items: refreshed,
+    });
+    const current = [
+      ...container.querySelectorAll<HTMLButtonElement>(
+        'button[aria-pressed="true"]',
+      ),
+    ].find((button) =>
+      button.getAttribute('aria-label')?.includes('기사 2건'),
+    )!;
+    expect(current).toBeTruthy();
+    expect(current).not.toBe(marker);
+    expect(current.textContent).toBe('2');
+    expect(current.style.boxShadow).toContain('0 0 0 4px');
+    expect(
+      document.querySelector('[aria-label="선택한 기사"]')?.textContent,
+    ).toContain('장림동 공장 화재');
+    await act(async () =>
+      document
+        .querySelector<HTMLButtonElement>(
+          'button[aria-label="기사 선택 닫기"]',
+        )!
+        .click(),
+    );
+    expect(current.getAttribute('aria-pressed')).toBe('false');
+    expect(current.style.boxShadow).not.toContain('0 0 0 4px');
+    expect(document.activeElement).toBe(card);
+    expect(fixture.setCenter).not.toHaveBeenCalled();
+    expect(fixture.setZoom).not.toHaveBeenCalled();
+  } finally {
+    document.removeEventListener('click', prevent);
+  }
+});
+
+test('filtering changes the group count without retaining a stale selected marker', async () => {
+  const recent = {
+    ...data.items[0],
+    article: { ...data.items[0].article, pubDate: new Date().toISOString() },
+  };
+  const old = {
+    ...data.items[0],
+    article_id: 'b'.repeat(64),
+    article: {
+      ...data.items[0].article,
+      title: '지난 기사',
+      pubDate: '2000-01-01T00:00:00Z',
+    },
+  };
+  const fixture = await mount({ ...data, total: 2, items: [recent, old] });
+  const marker = (
+    fixture.positions[0] as { icon: { content: HTMLButtonElement } }
+  ).icon.content;
+  await act(async () => fixture.selected[0]());
+  expect(marker.getAttribute('aria-pressed')).toBe('true');
+  expect(marker.textContent).toBe('2');
+  await act(async () =>
+    document
+      .querySelector<HTMLButtonElement>('button[aria-label="기사 선택 닫기"]')!
+      .click(),
+  );
+  const period = container.querySelector<HTMLButtonElement>(
+    'button[aria-label="기간"]',
+  )!;
+  await act(async () => period.click());
+  const option = [
+    ...container.querySelectorAll<HTMLButtonElement>('button'),
+  ].find((button) => button.textContent?.trim() === '최근 24시간')!;
+  await act(async () => option.click());
+  const remaining = [
+    ...container.querySelectorAll<HTMLButtonElement>(
+      'button[aria-label^="지역 대표 위치:"]',
+    ),
+  ];
+  expect(remaining).toHaveLength(1);
+  expect(remaining[0].textContent).toBe('1');
+  expect(remaining[0].getAttribute('aria-pressed')).toBe('false');
+  expect(document.querySelector('[aria-label="선택한 기사"]')).toBeNull();
 });

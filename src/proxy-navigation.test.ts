@@ -3837,3 +3837,131 @@ test('articleListOriginalLinkWorksWithMouseAndKeyboard', async () => {
     await page.close();
   }
 }, 60000);
+test('mapSelectionRendersVisibleDotAndGroupRingWithAccessibleRestoration', async () => {
+  const otherId = 'b'.repeat(64);
+  const thirdId = 'c'.repeat(64);
+  const located = (articleId: string, label: string, latitude: number) => ({
+    ...article,
+    article_id: articleId,
+    collection_id: 'selection-fixture',
+    article: {
+      ...article.article,
+      title: `${label} 검증 기사 ${articleId[0]}`,
+      description: `${label} 검증용 기사`,
+    },
+    location_status: 'resolved',
+    location_reason: null,
+    location: {
+      latitude,
+      longitude: latitude,
+      label,
+      precision: 'region',
+      evidence: { field: 'description', text: `${label} 검증용 기사` },
+    },
+  });
+  const saved = mapArticlesFixture;
+  mapArticlesFixture = {
+    total: 3,
+    items: [
+      located(id, '단일지역', 35),
+      located(otherId, '묶음지역', 36),
+      located(thirdId, '묶음지역', 36),
+    ],
+  };
+  const context = await browser!.newContext({
+    viewport: { width: 393, height: 852 },
+    reducedMotion: 'reduce',
+  });
+  contexts.push(context);
+  await context.addInitScript({
+    content: `
+    Object.defineProperty(navigator, 'geolocation', { configurable: true, value: { getCurrentPosition(ok) { ok({ coords: { latitude: 35, longitude: 35 } }); } } });
+    (() => {
+      class LatLng { constructor(latitude, longitude) { this.latitude = latitude; this.longitude = longitude; } lat() { return this.latitude; } lng() { return this.longitude; } }
+      class Map { constructor(element, options) { this.element = element; this.center = options.center; this.zoom = options.zoom; } destroy() {} setSize() {} setCenter(value) { this.center = value; } getCenter() { return this.center; } getZoom() { return this.zoom; } }
+      class Marker { constructor(options) { this.node = options.icon?.content; if (this.node) { this.node.style.position = 'absolute'; this.node.style.left = options.position.lat() === 35 ? '80px' : '240px'; this.node.style.top = '200px'; options.map.element.append(this.node); } } setMap(value) { if (!value) this.node?.remove(); } }
+      window.naver = { maps: { LatLng, Map, Marker, Point: class { constructor(x, y) { this.x = x; this.y = y; } }, Size: class {}, Event: { addListener(target, name, callback) { if (name === 'click' && target.node) target.node.addEventListener('click', callback); return { target, name, callback }; }, removeListener(entry) { if (entry.name === 'click' && entry.target.node) entry.target.node.removeEventListener('click', entry.callback); } } } };
+    })();
+  `,
+  });
+  await context.route('https://oapi.map.naver.com/**', (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: 'text/javascript',
+      body: '/* local SDK fixture */',
+    }),
+  );
+  const page = await context.newPage();
+  try {
+    await page.goto(origin + '/');
+    const single = page.locator(
+      'button[aria-label^="지역 대표 위치: 단일지역"]',
+    );
+    const group = page.locator(
+      'button[aria-label^="지역 대표 위치: 묶음지역"]',
+    );
+    await single.waitFor();
+    await group.waitFor();
+    expect(await single.getAttribute('aria-pressed')).toBe('false');
+    expect(await group.getAttribute('aria-pressed')).toBe('false');
+    await single.click();
+    expect(await single.getAttribute('aria-pressed')).toBe('true');
+    expect(await group.getAttribute('aria-pressed')).toBe('false');
+    const visual = await single.evaluate((button) => {
+      const dot = button.querySelector<HTMLElement>(
+        'span[aria-hidden="true"]',
+      )!;
+      const middle = dot.firstElementChild as HTMLElement;
+      const outerStyle = getComputedStyle(button);
+      const dotStyle = getComputedStyle(dot);
+      const centerStyle = getComputedStyle(middle);
+      return {
+        width: dotStyle.width,
+        height: dotStyle.height,
+        display: dotStyle.display,
+        border: dotStyle.borderTopColor,
+        background: dotStyle.backgroundColor,
+        center: centerStyle.backgroundColor,
+        fontSize: outerStyle.fontSize,
+        label: button.getAttribute('aria-label'),
+      };
+    });
+    expect(visual.width).toBe('26px');
+    expect(visual.height).toBe('26px');
+    expect(visual.display).toBe('grid');
+    expect(visual.background).toBe('rgb(255, 255, 255)');
+    expect(visual.border).not.toBe(visual.background);
+    expect(visual.center).toBe(visual.border);
+    expect(visual.fontSize).toBe('0px');
+    expect(visual.label).toContain('지역 대표 위치');
+    await page.getByRole('button', { name: '기사 선택 닫기' }).click();
+    expect(await single.getAttribute('aria-pressed')).toBe('false');
+    expect(
+      await single.evaluate((button) => document.activeElement === button),
+    ).toBe(true);
+    expect(
+      await single.evaluate(
+        (button) =>
+          getComputedStyle(button.querySelector('span[aria-hidden="true"]')!)
+            .display,
+      ),
+    ).toBe('none');
+    await group.click();
+    expect(await group.getAttribute('aria-pressed')).toBe('true');
+    expect(await group.textContent()).toBe('2');
+    const shadow = await group.evaluate(
+      (button) => getComputedStyle(button).boxShadow,
+    );
+    expect(shadow).toContain('rgb(255, 255, 255) 0px 0px 0px 2px');
+    expect(shadow).toContain('0px 0px 0px 4px');
+    expect(await single.getAttribute('aria-pressed')).toBe('false');
+    await page.getByRole('button', { name: '기사 선택 닫기' }).click();
+    expect(await group.getAttribute('aria-pressed')).toBe('false');
+    expect(
+      await group.evaluate((button) => document.activeElement === button),
+    ).toBe(true);
+  } finally {
+    mapArticlesFixture = saved;
+    await context.close();
+  }
+}, 30000);

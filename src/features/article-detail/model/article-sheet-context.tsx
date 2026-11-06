@@ -14,6 +14,7 @@ export type ArticleSheetRoute = {
   close(): void;
   setHeight(height: number, expanded?: boolean): void;
   registerMapArticles(items: LocatedArticle[]): void;
+  setMapPreviewVisible?(visible: boolean): void;
   retry(): void;
 };
 
