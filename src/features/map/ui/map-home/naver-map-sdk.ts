@@ -183,8 +183,10 @@ function startLoad(clientId: string): SdkLoad | undefined {
     }
 
     sdkScript.remove();
-    for (const subscriber of [...load.subscribers])
-      reportSubscriberError(subscriber);
+
+    for (const subscriber of [...load.subscribers]) {
+      if (load.subscribers.has(subscriber)) reportSubscriberError(subscriber);
+    }
   };
 
   load.loaded = () => {
@@ -194,8 +196,10 @@ function startLoad(clientId: string): SdkLoad | undefined {
     if (!maps) return load.failed();
     clearTimeout(load.timeout);
     load.state = 'ready';
-    for (const subscriber of [...load.subscribers])
-      reportReady(subscriber, maps);
+
+    for (const subscriber of [...load.subscribers]) {
+      if (load.subscribers.has(subscriber)) reportReady(subscriber, maps);
+    }
   };
 
   load.auth = () => {
