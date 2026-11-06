@@ -3,6 +3,8 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
+import { highlightedText } from '../highlighted-text';
+
 type Suggestion = { id: string; title: string };
 
 function validItems(value: unknown): value is { items: Suggestion[] } {
@@ -73,38 +75,44 @@ export function SearchSuggestions({
     };
   }, [normalized, keyword, composing]);
 
-  if (
-    composing ||
-    normalized === keyword.trim() ||
-    result?.query !== normalized ||
-    !result.items.length
-  )
-    return null;
+  const items =
+    !composing && normalized !== keyword.trim() && result?.query === normalized
+      ? result.items
+      : [];
 
   return (
-    <section
-      aria-live="polite"
-      aria-labelledby="search-suggestions-title"
-      className="flex flex-col gap-2"
-    >
-      <h2
-        id="search-suggestions-title"
-        className="m-0 text-xs font-bold text-muted"
-      >
-        일치하는 기사
-      </h2>
-      <ul className="m-0 flex list-none flex-col gap-1 p-0">
-        {result.items.map((item) => (
-          <li key={item.id}>
-            <Link
-              href={`/incidents/${item.id}`}
-              className="ui-control block rounded-lg px-2 py-2 text-sm text-text"
-            >
-              {item.title}
-            </Link>
-          </li>
-        ))}
-      </ul>
-    </section>
+    <>
+      <p aria-live="polite" aria-atomic="true" className="sr-only">
+        {items.length > 0 ? `일치하는 기사 ${items.length}개` : ''}
+      </p>
+      {items.length > 0 && (
+        <section
+          aria-labelledby="search-suggestions-title"
+          className="flex flex-col gap-2"
+        >
+          <h2
+            id="search-suggestions-title"
+            className="m-0 text-xs font-bold text-muted"
+          >
+            일치하는 기사
+          </h2>
+          <ul className="m-0 flex min-w-0 list-none flex-col gap-2 p-0">
+            {items.map((item) => (
+              <li
+                key={item.id}
+                className="min-w-0 border-b border-solid border-border"
+              >
+                <Link
+                  href={`/incidents/${item.id}`}
+                  className="ui-control block min-h-[33px] min-w-0 rounded-sm py-2 text-[14px]/[17px] text-text [overflow-wrap:anywhere]"
+                >
+                  {highlightedText(item.title, normalized)}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+    </>
   );
 }
