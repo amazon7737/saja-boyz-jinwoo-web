@@ -49,15 +49,19 @@ export async function GET() {
       return Response.json({ titles: [] }, { status: 503, headers });
     }
 
-    const titles = payload.items
-      .map((item: Record<string, unknown>) =>
-        typeof item.title === 'string'
-          ? articleText(item.title).replace(/\s+/g, ' ').trim()
-          : '',
-      )
-      .filter(Boolean);
+    const items = payload.items
+      .map((item: Record<string, unknown>) => ({
+        article_id: item.article_id as string,
+        title:
+          typeof item.title === 'string'
+            ? articleText(item.title).replace(/\s+/g, ' ').trim()
+            : '',
+        views_today: item.views_today as number,
+      }))
+      .filter((item) => item.title);
+    const titles = items.map((item) => item.title);
 
-    return Response.json({ titles }, { headers });
+    return Response.json({ titles, items }, { headers });
   } catch {
     return Response.json({ titles: [] }, { status: 503, headers });
   }

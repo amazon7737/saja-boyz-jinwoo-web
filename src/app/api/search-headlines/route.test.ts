@@ -29,6 +29,10 @@ test('searchHeadlinesProxyUsesTodayRankingAndCleansNaverTitleMarkup', async () =
   expect(response.status).toBe(200);
   expect(await response.json()).toEqual({
     titles: ['서울 수사 & 속보', '부산 소식'],
+    items: [
+      { article_id: 'a'.repeat(64), title: '서울 수사 & 속보', views_today: 3 },
+      { article_id: 'b'.repeat(64), title: '부산 소식', views_today: 1 },
+    ],
   });
   expect(String(request.mock.calls[0][0])).toBe(
     'https://news.example.test/news/popular/today',

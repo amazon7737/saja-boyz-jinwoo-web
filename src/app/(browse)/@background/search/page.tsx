@@ -8,6 +8,7 @@ import { SearchResults } from '@/features/search/ui/search-results/search-result
 import { RecentSearches } from '@/features/search/ui/recent-searches/recent-searches';
 import { KeywordLinkStatus } from '@/features/search/ui/keyword-link-status/keyword-link-status';
 import { SearchForm } from '@/features/search/ui/search-form/search-form';
+import { PopularArticles } from '@/features/search/ui/popular-articles/popular-articles';
 
 const suggestedKeywords: { keyword: string; icon?: IconName }[] = [
   { keyword: '대형화재', icon: 'flame' },
@@ -53,6 +54,7 @@ export default async function SearchPage({
         )
       ) : null}
       <RecentSearches executedKeyword={keyword} />
+      {!keyword && <PopularArticles />}
       {!keyword && (
         <section
           aria-labelledby="suggested-keywords"
