@@ -127,8 +127,10 @@ test('articleCardsIdentityAndPublication', async () => {
   expect(rows[0]).toContain('샘플: 교통 안내 &amp; 점검');
   expect(rows[1]).toContain('샘플: 교통 안내 &amp; 점검');
   expect(rows[0]).toContain('가상 &quot;안내&quot; &#x27;검증&#x27; 가');
+  expect(rows[0]).toContain(`href="/incidents/${idA}"`);
+  expect(rows[1]).toContain(`href="/incidents/${idB}"`);
   expect(rows[0]).toContain('href="https://example.invalid/news/a"');
-  expect(rows[1]).toContain('href="https://example.invalid/news/b"');
+  expect(rows[0]).toContain('기사 원문');
   expect(rows[0]).toContain('기사 발행');
   expect(rows[0]).toContain('dateTime="2026-09-17T00:00:00.000Z"');
   expect(rows[0]).toContain('2026-09-17 09:00 KST');

@@ -3804,3 +3804,36 @@ test('articleDocumentAndRscWorkWithExplicitLoopbackHostname', async () => {
     await stop(child);
   }
 }, 60000);
+
+test('articleListOriginalLinkWorksWithMouseAndKeyboard', async () => {
+  for (const mode of ['mouse', 'keyboard']) {
+    const page = await openList(320);
+    await page.route('https://publisher.example.invalid/**', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'text/html; charset=utf-8',
+        body: '<!doctype html><title>원문 fixture</title>',
+      });
+    });
+    const card = page.locator('article:visible').first();
+    const title = card.getByRole('link', {
+      name: article.article.title,
+      exact: true,
+    });
+    const source = card.getByRole('link', { name: '기사 원문', exact: true });
+    expect(await source.getAttribute('href')).toBe(
+      article.article.originallink,
+    );
+    if (mode === 'keyboard') {
+      await title.focus();
+      await page.keyboard.press('Tab');
+      expect(await source.evaluate((el) => el === document.activeElement)).toBe(
+        true,
+      );
+      await page.keyboard.press('Enter');
+    } else await source.click();
+    await page.waitForURL(article.article.originallink);
+    expect(await page.title()).toBe('원문 fixture');
+    await page.close();
+  }
+}, 60000);

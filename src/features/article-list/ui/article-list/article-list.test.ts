@@ -82,19 +82,17 @@ test('articleImageErrorPreservesCards', async () => {
   expect(cards[0].textContent).toContain('이미지 없음');
   expect(cards[0].querySelector('h2')?.textContent).toBe('샘플 기사 A');
   expect(cards[0].textContent).toContain('검증용 기사 A 요약');
-  expect(cards[0].textContent).toContain('기사 발행 2026-10-04 09:00 KST');
+  expect(cards[0].textContent).toContain('2026-10-04 09:00 KST');
   expect(cards[0].querySelector('time')?.dateTime).toBe(
     '2026-10-04T00:00:00.000Z',
   );
+  expect(cards[0].querySelectorAll('a')).toHaveLength(2);
+  expect(cards[0].querySelector('a')?.getAttribute('href')).toBe(
+    `/incidents/${idA}`,
+  );
   expect(
-    cards[0]
-      .querySelector('a[href="https://publisher.example.invalid/A"]')
-      ?.getAttribute('href'),
+    cards[0].querySelector('a[href^="https://"]')?.getAttribute('href'),
   ).toBe('https://publisher.example.invalid/A');
-  expect(
-    cards[0].querySelector('a[href="https://publisher.example.invalid/A"]')
-      ?.textContent,
-  ).toBe('기사 원문');
   expect(cards[1].querySelector('img')?.src).toBe(
     `${apiOrigin}/images/${idB}.jpg`,
   );
@@ -123,11 +121,9 @@ test('articleImageRecoversForNewSource', async () => {
   expect(nextImage.getAttribute('alt')).toBe('');
   expect(container.textContent).not.toContain('이미지 없음');
   expect(container.querySelector('figcaption')).toBeNull();
-  expect(
-    container
-      .querySelector('a[href="https://publisher.example.invalid/A"]')
-      ?.getAttribute('href'),
-  ).toBe('https://publisher.example.invalid/A');
+  expect(container.querySelector('a')?.getAttribute('href')).toBe(
+    `/incidents/${idA}`,
+  );
 
   await failImage(nextImage);
 
