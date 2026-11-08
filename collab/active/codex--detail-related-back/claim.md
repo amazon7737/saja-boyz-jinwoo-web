@@ -2,9 +2,9 @@
 branch: codex/detail-related-back
 owner: amazon
 started: 2026-11-08
-status: active
+status: done
 goal: 'fix(article): 관련 기사에서 이전 기사로 돌아가기'
-next: 상세 관련 기사 탐색과 뒤로가기 회귀 검증
+next: PR 검토와 CI 확인
 base: dev
 ---
 
