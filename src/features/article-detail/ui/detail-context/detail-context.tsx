@@ -1,76 +1,93 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 
-import { IconText } from '@/components/ui/icon-text/icon-text';
-import { groupMapArticles } from '@/features/map/model/map-region-groups';
 import {
-  articleTitle,
   publicationDate,
   publicationText,
 } from '@/features/article-list/model/article-presentation';
 
 import { useArticleSheetRoute } from '../../model/article-sheet-context';
-
-function useMapContext(id: string) {
-  const route = useArticleSheetRoute();
-  const groups = groupMapArticles(route?.mapArticles ?? []);
-  const group = [...groups.values()].find((items) =>
-    items.some((item) => item.article_id === id),
-  );
-
-  return {
-    route,
-    item: group?.find((item) => item.article_id === id),
-    related: group?.filter((item) => item.article_id !== id).slice(0, 3) ?? [],
-  };
-}
+import { useDetailLocation } from '../../model/detail-location-context';
 
 export function DetailLocation({ id }: { id: string }) {
-  const { item } = useMapContext(id);
+  const state = useDetailLocation(id);
 
-  if (!item) return null;
+  if (state.status === 'loading')
+    return (
+      <span className="sr-only" role="status">
+        기사 위치를 확인하고 있어요
+      </span>
+    );
+  if (state.status === 'error')
+    return (
+      <p className="m-0 text-xs text-muted" role="alert">
+        위치를 불러오지 못했어요{' '}
+        <button
+          type="button"
+          className="ui-control inline-flex min-h-11 items-center border-0 bg-transparent px-2 text-brand underline"
+          onClick={state.retry}
+        >
+          다시 시도
+        </button>
+      </p>
+    );
+  const location = state.data?.location;
+
+  if (!location) return null;
   const precision =
-    item.location.precision === 'address'
+    location.precision === 'address'
       ? '기사에 언급된 주소'
-      : item.location.precision === 'neighborhood'
+      : location.precision === 'neighborhood'
         ? '동네 기준 위치'
         : '지역 대표 위치';
 
   return (
     <p className="m-0 flex items-start gap-1 text-[13px]/[18px] font-medium text-muted">
-      <IconText
-        icon="pin"
-        iconClassName="text-brand"
-        textClassName="[overflow-wrap:anywhere]"
-      >
-        {item.location.label} · {precision}
-        {item.location.precision !== 'address' && (
-          <span className="sr-only"> · 실제 발생 지점과 다를 수 있습니다</span>
-        )}
-      </IconText>
+      <span className="inline-flex min-w-0 items-center gap-1">
+        <Image
+          src="/figma/preview-location.svg"
+          alt=""
+          aria-hidden="true"
+          width={16}
+          height={16}
+          unoptimized
+          className="size-4 shrink-0"
+        />
+        <span className="min-w-0 [overflow-wrap:anywhere]">
+          {location.label} · {precision}
+          {location.precision !== 'address' && (
+            <span className="sr-only">
+              {' '}
+              · 실제 발생 지점과 다를 수 있습니다
+            </span>
+          )}
+        </span>
+      </span>
     </p>
   );
 }
 
 export function RelatedArticles({ id }: { id: string }) {
-  const { route, related } = useMapContext(id);
+  const route = useArticleSheetRoute();
+  const related = useDetailLocation(id).data?.related ?? [];
 
   if (!related.length) return null;
 
   return (
-    <section aria-label="주변 핫한 사건" className="flex flex-col gap-2.5">
+    <section aria-label="같은 지역 기사" className="flex flex-col gap-2.5">
       <h2 className="m-0 text-[12px]/[15px] font-bold text-muted">
-        주변 핫한 사건
+        같은 지역 기사
       </h2>
       <ul className="m-0 flex list-none flex-col gap-2.5 p-0">
         {related.map((item) => {
-          const published = publicationDate(item.article.pubDate);
+          const published = publicationDate(item.publishedAt);
 
           return (
-            <li key={item.article_id}>
+            <li key={item.articleId}>
               <Link
-                href={'/incidents/' + item.article_id}
+                href={'/incidents/' + item.articleId}
                 replace={route?.active}
                 scroll={false}
                 className="ui-link flex flex-col gap-1.5 rounded-lg border border-solid border-[#e3e8f0] bg-[#f7fafc] p-2.5"
@@ -85,10 +102,10 @@ export function RelatedArticles({ id }: { id: string }) {
                   )}
                 </span>
                 <span className="text-[13px]/[16px] font-bold text-text">
-                  {articleTitle(item.article.title)}
+                  {item.title}
                 </span>
                 <span className="text-[11px]/[13px] text-muted">
-                  {item.location.label}
+                  {item.locationLabel}
                 </span>
               </Link>
             </li>

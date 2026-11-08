@@ -38,6 +38,11 @@ let root: Root;
 
 beforeEach(() => {
   vi.stubEnv('NEWS_API_BASE_URL', apiOrigin);
+  fetchMock.mockImplementation(async (input) => {
+    if (String(input) === '/api/incidents/' + id + '/location')
+      return Response.json({ location: null, related: [] });
+    throw new Error('Unexpected fetch in article detail test');
+  });
   vi.stubGlobal('fetch', fetchMock);
   vi.stubGlobal('IS_REACT_ACT_ENVIRONMENT', true);
   window.history.replaceState(null, '', '/');
@@ -197,10 +202,16 @@ test('articleDetailImageFailure', async () => {
   fetchMock.mockResolvedValueOnce(Response.json(item));
   const tree = await detailTree();
   await act(async () => root.render(tree));
-  const image = container.querySelector('img');
+  const image = container.querySelector(
+    `figure img[src="${apiOrigin}/images/${id}.jpg"]`,
+  );
   assert(image);
   await act(async () => image.dispatchEvent(new Event('error')));
-  expect(container.querySelector('img')).toBeNull();
+  expect(
+    container.querySelector(
+      'img:not([src="/figma/preview-date.svg"]):not([src="/article-detail/header-close.svg"])',
+    ),
+  ).toBeNull();
   expect(container.textContent).toContain('이미지 없음');
   expect(container.textContent).not.toContain('AI로 생성된 이미지입니다.');
   expect(container.querySelector('h1')?.textContent).toBe('교통 안내 & 점검');
@@ -277,7 +288,11 @@ test('articleDetailShareUrl', async () => {
   expect(
     container.querySelector('input[aria-label="공유 링크"]'),
   ).not.toBeNull();
-  expect(fetchMock).toHaveBeenCalledTimes(1);
+  expect(fetchMock).toHaveBeenCalledTimes(2);
+  expect(String(fetchMock.mock.calls[0][0])).toBe(apiOrigin + '/news/' + id);
+  expect(String(fetchMock.mock.calls[1][0])).toBe(
+    '/api/incidents/' + id + '/location',
+  );
 });
 
 test('articleDetailLinksFromListAndSearch', async () => {
@@ -379,7 +394,11 @@ test('articleDetailSafePresentation', async () => {
       Response.json({ ...item, image_status: imageStatus }),
     );
     const view = await detailMarkup();
-    expect(view.querySelector('img')).toBeNull();
+    expect(
+      view.querySelector(
+        'img:not([src="/figma/preview-date.svg"]):not([src="/article-detail/header-close.svg"])',
+      ),
+    ).toBeNull();
     expect(view.textContent).toContain('이미지 없음');
     expect(view.textContent).not.toContain('AI로 생성된 이미지입니다.');
   }
@@ -409,7 +428,7 @@ test('articleDetailSafePresentation', async () => {
     expect(view.textContent).toContain('"확인"');
     expect(
       view.querySelector(
-        'script:not([type="application/ld+json"]), img, b, time',
+        'script:not([type="application/ld+json"]), img:not([src="/article-detail/header-close.svg"]), b, time',
       ),
     ).toBeNull();
     expect(
@@ -431,4 +450,29 @@ test('articleDetailSafePresentation', async () => {
   const view = await detailMarkup();
   expect(view.textContent).toContain('원문 링크 없음');
   expect(view.querySelector('a[href^="//"], a[href^="data:"]')).toBeNull();
+});
+
+test('serverDetailUsesFigmaDateIconAndKeepsArticleContent', async () => {
+  fetchMock.mockResolvedValueOnce(Response.json(item));
+  const view = await detailMarkup();
+  const time = view.querySelector('time');
+  assert(time);
+  const row = time.closest('p');
+  assert(row);
+  const icon = row.querySelector<HTMLImageElement>(
+    'img[src="/figma/preview-date.svg"]',
+  );
+  assert(icon);
+  expect(icon.getAttribute('width')).toBe('16');
+  expect(icon.getAttribute('height')).toBe('16');
+  expect(icon.getAttribute('alt')).toBe('');
+  expect(icon.parentElement?.classList.contains('items-center')).toBe(true);
+  expect(icon.parentElement?.classList.contains('gap-1')).toBe(true);
+  expect(row.textContent).toContain('기사 발행');
+  expect(time.dateTime).toBe('2026-10-10T00:00:00.000Z');
+  expect(view.querySelector('h1')?.textContent).toBe('교통 안내 & 점검');
+  expect(view.textContent).toContain(item.article.description);
+  expect(
+    view.querySelector('script[type="application/ld+json"]'),
+  ).not.toBeNull();
 });

@@ -75,9 +75,9 @@ test('articleSheetVerifiedContext', () => {
   expect(view.textContent).toContain('검증 지역 A');
   expect(view.textContent).toContain('지역 대표 위치');
   expect(view.textContent).toContain('실제 발생 지점과 다를 수 있습니다');
-  const section = view.querySelector('section[aria-label="주변 핫한 사건"]');
+  const section = view.querySelector('section[aria-label="같은 지역 기사"]');
   expect(section?.querySelector('h2')?.textContent?.trim()).toBe(
-    '주변 핫한 사건',
+    '같은 지역 기사',
   );
   expect(section?.textContent).toContain('같은 지역 검증 기사');
   expect(
@@ -94,4 +94,65 @@ test('articleSheetVerifiedContext', () => {
     draw(null, id).textContent,
     '직접 유입에 없는 위치·관련 기사를 채워 넣지 않음',
   ).toBe('');
+});
+
+test('serverDetailLocationUsesFigmaIconAndKeepsAccuracyDisclosure', () => {
+  const id = 'a'.repeat(64);
+  const item: LocatedArticle = {
+    article_id: id,
+    collection_id: 'verified-context',
+    image_status: 'disabled',
+    image_url: null,
+    article: {
+      title: '검증 기사',
+      description: '검증 지역 A',
+      pubDate: '2026-10-22T12:20:00Z',
+      originallink: '',
+      link: '',
+    },
+    location_status: 'resolved',
+    location_reason: null,
+    location: {
+      latitude: 37.5,
+      longitude: 127,
+      label: '검증 지역 A',
+      precision: 'region',
+      evidence: { field: 'description', text: '검증 지역 A' },
+    },
+  };
+  const route: ArticleSheetRoute = {
+    active: true,
+    sourcePath: '/',
+    height: 0,
+    mapArticles: [item],
+    openArticle: vi.fn(),
+    close: vi.fn(),
+    setHeight: vi.fn(),
+    registerMapArticles: vi.fn(),
+    retry: vi.fn(),
+  };
+  const render = (value: ArticleSheetRoute | null) => {
+    const view = document.createElement('div');
+    view.innerHTML = renderToStaticMarkup(
+      createElement(
+        ArticleSheetContext,
+        { value },
+        createElement(DetailLocation, { id }),
+      ),
+    );
+    return view;
+  };
+  const view = render(route);
+  const icon = view.querySelector<HTMLImageElement>(
+    'img[src="/figma/preview-location.svg"]',
+  );
+  expect(icon).not.toBeNull();
+  expect(icon?.getAttribute('width')).toBe('16');
+  expect(icon?.getAttribute('height')).toBe('16');
+  expect(icon?.getAttribute('alt')).toBe('');
+  expect(icon?.parentElement?.classList.contains('items-center')).toBe(true);
+  expect(icon?.parentElement?.classList.contains('gap-1')).toBe(true);
+  expect(view.textContent).toContain('검증 지역 A · 지역 대표 위치');
+  expect(view.textContent).toContain('실제 발생 지점과 다를 수 있습니다');
+  expect(render(null).textContent).toBe('');
 });

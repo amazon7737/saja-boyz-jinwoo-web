@@ -1,5 +1,7 @@
 import Link from 'next/link';
 
+import { ListLink } from '@/components/layout/list-link/list-link';
+
 export function FoundationPanel({
   title,
   description,
@@ -27,12 +29,9 @@ export function FoundationPanel({
         >
           검색
         </Link>
-        <Link
-          className="rounded-xl border border-solid border-border bg-background px-3.5 py-2.5"
-          href="/incidents"
-        >
+        <ListLink className="rounded-xl border border-solid border-border bg-background px-3.5 py-2.5">
           사건 목록
-        </Link>
+        </ListLink>
         <Link
           className="rounded-xl border border-solid border-border bg-background px-3.5 py-2.5"
           href="/report"

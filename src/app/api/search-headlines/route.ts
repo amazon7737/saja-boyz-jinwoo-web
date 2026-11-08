@@ -49,15 +49,25 @@ export async function GET() {
       return Response.json({ titles: [] }, { status: 503, headers });
     }
 
-    const titles = payload.items
-      .map((item: Record<string, unknown>) =>
-        typeof item.title === 'string'
-          ? articleText(item.title).replace(/\s+/g, ' ').trim()
-          : '',
-      )
-      .filter(Boolean);
+    const seen = new Set<string>();
+    const items = payload.items
+      .map((item: Record<string, unknown>) => ({
+        article_id: item.article_id as string,
+        title:
+          typeof item.title === 'string'
+            ? articleText(item.title).replace(/\s+/g, ' ').trim()
+            : '',
+        views_today: item.views_today as number,
+      }))
+      .filter((item) => {
+        if (seen.has(item.article_id)) return false;
+        seen.add(item.article_id);
 
-    return Response.json({ titles }, { headers });
+        return Boolean(item.title);
+      });
+    const titles = items.map((item) => item.title);
+
+    return Response.json({ titles, items }, { headers });
   } catch {
     return Response.json({ titles: [] }, { status: 503, headers });
   }

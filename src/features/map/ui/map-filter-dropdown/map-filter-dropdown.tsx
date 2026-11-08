@@ -51,13 +51,11 @@ export function MapFilterPanel({
   id,
   label,
   descriptionId,
-  alignStatus = false,
   children,
 }: {
   id: string;
   label: string;
   descriptionId?: string;
-  alignStatus?: boolean;
   children: ReactNode;
 }) {
   return (
@@ -66,7 +64,7 @@ export function MapFilterPanel({
       role="group"
       aria-label={label}
       aria-describedby={descriptionId}
-      className={`ui-dropdown-enter absolute top-full z-10 mt-2 min-w-36 rounded-xl border border-solid border-border bg-white p-1.5 shadow-floating [&>p:not(.sr-only)]:px-3 ${alignStatus ? 'left-[min(0px,calc(100vw_-_394px))]' : 'left-0'}`}
+      className="ui-dropdown-enter absolute top-full left-0 z-10 mt-2 min-w-36 rounded-xl border border-solid border-border bg-white p-1.5 shadow-floating [&>p:not(.sr-only)]:px-3"
     >
       {children}
     </div>

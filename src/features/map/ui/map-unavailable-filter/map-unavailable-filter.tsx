@@ -10,12 +10,7 @@ const filters = {
   category: {
     label: '카테고리',
     explanation: '분류 정보 미제공',
-    options: ['사회', '안보', '정치', '국제'],
-  },
-  status: {
-    label: '상태',
-    explanation: '상태 정보 미제공',
-    options: ['진행 중', '공론화 성공', '종결'],
+    options: ['안보', '사회', '정치', '국제'],
   },
 };
 
@@ -66,7 +61,7 @@ export function MapUnavailableFilter({ kind }: { kind: keyof typeof filters }) {
         label={label}
         expanded={open}
         controls={panelId}
-        wide={kind === 'category'}
+        wide
         onClick={() => setOpen(!open)}
       >
         {label}
@@ -76,7 +71,6 @@ export function MapUnavailableFilter({ kind }: { kind: keyof typeof filters }) {
           id={panelId}
           label={`${label} 선택`}
           descriptionId={explanationId}
-          alignStatus={kind === 'status'}
         >
           {['전체', ...options].map((option, index) => (
             <MapFilterOption
@@ -90,14 +84,7 @@ export function MapUnavailableFilter({ kind }: { kind: keyof typeof filters }) {
               {option}
             </MapFilterOption>
           ))}
-          <p
-            id={explanationId}
-            className={
-              kind === 'category'
-                ? 'sr-only'
-                : 'm-0 px-4 py-2 text-xs text-muted'
-            }
-          >
+          <p id={explanationId} className="sr-only">
             {explanation}
           </p>
         </MapFilterPanel>

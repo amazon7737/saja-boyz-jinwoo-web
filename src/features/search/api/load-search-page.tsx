@@ -23,7 +23,13 @@ export async function loadSearchPage(keyword: string, offset: number) {
     received: result.items.length,
     cards: result.items.map((item) => ({
       id: item.article_id,
-      content: <SearchResultCard item={item} keyword={keyword} />,
+      content: (
+        <SearchResultCard
+          item={item}
+          keyword={keyword}
+          apiOrigin={result.apiOrigin}
+        />
+      ),
     })),
   };
 }

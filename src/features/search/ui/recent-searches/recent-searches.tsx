@@ -73,37 +73,34 @@ export function RecentSearches({ executedKeyword = '' }) {
 
   return (
     <section aria-label="최근 검색" className="flex flex-col gap-3">
-      <h2 className="m-0 text-[12px]/[15px] font-bold text-muted">최근 검색</h2>
+      <h2 className="m-0 text-[12px]/[15px] font-bold text-muted">
+        <IconText icon="clock" size="action" spacing="compact">
+          최근 검색
+        </IconText>
+      </h2>
       {keywords.length === 0 ? (
         <Notice title="최근 검색어가 없어요">
           첫 검색으로 동네 소식을 찾아보세요.
         </Notice>
       ) : (
-        <ul className="m-0 flex list-none flex-col gap-2 p-0">
+        <ul className="m-0 flex w-full list-none items-center gap-2 overflow-x-auto overscroll-x-contain px-1 py-1">
           {keywords.map((keyword, index) => (
             <li
               key={`${keyword}-${index}`}
-              className="flex items-center justify-between gap-2 border-0 border-b border-solid border-border py-0 text-[14px]/[17px]"
+              className="flex max-w-full shrink-0 items-center rounded-md bg-slate-100 ring-1 ring-border ring-inset text-[12px]/[15px]"
             >
               <Link
                 href={`/search?q=${encodeURIComponent(keyword)}`}
-                className="ui-control relative flex min-h-8 min-w-0 flex-1 items-center gap-2 font-medium"
+                className="ui-control relative flex min-h-8 min-w-0 flex-1 items-center px-[9px] font-semibold text-muted"
               >
-                <IconText
-                  icon="clock"
-                  spacing="comfortable"
-                  textClassName="truncate"
-                  iconClassName="text-muted"
-                >
-                  {keyword}
-                </IconText>
+                <span className="truncate">{keyword}</span>
                 <KeywordLinkStatus />
               </Link>
               <button
                 type="button"
                 aria-label={`${keyword} 삭제`}
                 onClick={() => removeKeyword(keyword)}
-                className="ui-control grid size-8 shrink-0 cursor-pointer items-center justify-items-end border-0 bg-transparent p-0 text-muted"
+                className="ui-control grid size-8 shrink-0 cursor-pointer place-items-center border-0 bg-transparent p-0 text-muted"
               >
                 <span aria-hidden="true">✕</span>
               </button>

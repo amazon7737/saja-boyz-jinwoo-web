@@ -76,7 +76,9 @@ function validItem(value: unknown): boolean {
   );
 }
 
-export async function fetchMapArticles(): Promise<MapArticleResult | null> {
+export async function fetchMapArticles(
+  signal?: AbortSignal,
+): Promise<MapArticleResult | null> {
   try {
     const baseUrl = process.env.NEWS_API_BASE_URL;
 
@@ -92,7 +94,10 @@ export async function fetchMapArticles(): Promise<MapArticleResult | null> {
     const items = new Map<string, LocatedArticle>();
     let offset = 0;
     let total = 0;
-    const signal = AbortSignal.timeout(15_000);
+    const deadline = AbortSignal.timeout(15_000);
+    const requestSignal = signal
+      ? AbortSignal.any([signal, deadline])
+      : deadline;
 
     do {
       const url = new URL('/map/articles', base);
@@ -102,7 +107,7 @@ export async function fetchMapArticles(): Promise<MapArticleResult | null> {
       const response = await fetch(url, {
         method: 'GET',
         cache: 'no-store',
-        signal,
+        signal: requestSignal,
       });
 
       if (!response.ok) return null;

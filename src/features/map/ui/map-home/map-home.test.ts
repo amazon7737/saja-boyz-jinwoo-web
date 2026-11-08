@@ -237,6 +237,35 @@ test('mapSdkFailureRetriesAndRecovers', async () => {
   ).toHaveLength(1);
 });
 
+test('mapSharesSdkAuthenticationFailureAndRetriesWithAnotherConsumer', async () => {
+  const { subscribeNaverMaps } = await import('./naver-map-sdk');
+  const other = { ready: vi.fn(), error: vi.fn() };
+  const release = subscribeNaverMaps('map-test-id', other);
+  const sharedAuthenticationFailure = Reflect.get(
+    window,
+    'navermap_authFailure',
+  );
+
+  try {
+    await mount();
+    expect(Reflect.get(window, 'navermap_authFailure')).toBe(
+      sharedAuthenticationFailure,
+    );
+    await act(async () => sharedAuthenticationFailure());
+    expect(other.error).toHaveBeenCalledTimes(1);
+    expect(container.querySelector('[role="alert"]')?.textContent).toMatch(
+      /지도/,
+    );
+    release();
+    await act(async () => button('다시 시도').click());
+    const fixture = await loaded();
+    expect(fixture.created).toHaveBeenCalledTimes(1);
+    expect(container.querySelector('[role="alert"]')).toBeNull();
+  } finally {
+    release();
+  }
+});
+
 test('mapSdkTimeoutAndAuthenticationFailureAreVisible', async () => {
   vi.useFakeTimers();
   await mount();
@@ -489,4 +518,88 @@ test('mapLocationRetryPreservesFocusAcrossPendingFailureAndSuccess', async () =>
   ).toBeNull();
   expect(document.activeElement).toBe(button('내 위치'));
   expect(button('내 위치').disabled).toBe(false);
+});
+
+test('mapAndDetailShareSdkWhenDetailUnmountsAndHomeRetriesAuthentication', async () => {
+  const { ArticleSheetContext } =
+    await import('@/features/article-detail/model/article-sheet-context');
+  const { DetailMap } =
+    await import('@/features/article-detail/ui/detail-map/detail-map');
+  const id = 'a'.repeat(64);
+  const detailHost = document.createElement('div');
+  document.body.append(detailHost);
+  const detailRoot = createRoot(detailHost);
+  let detailMounted = true;
+  try {
+    await mount();
+    const authenticationFailure = Reflect.get(window, 'navermap_authFailure');
+    await act(async () =>
+      detailRoot.render(
+        createElement(
+          ArticleSheetContext,
+          {
+            value: {
+              active: true,
+              sourcePath: '/',
+              height: 0,
+              mapArticles: [
+                {
+                  article_id: id,
+                  collection_id: 'detail-test',
+                  image_status: 'disabled',
+                  image_url: null,
+                  location_status: 'resolved',
+                  location_reason: null,
+                  location: {
+                    latitude: 37.5,
+                    longitude: 127.1,
+                    label: '서울 검증 지역',
+                    precision: 'region',
+                    evidence: { field: 'description', text: '서울 검증 지역' },
+                  },
+                  article: {
+                    title: '검증된 위치 기사',
+                    description: '서울 검증 지역',
+                    pubDate: '2026-10-10T09:00:00+09:00',
+                    originallink: 'https://publisher.example.invalid/news',
+                    link: '',
+                  },
+                },
+              ],
+              openArticle: vi.fn(),
+              close: vi.fn(),
+              setHeight: vi.fn(),
+              registerMapArticles: vi.fn(),
+              retry: vi.fn(),
+            },
+          },
+          createElement(DetailMap, { id }),
+        ),
+      ),
+    );
+    expect(
+      document.querySelectorAll('script[src*="oapi.map.naver.com"]'),
+    ).toHaveLength(1);
+    const fixture = await loaded();
+    expect(fixture.created).toHaveBeenCalledTimes(2);
+    await act(async () => detailRoot.unmount());
+    detailMounted = false;
+    expect(fixture.destroy).toHaveBeenCalledTimes(1);
+    expect(script().isConnected).toBe(true);
+    expect(Reflect.get(window, 'navermap_authFailure')).toBe(
+      authenticationFailure,
+    );
+    await act(async () => authenticationFailure());
+    expect(container.querySelector('[role="alert"]')?.textContent).toMatch(
+      /지도/,
+    );
+    expect(fixture.destroy).toHaveBeenCalledTimes(2);
+    await act(async () => button('다시 시도').click());
+    const retried = await loaded();
+    expect(retried.created).toHaveBeenCalledOnce();
+    expect(container.querySelector('[role="alert"]')).toBeNull();
+  } finally {
+    if (detailMounted) await act(async () => detailRoot.unmount());
+    detailHost.remove();
+  }
 });

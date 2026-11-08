@@ -193,8 +193,9 @@ test('articleListMoreAppendsWithRawOffsetsAndFirstSeenIdentity', async () => {
   );
   expect(added.querySelector('figcaption')).toBeNull();
   expect(
-    added.querySelector('a[href="https://publisher.example.invalid/19"]'),
-  ).not.toBeNull();
+    added.querySelector('a[href="https://publisher.example.invalid/19"]')
+      ?.textContent,
+  ).toBe('기사 원문');
 
   request.mockResolvedValueOnce(
     Response.json({ total: 43, items: [duplicate] }),

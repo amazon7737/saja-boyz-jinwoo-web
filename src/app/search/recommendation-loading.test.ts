@@ -47,7 +47,7 @@ async function ready(origin: string, app: ChildProcess, output: () => string) {
   throw new Error('Next server did not start: ' + output());
 }
 
-test('recommendedKeywordShowsPendingUntilResultsArrive', async () => {
+test('recentKeywordShowsPendingUntilResultsArrive', async () => {
   let releaseResponse!: () => void;
   const heldResponse = new Promise<void>((resolve) => {
     releaseResponse = resolve;
@@ -175,7 +175,7 @@ test('recommendedKeywordShowsPendingUntilResultsArrive', async () => {
           targetReachable: submit.contains(
             document.elementFromPoint(sr.left + sr.width / 2, sr.top + 1),
           ),
-          gaps: [tabs[1].left - tabs[0].right, tabs[2].left - tabs[1].right],
+          navigationCount: tabs.length,
         };
       });
       expect(geometry.overflow).toBe(false);
@@ -183,12 +183,18 @@ test('recommendedKeywordShowsPendingUntilResultsArrive', async () => {
       expect(geometry.submitHeight).toBeGreaterThanOrEqual(44);
       expect(geometry.centered).toBe(true);
       expect(geometry.targetReachable).toBe(true);
-      expect(geometry.gaps.every((gap) => gap >= 8)).toBe(true);
+      expect(geometry.navigationCount).toBe(0);
     }
     await page.setViewportSize({ width: 393, height: 852 });
     expect(
       await page.getByRole('heading', { name: '추천 검색어' }).count(),
     ).toBe(0);
+    await page.evaluate(() =>
+      localStorage.setItem(
+        'hh:recent-searches:v1',
+        JSON.stringify(['교통통제']),
+      ),
+    );
     await page.goto(origin + '/search');
     const keywordLink = page.getByRole('link', { name: /교통통제/ });
     const beforePending = await keywordLink.boundingBox();
@@ -197,7 +203,7 @@ test('recommendedKeywordShowsPendingUntilResultsArrive', async () => {
     await Promise.race([
       requested,
       wait(10000).then(() => {
-        throw new Error('추천 키워드 API 요청 없음');
+        throw new Error('최근 검색어 API 요청 없음');
       }),
     ]);
     const loading = page.getByRole('status').filter({ hasText: /검색.*불러/ });

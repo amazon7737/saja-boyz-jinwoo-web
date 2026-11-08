@@ -22,7 +22,7 @@ export function ArticleFilters({ isHome }: { isHome: boolean }) {
           <Image src="/filters/filter.svg" alt="" width={18} height={18} />
         </button>
       )}
-      {['기간', '카테고리', '상태'].map((label) => (
+      {['기간', '카테고리'].map((label) => (
         <button
           key={label}
           type="button"

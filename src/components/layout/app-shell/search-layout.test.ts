@@ -25,9 +25,7 @@ test('searchShellAvoidsDuplicateHeaderAndPreservesOtherRoutes', async () => {
     expect(container.querySelector('header')).toBeNull();
     expect(container.querySelector('main')?.textContent).toContain('검색 내용');
     const nav = container.querySelector('nav[aria-label="주 메뉴"]');
-    assert(nav);
-    expect(nav.querySelector('a[href="/"]')).not.toBeNull();
-    expect(nav.querySelector('a[href="/incidents"]')).not.toBeNull();
+    expect(nav).toBeNull();
     pathname = '/incidents';
     await act(async () =>
       root.render(
@@ -36,6 +34,10 @@ test('searchShellAvoidsDuplicateHeaderAndPreservesOtherRoutes', async () => {
     );
     expect(container.querySelector('header a[href="/search"]')).not.toBeNull();
     expect(container.querySelector('main')?.textContent).toContain('목록 내용');
+    const listNav = container.querySelector('nav[aria-label="주 메뉴"]');
+    assert(listNav);
+    expect(listNav.querySelector('a[href="/"]')).not.toBeNull();
+    expect(listNav.querySelector('a[href="/incidents"]')).not.toBeNull();
   } finally {
     await act(async () => root.unmount());
     container.remove();

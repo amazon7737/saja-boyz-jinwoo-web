@@ -30,40 +30,46 @@ export function ArticleRouteHost({
   children?: ReactNode;
   background?: ReactNode;
 }) {
-  const pathname = usePathname();
-  const backgroundSegments = useSelectedLayoutSegments('background');
-  const articleSegments = useSelectedLayoutSegments();
+  const pathname = usePathname() ?? '/';
+  const backgroundSegments = useSelectedLayoutSegments('background') ?? [];
+  const articleSegments = useSelectedLayoutSegments() ?? [];
   const router = useRouter();
   const active = articleSegments.includes('(.)incidents');
-  const sourcePath =
+  const [sourceQuery, setSourceQuery] = useState('');
+  const sourceBase =
     '/' +
     backgroundSegments.filter((segment) => !segment.startsWith('(')).join('/');
-  const inline = active && sourcePath === '/incidents';
+  const sourcePath =
+    sourceBase === '/search' && active ? sourceBase + sourceQuery : sourceBase;
+  const inline = active;
   const listScroll = useRef(0);
   const previousInline = useRef(false);
   const opener = useRef<HTMLElement | null>(null);
+  const detailFocus = useRef<'back' | 'close' | null>(null);
   const previousActive = useRef(false);
   const [height, setMeasuredHeight] = useState(0);
-  const [expanded, setExpanded] = useState(false);
-  const setHeight = useCallback((height: number, expanded = false) => {
+  const setHeight = useCallback((height: number) => {
     setMeasuredHeight(height);
-    setExpanded(expanded);
   }, []);
   const [mapArticles, registerMapArticles] = useState<LocatedArticle[]>([]);
+  const [mapPreviewVisible, setMapPreviewVisible] = useState(false);
   const openArticle = useCallback(
     (id: string) => {
+      setSourceQuery(pathname === '/search' ? window.location.search : '');
       opener.current =
         document.activeElement instanceof HTMLElement
           ? document.activeElement
           : null;
       router.push('/incidents/' + id, { scroll: false });
     },
-    [router],
+    [pathname, router],
   );
   const close = useCallback(() => router.back(), [router]);
   const retry = useCallback(() => router.refresh(), [router]);
 
   useEffect(() => {
+    if (previousActive.current && !active) detailFocus.current = null;
+
     if (previousActive.current && !active && opener.current?.isConnected) {
       opener.current.focus({ preventScroll: true });
     }
@@ -73,7 +79,7 @@ export function ArticleRouteHost({
 
   useLayoutEffect(() => {
     if (inline && !previousInline.current) window.scrollTo(0, 0);
-    if (!inline && previousInline.current && pathname === '/incidents')
+    if (!inline && previousInline.current && pathname !== '/')
       window.scrollTo(0, listScroll.current);
     previousInline.current = inline;
   }, [inline, pathname]);
@@ -98,8 +104,9 @@ export function ArticleRouteHost({
         link &&
         /^\/incidents\/[a-f0-9]{64}$/.test(link.getAttribute('href') ?? '')
       ) {
+        setSourceQuery(pathname === '/search' ? window.location.search : '');
         opener.current = link;
-        if (pathname === '/incidents') listScroll.current = window.scrollY;
+        if (pathname !== '/') listScroll.current = window.scrollY;
       }
     },
     [active, pathname],
@@ -109,12 +116,14 @@ export function ArticleRouteHost({
     () => ({
       active,
       sourcePath,
+      detailFocus,
       height,
       mapArticles,
       openArticle,
       close,
       setHeight,
       registerMapArticles,
+      setMapPreviewVisible,
       retry,
     }),
     [
@@ -132,10 +141,9 @@ export function ArticleRouteHost({
   return (
     <ArticleSheetContext value={value}>
       <AppShell
-        backgroundPath={active ? sourcePath : pathname}
-        inert={active && !inline}
-        hideHeader={active && sourcePath === '/' && expanded}
+        backgroundPath={pathname}
         onClickCapture={captureOpener}
+        hideMapControls={mapPreviewVisible}
       >
         <div
           hidden={inline}
