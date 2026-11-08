@@ -9,12 +9,18 @@ import {
   useLayoutEffect,
   useRef,
   useState,
+  useSyncExternalStore,
   type ReactNode,
 } from 'react';
 
 import { ListNavigationPending } from '@/components/feedback/list-navigation-pending';
 
 import { useArticleSheetRoute } from '../../model/article-sheet-context';
+import {
+  noPreviousRelatedArticle,
+  previousRelatedArticle,
+  subscribeRelatedArticleHistory,
+} from '../../model/related-article-history';
 
 export function DetailInline({
   titleId,
@@ -30,6 +36,11 @@ export function DetailInline({
   const route = useArticleSheetRoute();
   const pagesRouter = useCompatRouter();
   const [legacyPending, setLegacyPending] = useState(false);
+  const previousArticle = useSyncExternalStore(
+    subscribeRelatedArticleHistory,
+    previousRelatedArticle,
+    noPreviousRelatedArticle,
+  );
 
   useEffect(() => {
     if (!pagesRouter) return;
@@ -111,10 +122,13 @@ export function DetailInline({
       >
         <Link
           data-article-control="back"
-          href={route?.active ? route.sourcePath : '/incidents'}
+          href={
+            previousArticle ?? (route?.active ? route.sourcePath : '/incidents')
+          }
           scroll={false}
           aria-label={
-            route?.active && route.sourcePath !== '/incidents'
+            (route?.active && route.sourcePath !== '/incidents') ||
+            previousArticle
               ? '이전 화면으로'
               : '목록으로'
           }
@@ -130,6 +144,17 @@ export function DetailInline({
             ) {
               event.preventDefault();
               route.close();
+            } else if (
+              previousArticle &&
+              event.button === 0 &&
+              !event.metaKey &&
+              !event.ctrlKey &&
+              !event.shiftKey &&
+              !event.altKey &&
+              !event.defaultPrevented
+            ) {
+              event.preventDefault();
+              window.history.back();
             } else if (
               pagesRouter &&
               event.button === 0 &&
@@ -147,9 +172,10 @@ export function DetailInline({
             ←
           </span>{' '}
           사건 상세
-          {(!route?.active || route.sourcePath === '/incidents') && (
-            <ListNavigationPending pendingOverride={legacyPending} />
-          )}
+          {!previousArticle &&
+            (!route?.active || route.sourcePath === '/incidents') && (
+              <ListNavigationPending pendingOverride={legacyPending} />
+            )}
         </Link>
         <Link
           data-article-control="close"

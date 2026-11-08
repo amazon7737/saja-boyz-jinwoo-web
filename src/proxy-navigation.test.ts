@@ -4255,3 +4255,119 @@ test('fixedNavigationDoesNotCoverContentLinks', async () => {
     }
   }
 }, 60000);
+
+test('relatedArticleBackReturnsToPreviousDetailBeforeTheList', async () => {
+  const second = {
+    ...article,
+    article_id: 'b'.repeat(64),
+    article: { ...article.article, title: '같은 지역의 두 번째 기사' },
+  };
+  const location = {
+    latitude: 37.5,
+    longitude: 127.1,
+    label: '서울 검증 지역',
+    precision: 'region',
+    evidence: { field: 'description', text: '내부 이동 검증용 기사' },
+  };
+  const located = (item: typeof article) => ({
+    ...item,
+    collection_id: 'detail-navigation-fixture',
+    location_status: 'resolved',
+    location_reason: null,
+    location,
+  });
+  listArticles = [article, second];
+  mapArticlesFixture = { total: 2, items: [located(article), located(second)] };
+  try {
+    const page = await openList();
+    await page
+      .getByRole('link', { name: article.article.title, exact: true })
+      .click();
+    await page
+      .getByRole('heading', { level: 1, name: article.article.title })
+      .waitFor();
+    await page
+      .getByRole('region', { name: '같은 지역 기사' })
+      .getByRole('link', { name: /같은 지역의 두 번째 기사/ })
+      .click();
+    await page
+      .getByRole('heading', { level: 1, name: second.article.title })
+      .waitFor();
+    expect(
+      await page.locator('[data-article-control="back"]').getAttribute('href'),
+    ).toBe('/incidents/' + id);
+    await page.locator('[data-article-control="back"]').click();
+    await expect
+      .poll(() => new URL(page.url()).pathname)
+      .toBe('/incidents/' + id);
+    await page
+      .getByRole('heading', { level: 1, name: article.article.title })
+      .waitFor();
+    await page.goForward();
+    await page
+      .getByRole('heading', { level: 1, name: second.article.title })
+      .waitFor();
+    await expect
+      .poll(() =>
+        page.locator('[data-article-control="back"]').getAttribute('href'),
+      )
+      .toBe('/incidents/' + id);
+    await page.goBack();
+    await page
+      .getByRole('heading', { level: 1, name: article.article.title })
+      .waitFor();
+    await page.locator('[data-article-control="back"]').click();
+    await expect.poll(() => new URL(page.url()).pathname).toBe('/incidents');
+  } finally {
+    listArticles = [article];
+    mapArticlesFixture = { total: 0, items: [] };
+  }
+}, 120000);
+
+test('relatedArticleBackReturnsToDirectlyOpenedDetail', async () => {
+  const second = {
+    ...article,
+    article_id: 'b'.repeat(64),
+    article: { ...article.article, title: '같은 지역의 두 번째 기사' },
+  };
+  const location = {
+    latitude: 37.5,
+    longitude: 127.1,
+    label: '서울 검증 지역',
+    precision: 'region',
+    evidence: { field: 'description', text: '내부 이동 검증용 기사' },
+  };
+  const located = (item: typeof article) => ({
+    ...item,
+    collection_id: 'detail-navigation-fixture',
+    location_status: 'resolved',
+    location_reason: null,
+    location,
+  });
+  listArticles = [article, second];
+  mapArticlesFixture = { total: 2, items: [located(article), located(second)] };
+  try {
+    const page = await openList();
+    await page.goto(origin + '/incidents/' + id);
+    await page
+      .getByRole('heading', { level: 1, name: article.article.title })
+      .waitFor();
+    await page
+      .getByRole('region', { name: '같은 지역 기사' })
+      .getByRole('link', { name: /같은 지역의 두 번째 기사/ })
+      .click();
+    await page
+      .getByRole('heading', { level: 1, name: second.article.title })
+      .waitFor();
+    await page.locator('[data-article-control="back"]').click();
+    await expect
+      .poll(() => new URL(page.url()).pathname)
+      .toBe('/incidents/' + id);
+    await page
+      .getByRole('heading', { level: 1, name: article.article.title })
+      .waitFor();
+  } finally {
+    listArticles = [article];
+    mapArticlesFixture = { total: 0, items: [] };
+  }
+}, 120000);
