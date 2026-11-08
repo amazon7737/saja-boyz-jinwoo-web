@@ -17,6 +17,22 @@ export function PaginatedArticleList({
   initialPage: ArticlePage;
 }) {
   const [page, setPage] = useState(initialPage);
+  const [now, setNow] = useState<number | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    const update = () => {
+      if (active) setNow(Date.now());
+    };
+
+    queueMicrotask(update);
+    const timer = setInterval(update, 60_000);
+
+    return () => {
+      active = false;
+      clearInterval(timer);
+    };
+  }, []);
   const [offset, setOffset] = useState(initialPage.items.length);
   const [exhausted, setExhausted] = useState(initialPage.items.length === 0);
   const [pending, setPending] = useState(false);
@@ -77,7 +93,7 @@ export function PaginatedArticleList({
 
   return (
     <>
-      <ArticleList items={page.items} apiOrigin={page.apiOrigin} />
+      <ArticleList items={page.items} apiOrigin={page.apiOrigin} now={now} />
       {pending && <ArticleSkeleton label="추가 기사를 불러오는 중이에요" />}
       {hasMore && <div ref={tail} aria-hidden="true" className="h-px" />}
       {hasMore && (failed || retrying) && (

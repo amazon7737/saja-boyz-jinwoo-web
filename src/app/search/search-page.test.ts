@@ -53,15 +53,7 @@ test('searchInitialStateUsesRealGetFormWithoutFetching', async () => {
     expect(input.getAttribute('aria-label')).toBe('기사 키워드 검색');
     expect(form.querySelector('button[type="submit"]')).not.toBeNull();
     expect(root.querySelector('a[href="/"]')).not.toBeNull();
-    expect(
-      Array.from(root.querySelectorAll('a')).some(
-        (a) =>
-          new URL(
-            a.getAttribute('href') ?? '',
-            'https://app.example.invalid',
-          ).searchParams.get('q') === '대형화재',
-      ),
-    ).toBe(true);
+    expect(root.textContent).not.toContain('추천 검색어');
     expect(root.textContent).not.toContain('검색 결과가 없어요');
     expect(root.textContent).not.toContain('서울 소방서');
   }

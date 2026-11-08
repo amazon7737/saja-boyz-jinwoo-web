@@ -601,3 +601,104 @@ test('mapPaneProjectionNormalizesCameraCenterBeforeViewportSizing', async () => 
   expect(fixture.setCenter).not.toHaveBeenCalled();
   expect(fixture.setZoom).not.toHaveBeenCalled();
 });
+
+test('carouselPreviewSurvivesMarkerRegroupingOnZoom', async () => {
+  const first = nearby(1);
+  const fixture = await mount([first, nearby(2), item(3)]);
+  expect(counts(fixture)).toEqual(['1', '2']);
+  const card = carousel().querySelector<HTMLAnchorElement>(
+    `a[href="/incidents/${first.article_id}"]`,
+  )!;
+  const stop = (event: MouseEvent) => event.preventDefault();
+  document.addEventListener('click', stop);
+  try {
+    await act(async () => card.click());
+    const preview = document.querySelector<HTMLElement>(
+      '[aria-label="선택한 기사"]',
+    )!;
+    expect(preview).not.toBeNull();
+    expect(preview.textContent).toContain(first.article.title);
+    await fixture.changeZoom(15);
+    expect(counts(fixture)).toEqual(['1', '1', '1']);
+    expect(document.querySelector('[aria-label="선택한 기사"]')).toBe(preview);
+    expect(preview.textContent).toContain(first.article.title);
+    await click('기사 선택 닫기', preview);
+    expect(document.activeElement).toBe(card);
+    expect(fixture.created).toHaveBeenCalledTimes(1);
+    expect(fixture.destroy).not.toHaveBeenCalled();
+    expect(fixture.setCenter).not.toHaveBeenCalled();
+    expect(fixture.setZoom).not.toHaveBeenCalled();
+  } finally {
+    document.removeEventListener('click', stop);
+  }
+});
+
+test('hiddenMapResizeKeepsSelectedArticlePreviewAndViewport', async () => {
+  const first = nearby(1);
+  const second = nearby(2);
+  const fixture = await mount([first, second], false, {
+    width: 393,
+    height: 852,
+  });
+  // 첫 기사는 화면 밖, 두 번째 기사는 왼쪽 위 경계 안쪽에 둔다.
+  await fixture.pan(-5, -5);
+  expect(counts(fixture)).toEqual(['1']);
+  const marker = [...fixture.active][0].content;
+  expect(marker.getAttribute('aria-label')).toContain(second.article.title);
+  marker.focus();
+  await act(async () =>
+    marker.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }),
+    ),
+  );
+  const preview = document.querySelector<HTMLElement>(
+    '[aria-label="선택한 기사"]',
+  )!;
+  expect(preview).not.toBeNull();
+  expect(
+    [...preview.querySelectorAll('article h2')].map(
+      (heading) => heading.textContent,
+    ),
+  ).toEqual([second.article.title]);
+  expect(marker.getAttribute('aria-pressed')).toBe('true');
+
+  // ResizeObserver보다 SDK idle이 먼저 올 수 있다.
+  const canvas = host.querySelector<HTMLElement>(
+    '[aria-label="주변 지도"] > .h-dvh',
+  )!;
+  Object.defineProperty(canvas, 'clientWidth', {
+    configurable: true,
+    value: 0,
+  });
+  Object.defineProperty(canvas, 'clientHeight', {
+    configurable: true,
+    value: 0,
+  });
+  await fixture.idle();
+  expect(preview.isConnected, '크기 변경 직후 SDK 갱신에도 선택 유지').toBe(
+    true,
+  );
+
+  // 상세 화면이 홈 지도에 display:none을 적용할 때와 같은 canvas 크기.
+  await fixture.resize(0, 0);
+  expect(preview.isConnected, '숨긴 지도에서 선택된 시트를 제거하지 않음').toBe(
+    true,
+  );
+  await fixture.idle();
+  expect(
+    preview.isConnected,
+    '숨긴 지도에서 뒤늦은 SDK 갱신에도 선택 유지',
+  ).toBe(true);
+  await fixture.resize(393, 852);
+  expect(document.querySelector('[aria-label="선택한 기사"]')).toBe(preview);
+  expect(preview.textContent).toContain(second.article.title);
+  expect(counts(fixture)).toEqual(['1']);
+  const restoredMarker = [...fixture.active][0].content;
+  expect(restoredMarker.getAttribute('aria-pressed')).toBe('true');
+  await click('기사 선택 닫기', preview);
+  expect(document.activeElement).toBe(restoredMarker);
+  expect(fixture.created).toHaveBeenCalledTimes(1);
+  expect(fixture.destroy).not.toHaveBeenCalled();
+  expect(fixture.setCenter).not.toHaveBeenCalled();
+  expect(fixture.setZoom).not.toHaveBeenCalled();
+});

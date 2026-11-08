@@ -1,5 +1,7 @@
 import Link from 'next/link';
 
+import { ListLink } from '@/components/layout/list-link/list-link';
+
 import { pageMetadata } from '../site-metadata';
 
 export const metadata = pageMetadata(
@@ -62,9 +64,7 @@ export default function AboutPage() {
         기상청 지역 대표 좌표
       </a>
       <nav aria-label="기사 찾아보기" className="flex flex-wrap gap-4 py-4">
-        <Link href="/incidents" className="ui-link text-brand underline">
-          기사 목록
-        </Link>
+        <ListLink className="ui-link text-brand underline">기사 목록</ListLink>
         <Link href="/archive" className="ui-link text-brand underline">
           기사 아카이브
         </Link>

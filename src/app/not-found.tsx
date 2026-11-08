@@ -1,5 +1,6 @@
 import Link from 'next/link';
 
+import { ListLink } from '@/components/layout/list-link/list-link';
 import { Notice } from '@/components/feedback/notice';
 
 export default function NotFound() {
@@ -12,7 +13,7 @@ export default function NotFound() {
           <>
             <Link href="/">지도 홈</Link>
             <Link href="/search">검색</Link>
-            <Link href="/incidents">사건 목록</Link>
+            <ListLink>사건 목록</ListLink>
             <Link href="/report">제보</Link>
           </>
         }

@@ -1,7 +1,15 @@
 // file: src/proxy-navigation.test.ts
 import { execFile, spawn, type ChildProcess } from 'node:child_process';
 import { once } from 'node:events';
-import { cp, mkdtemp, rm, symlink } from 'node:fs/promises';
+import {
+  cp,
+  mkdir,
+  mkdtemp,
+  readFile,
+  rm,
+  symlink,
+  writeFile,
+} from 'node:fs/promises';
 import { createServer, type Server, type ServerResponse } from 'node:http';
 import type { AddressInfo } from 'node:net';
 import { tmpdir } from 'node:os';
@@ -61,9 +69,14 @@ const article = {
     link: '',
   },
 };
+let holdList = false;
+const waitingLists: ServerResponse[] = [];
 let holdMap = false;
+let mapArticlesFixture: unknown = { total: 0, items: [] };
 let holdDetails = false;
 let failDetail = false;
+let failAfterDetailRequest = Number.POSITIVE_INFINITY;
+let largePrivateDetail = false;
 let detailDelay = 0;
 let imageEnabled = false;
 function presentArticle(item: typeof article) {
@@ -93,10 +106,14 @@ const api = createServer((request, response) => {
   }
   if (url.pathname === '/map/articles') {
     if (holdMap) waitingMap.push(response);
-    else response.end(JSON.stringify({ total: 0, items: [] }));
+    else response.end(JSON.stringify(mapArticlesFixture));
     return;
   }
   if (url.pathname === '/news') {
+    if (holdList) {
+      waitingLists.push(response);
+      return;
+    }
     const offset = Number(url.searchParams.get('offset') ?? 0);
     if (url.searchParams.get('keyword') === '재검색') newsOffsets.push(offset);
     const limit = Number(url.searchParams.get('limit') ?? 20);
@@ -116,8 +133,22 @@ const api = createServer((request, response) => {
       waitingDetails.push(response);
       return;
     }
-    if (failDetail) {
+    if (failDetail || detailRequests.length > failAfterDetailRequest) {
       response.writeHead(503).end('{"error":"QA_PRIVATE_DETAIL"}');
+      return;
+    }
+    if (largePrivateDetail) {
+      response.end(
+        JSON.stringify({
+          ...article,
+          secret: 'PRIVATE_UNEXPECTED_FIELD',
+          article: {
+            ...article.article,
+            description: '가'.repeat(180_000) + '끝표식',
+            private: 'PRIVATE_NESTED_FIELD',
+          },
+        }),
+      );
       return;
     }
     if (detailDelay)
@@ -167,11 +198,68 @@ beforeAll(async () => {
     join(directory, 'node_modules'),
     'junction',
   );
+  // The temporary app exposes the actual shared sheet as a preview fixture.
+  const sheetFixture = join(directory, 'src/app/sheet-test-fixture');
+  await mkdir(sheetFixture, { recursive: true });
+  await writeFile(
+    join(sheetFixture, 'page.tsx'),
+    `import { SheetFixture, type FixtureArticle } from './sheet-fixture';
+export const dynamic = 'force-dynamic';
+export default async function FixturePage() {
+  const id = 'a'.repeat(64);
+  const base = process.env.NEWS_API_BASE_URL!;
+  const response = await fetch(new URL('/news/' + id, base), { cache: 'no-store' });
+  const item = response.ok ? ((await response.json()) as FixtureArticle) : null;
+  return <SheetFixture item={item} id={id} apiOrigin={base} />;
+}
+`,
+  );
+  await writeFile(
+    join(sheetFixture, 'sheet-fixture.tsx'),
+    `"use client";
+import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
+import { DetailSheet } from '@/features/article-detail/ui/detail-sheet/detail-sheet';
+import { DetailImage } from '@/app/incidents/[id]/detail-image';
+import { DetailShare } from '@/app/incidents/[id]/detail-share';
+import { DetailRetry } from '@/features/article-detail/ui/detail-retry/detail-retry';
+import { Notice } from '@/components/feedback/notice';
+export type FixtureArticle = {
+  image_status: string;
+  image_url: string | null;
+  article: { title: string; description: string };
+};
+export function SheetFixture({ item, id, apiOrigin }: { item: FixtureArticle | null; id: string; apiOrigin: string }) {
+  const [open, setOpen] = useState(true);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  const imageUrl = item?.image_status === 'ready' && item.image_url === '/images/' + id + '.jpg'
+    ? new URL(item.image_url, apiOrigin).href : null;
+  return <>
+    <div data-article-background="">지도 배경 fixture</div>
+    {mounted && open && createPortal(<DetailSheet titleId={item ? 'fixture-title' : 'article-detail-error'} onClose={() => setOpen(false)} footer={item ? <DetailShare id={id} title={item.article.title} /> : undefined}>
+      {item ? <>
+        <h1 id="fixture-title" className="m-0 text-sm">{item.article.title}</h1>
+        {imageUrl && <DetailImage src={imageUrl} />}
+        <p className="m-0">{item.article.description}</p>
+      </> : <>
+        <span id="article-detail-error" className="sr-only">기사 상세 오류</span>
+        <Notice role="alert" title="이 소식을 다시 열어볼까요?" action={<DetailRetry id={id} />}>
+          <p className="mt-0 font-bold">기사를 불러오지 못했어요</p>
+          <p>연결을 확인한 뒤 다시 눌러주세요.</p>
+        </Notice>
+      </>}
+    </DetailSheet>, document.body)}
+  </>;
+}
+`,
+  );
   const env = {
     ...process.env,
     NEWS_API_BASE_URL: 'http://127.0.0.1:' + apiPort,
     NEXT_TELEMETRY_DISABLED: '1',
     NEXT_PUBLIC_NAVER_MAP_CLIENT_ID: 'local-loading-test',
+    NEXT_PUBLIC_REPORT_API_BASE_URL: 'https://reports.example.test',
   };
   const next = join(process.cwd(), 'node_modules/next/dist/bin/next');
   await execute(process.execPath, [next, 'build', '--webpack'], {
@@ -179,16 +267,15 @@ beforeAll(async () => {
     env,
     timeout: 90000,
     maxBuffer: 8 * 1024 * 1024,
+  }).catch((error: Error & { stdout?: string; stderr?: string }) => {
+    console.error(error.stdout, error.stderr);
+    throw error;
   });
-  app = spawn(
-    process.execPath,
-    [next, 'start', '--hostname', '127.0.0.1', '--port', String(appPort)],
-    {
-      cwd: directory,
-      env,
-      stdio: ['ignore', 'pipe', 'pipe'],
-    },
-  );
+  app = spawn(process.execPath, [next, 'start', '--port', String(appPort)], {
+    cwd: directory,
+    env,
+    stdio: ['ignore', 'pipe', 'pipe'],
+  });
   let output = '';
   app.stdout?.on('data', (chunk) => {
     output += String(chunk);
@@ -196,7 +283,7 @@ beforeAll(async () => {
   app.stderr?.on('data', (chunk) => {
     output += String(chunk);
   });
-  origin = 'http://127.0.0.1:' + appPort;
+  origin = 'http://localhost:' + appPort;
   await ready(origin, app, () => output);
   browser = await chromium.launch({ channel: 'chrome', headless: true });
 }, 120000);
@@ -242,9 +329,9 @@ test('realNextLinkNavigationSkipsDocumentProbeAndTimesOutOnlyOnce', async () => 
     expect
       .soft(
         detailRequests.length - beforeDocument,
-        'direct document keeps existence probe plus detail load',
+        'direct document loads the article once',
       )
-      .toBe(2);
+      .toBe(1);
     const missing = await fetch(origin + '/incidents/' + missingId);
     const missingHtml = await missing.text();
     expect(missing.status).toBe(404);
@@ -336,7 +423,7 @@ test('listFocusRemainsVisibleWhileTabbingAndReturningFromDetail', async () => {
     for (const width of [320, 393, 1440]) {
       const page = await openList(width);
       await page.emulateMedia({ reducedMotion: 'reduce' });
-      const links = page.locator('article a');
+      const links = page.locator('article a:visible');
       expect(await links.count()).toBe(28);
       async function visible(index: number, direction: string) {
         await page.evaluate(
@@ -456,10 +543,10 @@ test('listFrameKeepsLoadingInlineAndRestoresLoadedPagesAcrossHistory', async () 
       const inline = page.locator('main [data-article-inline]');
       await inline.locator('[role="status"][aria-busy="true"]').waitFor();
       expect(await page.getByRole('dialog').count()).toBe(0);
-      expect(await page.locator('header').isVisible()).toBe(true);
+      expect(await page.locator('header').isVisible()).toBe(false);
       expect(
         await page.getByRole('navigation', { name: '주 메뉴' }).isVisible(),
-      ).toBe(true);
+      ).toBe(false);
       expect(await page.evaluate(() => document.body.style.overflow)).not.toBe(
         'hidden',
       );
@@ -518,35 +605,43 @@ test('searchAlignmentPreservesFullTargetsAndWorkingControls', async () => {
     return {
       form: box(form),
       submit: box(form.querySelector('button[type="submit"]')!),
+      searchIcon: box(form.querySelector('button[type="submit"] svg')!),
       input: box(form.querySelector('input[name="q"]')!),
       row: box(row),
-      clock: box(row.querySelector('a svg')!),
+      clock: box(
+        document.querySelector('section[aria-label="최근 검색"] h2 svg')!,
+      ),
       remove: box(remove),
       removeGlyph: box(remove.querySelector('span')!),
-      chip: box(document.querySelector('#suggested-keywords + div > a')!),
     };
   });
-  expect.soft(sizes.form.height, '시각 검색바37px 유지').toBeCloseTo(37, 0);
-  expect.soft(sizes.submit.width, '검색 실제 클릭 영역44px 유지').toBe(44);
+  expect.soft(sizes.form.height, '시각 검색바44px 유지').toBeCloseTo(44, 0);
+  expect.soft(sizes.submit.width, '검색 실제 클릭 영역46px 유지').toBe(46);
   expect.soft(sizes.submit.height).toBe(44);
+  expect.soft(sizes.searchIcon.width, '검색 아이콘 24px').toBe(24);
+  expect.soft(sizes.searchIcon.height, '검색 아이콘 24px').toBe(24);
   expect
     .soft(
-      Math.abs(sizes.input.x - sizes.form.x - 37.5),
+      Math.abs(sizes.input.x - sizes.form.x - 47.5),
       'Figma 입력 시작점 · 테두리 반올림 1px 허용',
     )
     .toBeLessThanOrEqual(1);
   expect
     .soft(sizes.submit.right, '검색 버튼과 입력이 겹치지 않음')
     .toBeLessThanOrEqual(sizes.input.left + 0.5);
-  expect.soft(sizes.clock.width, '시계glyph가 본문을 밀지 않음').toBe(14);
+  expect.soft(sizes.clock.width, '최근 검색 제목의 시계 크기').toBe(16);
   expect.soft(sizes.remove.width, '최근검색 삭제 타깃32px 유지').toBe(32);
   expect.soft(sizes.remove.height).toBe(32);
   expect
-    .soft(sizes.removeGlyph.right, '삭제X 시각 위치는 행 오른쪽')
-    .toBeCloseTo(sizes.row.right, 0);
-  expect
-    .soft(sizes.chip.width, '아이콘 추천칩은Figma89px에정렬')
-    .toBeCloseTo(89, 0);
+    .soft(
+      Math.abs(
+        (sizes.removeGlyph.left + sizes.removeGlyph.right) / 2 -
+          (sizes.remove.left + sizes.remove.right) / 2,
+      ),
+      '삭제 아이콘이 조작 영역 가운데 정렬',
+    )
+    .toBeLessThanOrEqual(1);
+  expect.soft(sizes.row.height, '최근 검색 칩 높이32px 유지').toBe(32);
   await page
     .getByRole('button', { name: '서울 소방서 삭제', exact: true })
     .click();
@@ -566,6 +661,129 @@ test('searchAlignmentPreservesFullTargetsAndWorkingControls', async () => {
       .inputValue(),
   ).toBe('');
   await page.close();
+}, 120000);
+
+test('searchDetailBackLinkKeepsTheOriginalSearchQuery', async () => {
+  const page = await openList();
+  const keyword = '검증 & 안전';
+
+  try {
+    await page.goto(origin + '/search?q=' + encodeURIComponent(keyword));
+    const opener = page.getByRole('link', {
+      name: article.article.title,
+      exact: true,
+    });
+    await opener.waitFor();
+    await opener.focus();
+    await page.keyboard.press('Enter');
+
+    const detail = page.locator('[data-article-inline]');
+    await detail
+      .getByRole('heading', { name: article.article.title, exact: true })
+      .waitFor();
+    const backLink = detail
+      .getByRole('navigation', { name: '기사 상세 탐색' })
+      .locator('a')
+      .first();
+    const href = await backLink.getAttribute('href');
+    expect(href).not.toBeNull();
+    const destination = new URL(href!, origin);
+    expect(destination.pathname).toBe('/search');
+    expect(destination.searchParams.get('q')).toBe(keyword);
+
+    await backLink.click();
+    await page.waitForURL(
+      (url) =>
+        url.pathname === '/search' && url.searchParams.get('q') === keyword,
+    );
+    await expect
+      .poll(() =>
+        opener.evaluate((element) => element === document.activeElement),
+      )
+      .toBe(true);
+  } finally {
+    await page.close();
+  }
+}, 120000);
+
+test('detailResponseKeepsKeyboardFocusOnItsBackControl', async () => {
+  const releaseDetails = (status: 200 | 503) => {
+    holdDetails = false;
+    failDetail = status === 503;
+    for (const response of waitingDetails.splice(0)) {
+      if (!response.destroyed) {
+        response
+          .writeHead(status)
+          .end(
+            status === 200
+              ? JSON.stringify(article)
+              : '{"error":"QA_PRIVATE_DETAIL"}',
+          );
+      }
+    }
+  };
+
+  try {
+    for (const status of [200, 503] as const) {
+      failDetail = false;
+      const page = await openList();
+      const opener = page.getByRole('link', {
+        name: article.article.title,
+        exact: true,
+      });
+      holdDetails = true;
+      try {
+        await opener.click();
+        await expect
+          .poll(() => waitingDetails.length, { timeout: 5000 })
+          .toBeGreaterThan(0);
+        const detail = page.locator('[data-article-inline]');
+        await detail
+          .locator('[role="status"][aria-busy="true"]')
+          .waitFor({ state: 'visible' });
+        // 초기 포커스 위치를 명시하고 Tab으로 헤더 제어에 진입한다.
+        await detail.focus();
+        await page.keyboard.press('Tab');
+        const backLink = detail
+          .getByRole('navigation', { name: '기사 상세 탐색' })
+          .locator('a')
+          .first();
+        expect(
+          await backLink.evaluate((node) => node === document.activeElement),
+        ).toBe(true);
+
+        releaseDetails(status);
+        if (status === 200) {
+          await detail
+            .getByRole('heading', { name: article.article.title, exact: true })
+            .waitFor();
+        } else {
+          await detail
+            .getByText('기사를 불러오지 못했어요', { exact: true })
+            .waitFor();
+        }
+        // 로딩과 본문의 DOM이 교체되더라도 같은 사용자 제어를 유지해야 한다.
+        await expect
+          .poll(() =>
+            backLink.evaluate((node) => node === document.activeElement),
+          )
+          .toBe(true);
+        await page.keyboard.press('Enter');
+        await page.waitForURL((url) => url.pathname === '/incidents');
+        await expect
+          .poll(() =>
+            opener.evaluate((node) => node === document.activeElement),
+          )
+          .toBe(true);
+      } finally {
+        releaseDetails(200);
+        await page.close();
+      }
+    }
+  } finally {
+    releaseDetails(200);
+    failDetail = false;
+  }
 }, 120000);
 
 test('searchResultFocusStaysAboveNavigationAndReturnsToItsOpener', async () => {
@@ -605,7 +823,6 @@ test('searchResultFocusStaysAboveNavigationAndReturnsToItsOpener', async () => {
         );
         const value = await links.nth(index).evaluate((element) => {
           const rect = element.getBoundingClientRect();
-          const nav = document.querySelector('nav[aria-label="주 메뉴"]')!;
           const hit = document.elementFromPoint(
             rect.x + rect.width / 2,
             rect.y + rect.height / 2,
@@ -614,7 +831,7 @@ test('searchResultFocusStaysAboveNavigationAndReturnsToItsOpener', async () => {
             focused: document.activeElement === element,
             top: rect.top,
             bottom: rect.bottom,
-            navTop: nav.getBoundingClientRect().top,
+            viewportBottom: window.innerHeight,
             hit: hit === element || element.contains(hit),
           };
         });
@@ -624,8 +841,8 @@ test('searchResultFocusStaysAboveNavigationAndReturnsToItsOpener', async () => {
           .soft(value.top, label + ' 상단 포커스 윤곽')
           .toBeGreaterThanOrEqual(7);
         expect
-          .soft(value.bottom, label + ' 하단 메뉴 위 포커스 윤곽')
-          .toBeLessThanOrEqual(value.navTop - 7);
+          .soft(value.bottom, label + ' 화면 하단 위 포커스 윤곽')
+          .toBeLessThanOrEqual(value.viewportBottom - 7);
         expect
           .soft(value.hit, label + ' 링크 중앙이 다른 요소에 가리지 않음')
           .toBe(true);
@@ -643,7 +860,7 @@ test('searchResultFocusStaysAboveNavigationAndReturnsToItsOpener', async () => {
       const before = await page.evaluate(() => scrollY);
       await page.keyboard.press('Enter');
       await page
-        .getByRole('dialog')
+        .locator('[data-article-inline]')
         .getByRole('heading', {
           level: 1,
           name: listArticles[12].article.title,
@@ -651,7 +868,7 @@ test('searchResultFocusStaysAboveNavigationAndReturnsToItsOpener', async () => {
         .waitFor();
       await page.keyboard.press('Escape');
       await page.waitForFunction(
-        () => !document.querySelector('[role="dialog"]'),
+        () => !document.querySelector('[data-article-inline]'),
       );
       const returned = new URL(page.url());
       expect(returned.pathname).toBe('/search');
@@ -678,18 +895,11 @@ test('inlineIconsPreserveSpacingAndAccessibleControls', async () => {
   await page
     .getByRole('link', { name: article.article.title, exact: true })
     .click();
-  const dialog = page.getByRole('dialog');
+  const dialog = page.locator('[data-article-inline]');
   await dialog
     .getByRole('heading', { level: 1, name: article.article.title })
     .waitFor();
-  const expand = dialog.getByRole('button', {
-    name: '기사 시트 펼치기',
-    exact: true,
-  });
-  if (await expand.count()) await expand.click();
-  await dialog
-    .getByRole('button', { name: '기사 시트 접기', exact: true })
-    .waitFor();
+  expect(await page.getByRole('dialog').count()).toBe(0);
   async function checkRow(
     element: import('playwright-core').Locator,
     label: string,
@@ -715,14 +925,20 @@ test('inlineIconsPreserveSpacingAndAccessibleControls', async () => {
         const a = icon.getBoundingClientRect(),
           b = range.getBoundingClientRect();
         return {
-          svg: icon.tagName.toLowerCase() === 'svg',
+          svg:
+            icon.tagName.toLowerCase() === 'svg' ||
+            (icon.tagName.toLowerCase() === 'img' &&
+              icon.getAttribute('src') === '/figma/preview-date.svg'),
           width: a.width,
           height: a.height,
           gap: trailing ? a.left - b.right : b.left - a.right,
           centerDelta: Math.abs((a.top + a.bottom - b.top - b.bottom) / 2),
           shrink: getComputedStyle(icon).flexShrink,
           hidden: icon.getAttribute('aria-hidden'),
-          focusable: icon.getAttribute('focusable'),
+          focusable:
+            icon instanceof HTMLImageElement && icon.tabIndex < 0
+              ? 'false'
+              : icon.getAttribute('focusable'),
         };
       },
       { label, trailing },
@@ -742,7 +958,7 @@ test('inlineIconsPreserveSpacingAndAccessibleControls', async () => {
   }
   const date = dialog.locator('p:has(time)').first();
   const dateText = (await date.locator('time').textContent())!;
-  await checkRow(date, dateText, 12, 6);
+  await checkRow(date, dateText, 16, 4);
   const share = dialog.getByRole('button', {
     name: '기사 공유하기',
     exact: true,
@@ -763,8 +979,13 @@ test('inlineIconsPreserveSpacingAndAccessibleControls', async () => {
     ),
   );
   await page.goto(origin + '/search');
-  const recent = page.getByRole('link', { name: '간격 검증', exact: true });
-  await checkRow(recent, '간격 검증', 14, 8);
+  const recentHeading = page
+    .getByRole('region', { name: '최근 검색', exact: true })
+    .getByRole('heading', { name: '최근 검색', exact: true });
+  await checkRow(recentHeading, '최근 검색', 16, 4);
+  expect(
+    await page.getByRole('link', { name: '간격 검증', exact: true }).count(),
+  ).toBe(1);
   expect(
     (await page
       .getByRole('button', { name: '간격 검증 삭제', exact: true })
@@ -920,13 +1141,13 @@ test('serverLoadingBoundariesKeepMapFrameAndStandaloneArticleSeoAccessible', asy
         .poll(() => waitingDetails.length, { timeout: 5000 })
         .toBeGreaterThan(0);
       const loading = page
-        .getByRole('dialog')
+        .locator('[data-article-inline]')
         .locator('[role="status"][aria-busy="true"]');
       await loading.waitFor({ timeout: 1500 }).catch(() => {});
       expect
         .soft(
           await loading.isVisible(),
-          '기사 주소로 내부 이동할 때 시트 스켈레톤',
+          '기사 주소로 내부 이동할 때 상세 스켈레톤',
         )
         .toBe(true);
     } finally {
@@ -1135,12 +1356,57 @@ test('searchSubmissionsAndDetailRetriesExposePendingWithoutLosingGetOrRecovery',
           .getByRole('link', { name: article.article.title, exact: true })
           .click();
       else await retryPage.goto(origin + '/incidents/' + id);
+      const directStates: Array<{
+        busy: string | null;
+        spinnerVisible: boolean;
+        duplicateBlocked: boolean;
+      }> = [];
+      if (mode === 'direct') {
+        await retryPage.exposeFunction(
+          'observeDocumentRetry',
+          (state: (typeof directStates)[number]) => {
+            directStates.push(state);
+          },
+        );
+      }
       for (const status of [503, 200]) {
         const retry = retryPage.getByRole('link', {
           name: '다시 시도',
           exact: true,
         });
         await retry.waitFor();
+        directStates.length = 0;
+        if (mode === 'direct') {
+          await retry.evaluate((element) => {
+            element.addEventListener(
+              'click',
+              () => {
+                const spinner =
+                  element.querySelector<HTMLElement>('[role="status"]');
+                const duplicate = new MouseEvent('click', {
+                  bubbles: true,
+                  cancelable: true,
+                  button: 0,
+                });
+                const state = {
+                  busy: element.getAttribute('aria-busy'),
+                  spinnerVisible: Boolean(
+                    spinner && !spinner.hidden && spinner.querySelector('svg'),
+                  ),
+                  duplicateBlocked: !element.dispatchEvent(duplicate),
+                };
+                void (
+                  window as unknown as {
+                    observeDocumentRetry: (
+                      value: typeof state,
+                    ) => Promise<void>;
+                  }
+                ).observeDocumentRetry(state);
+              },
+              { once: true },
+            );
+          });
+        }
         holdDetails = true;
         const before = detailRequests.length;
         const retrying = retry.click();
@@ -1148,15 +1414,38 @@ test('searchSubmissionsAndDetailRetriesExposePendingWithoutLosingGetOrRecovery',
           await expect
             .poll(() => waitingDetails.length, { timeout: 5000 })
             .toBeGreaterThan(0);
-          expect
-            .soft(await retry.getAttribute('aria-busy'), mode + ' 재시도 대기')
-            .toBe('true');
-          expect
-            .soft(await retry.locator('svg').count(), '재시도 스피너')
-            .toBe(1);
-          if ((await retry.getAttribute('aria-busy')) === 'true') {
-            await retry.evaluate((node) => (node as HTMLAnchorElement).click());
-            await retryPage.keyboard.press('Enter');
+          if (mode === 'direct') {
+            await expect
+              .poll(() => directStates[0], { timeout: 5000 })
+              .toBeDefined();
+            expect
+              .soft(directStates[0]?.busy, '직접 진입 재시도 대기')
+              .toBe('true');
+            expect
+              .soft(directStates[0]?.spinnerVisible, '직접 진입 재시도 스피너')
+              .toBe(true);
+            expect
+              .soft(
+                directStates[0]?.duplicateBlocked,
+                '직접 진입 중복 클릭 방지',
+              )
+              .toBe(true);
+          } else {
+            expect
+              .soft(
+                await retry.getAttribute('aria-busy'),
+                mode + ' 재시도 대기',
+              )
+              .toBe('true');
+            expect
+              .soft(await retry.locator('svg').count(), '재시도 스피너')
+              .toBe(1);
+            if ((await retry.getAttribute('aria-busy')) === 'true') {
+              await retry.evaluate((node) =>
+                (node as HTMLAnchorElement).click(),
+              );
+              await retryPage.keyboard.press('Enter');
+            }
           }
           await wait(100);
           expect
@@ -1331,6 +1620,293 @@ test('repeatingTheSameSearchReplacesCardsAndResetsPagination', async () => {
   }
 }, 60000);
 
+test('errorSheetTracksSmallDragWithoutCountingScreenReaderOnlyContent', async () => {
+  const page = await openList();
+
+  try {
+    await page.emulateMedia({ reducedMotion: 'no-preference' });
+    failDetail = true;
+    await page.goto(origin + '/sheet-test-fixture');
+    const dialog = page.getByRole('dialog');
+    const handle = dialog.locator('button[aria-expanded]');
+    const hiddenHeading = dialog.locator('#article-detail-error');
+    await page.getByRole('link', { name: '다시 시도', exact: true }).waitFor();
+    expect(
+      await hiddenHeading.evaluate(
+        (element) => getComputedStyle(element).position,
+      ),
+      '오류 시트에는 일반 흐름 밖의 접근성 제목이 있음',
+    ).toBe('absolute');
+    await dialog.evaluate(async (element) => {
+      await Promise.all(
+        element
+          .getAnimations()
+          .map((animation) => animation.finished.catch(() => undefined)),
+      );
+    });
+    const start = await dialog.boundingBox();
+    const grip = await handle.boundingBox();
+    if (!start || !grip)
+      throw new Error('오류 시트 또는 핸들의 위치를 읽지 못함');
+    const x = grip.x + grip.width / 2;
+    const y = grip.y + grip.height / 2;
+    const waitForFrames = () =>
+      page.evaluate(
+        () =>
+          new Promise<void>((resolve) =>
+            requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+          ),
+      );
+
+    await page.mouse.move(x, y);
+    await page.mouse.down();
+    try {
+      await waitForFrames();
+      const pressed = await dialog.boundingBox();
+      if (!pressed) throw new Error('누른 직후 오류 시트의 위치를 읽지 못함');
+      expect
+        .soft(
+          Math.abs(pressed.height - start.height),
+          `누르기만 해서는 오류 시트 높이가 바뀌지 않아야 함: 시작 ${start.height}, 누른 후 ${pressed.height}`,
+        )
+        .toBeLessThan(2);
+      await page.mouse.move(x, y - 10, { steps: 2 });
+      await waitForFrames();
+      const moved = await dialog.boundingBox();
+      if (!moved) throw new Error('이동 중 오류 시트의 위치를 읽지 못함');
+      expect
+        .soft(
+          Math.abs(moved.height - (start.height + 10)),
+          `오류 시트는 10px 이동만큼 커져야 함: 시작 ${start.height}, 이동 후 ${moved.height}`,
+        )
+        .toBeLessThan(4);
+    } finally {
+      await page.mouse.up();
+    }
+  } finally {
+    failDetail = false;
+  }
+}, 60000);
+
+test('articleSheetStaysInViewportWhenResizedDuringDrag', async () => {
+  const savedDescription = article.article.description;
+
+  try {
+    article.article.description =
+      '회전 중 크기를 확인하는 긴 기사입니다. '.repeat(300);
+    const page = await openList();
+    await page.emulateMedia({ reducedMotion: 'no-preference' });
+    await page.goto(origin + '/sheet-test-fixture');
+
+    const dialog = page.getByRole('dialog');
+    const handle = dialog.locator('button[aria-expanded]');
+    await dialog
+      .getByRole('heading', { name: article.article.title, exact: true })
+      .waitFor();
+    await dialog.evaluate(async (element) => {
+      await Promise.all(
+        element
+          .getAnimations()
+          .map((animation) => animation.finished.catch(() => undefined)),
+      );
+    });
+    const grip = await handle.boundingBox();
+    if (!grip) throw new Error('핸들의 위치를 읽지 못함');
+    const x = grip.x + grip.width / 2;
+    const y = grip.y + grip.height / 2;
+    const waitForFrames = () =>
+      page.evaluate(
+        () =>
+          new Promise<void>((resolve) =>
+            requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+          ),
+      );
+
+    await page.mouse.move(x, y);
+    await page.mouse.down();
+    try {
+      await page.mouse.move(x, y - 120, { steps: 4 });
+      await waitForFrames();
+      const before = await dialog.boundingBox();
+      if (!before) throw new Error('회전 전 시트의 위치를 읽지 못함');
+      expect(
+        before.height,
+        '가로 화면보다 높은 시트를 드래그 중',
+      ).toBeGreaterThan(320);
+
+      await page.setViewportSize({ width: 852, height: 320 });
+      await waitForFrames();
+      const rotated = await dialog.boundingBox();
+      if (!rotated) throw new Error('회전 후 시트의 위치를 읽지 못함');
+      expect
+        .soft(
+          rotated.y,
+          `회전 직후 시트 상단이 화면 밖으로 나가면 안 됨: ${rotated.y}`,
+        )
+        .toBeGreaterThanOrEqual(0);
+
+      await page.mouse.move(x, y - 160, { steps: 4 });
+      await waitForFrames();
+      const continued = await dialog.boundingBox();
+      if (!continued)
+        throw new Error('회전 후 이동 중 시트의 위치를 읽지 못함');
+      expect
+        .soft(
+          continued.y,
+          `회전 후 계속 드래그해도 상단이 화면 안에 있어야 함: ${continued.y}`,
+        )
+        .toBeGreaterThanOrEqual(0);
+    } finally {
+      await page.mouse.up();
+    }
+  } finally {
+    article.article.description = savedDescription;
+  }
+}, 60000);
+
+test('articleSheetTracksSmallPointerMovement', async () => {
+  const savedDescription = article.article.description;
+
+  try {
+    article.article.description = '작은 이동을 확인하는 긴 기사입니다. '.repeat(
+      300,
+    );
+    const page = await openList();
+    await page.emulateMedia({ reducedMotion: 'no-preference' });
+    await page.goto(origin + '/sheet-test-fixture');
+
+    const dialog = page.getByRole('dialog');
+    const handle = dialog.locator('button[aria-expanded]');
+    await dialog
+      .getByRole('heading', { name: article.article.title, exact: true })
+      .waitFor();
+    await dialog.evaluate(async (element) => {
+      await Promise.all(
+        element
+          .getAnimations()
+          .map((animation) => animation.finished.catch(() => undefined)),
+      );
+    });
+
+    const start = await dialog.boundingBox();
+    const grip = await handle.boundingBox();
+    if (!start || !grip) throw new Error('시트 또는 핸들의 위치를 읽지 못함');
+    const x = grip.x + grip.width / 2;
+    const y = grip.y + grip.height / 2;
+
+    await page.mouse.move(x, y);
+    await page.mouse.down();
+    try {
+      const waitForFrames = () =>
+        page.evaluate(
+          () =>
+            new Promise<void>((resolve) =>
+              requestAnimationFrame(() =>
+                requestAnimationFrame(() => resolve()),
+              ),
+            ),
+        );
+      await waitForFrames();
+      const pressed = await dialog.boundingBox();
+      if (!pressed) throw new Error('누른 직후 시트의 위치를 읽지 못함');
+      const motion = await dialog.evaluate((element) => ({
+        transition: getComputedStyle(element).transitionProperty,
+        running: element
+          .getAnimations()
+          .filter((animation) => animation.playState === 'running').length,
+      }));
+      expect
+        .soft(
+          Math.abs(pressed.y - start.y),
+          `핸들을 누르기만 해서는 위치가 바뀌지 않아야 함: 시작 ${start.y}, 누른 후 ${pressed.y}, 전환 ${motion.transition}, 동작 중 ${motion.running}`,
+        )
+        .toBeLessThan(2);
+
+      await page.mouse.move(x, y - 10, { steps: 2 });
+      await waitForFrames();
+      const moved = await dialog.boundingBox();
+      if (!moved) throw new Error('이동 중 시트의 위치를 읽지 못함');
+      expect
+        .soft(
+          Math.abs(moved.y - (start.y - 10)),
+          `핸들을 놓기 전 10px 이동에도 시트가 따라와야 함: 시작 ${start.y}, 이동 후 ${moved.y}`,
+        )
+        .toBeLessThan(4);
+    } finally {
+      await page.mouse.up();
+    }
+  } finally {
+    article.article.description = savedDescription;
+  }
+}, 60000);
+
+test('articleSheetFollowsPointerBeforeRelease', async () => {
+  const savedDescription = article.article.description;
+
+  try {
+    article.article.description =
+      '드래그 검증을 위한 긴 기사 요약입니다. '.repeat(300);
+    const page = await openList();
+    await page.goto(origin + '/sheet-test-fixture');
+
+    const dialog = page.getByRole('dialog');
+    const handle = dialog.locator('button[aria-expanded]');
+    await dialog
+      .getByRole('heading', { name: article.article.title, exact: true })
+      .waitFor();
+    await dialog.evaluate(async (element) => {
+      await Promise.all(
+        element
+          .getAnimations()
+          .map((animation) => animation.finished.catch(() => undefined)),
+      );
+    });
+
+    const start = await dialog.boundingBox();
+    const grip = await handle.boundingBox();
+    if (!start || !grip) throw new Error('시트 또는 핸들의 위치를 읽지 못함');
+    const x = grip.x + grip.width / 2;
+    const y = grip.y + grip.height / 2;
+    const nextFrames = () =>
+      page.evaluate(
+        () =>
+          new Promise<void>((resolve) =>
+            requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+          ),
+      );
+
+    await page.mouse.move(x, y);
+    await page.mouse.down();
+    try {
+      await page.mouse.move(x, y - 40, { steps: 4 });
+      await nextFrames();
+      const first = await dialog.boundingBox();
+      if (!first) throw new Error('첫 이동 중 시트의 위치를 읽지 못함');
+      expect
+        .soft(
+          Math.abs(first.y - (start.y - 40)),
+          '핸들을 놓기 전 40px 이동에 시트가 따라와야 함',
+        )
+        .toBeLessThan(8);
+
+      await page.mouse.move(x, y - 80, { steps: 4 });
+      await nextFrames();
+      const second = await dialog.boundingBox();
+      if (!second) throw new Error('두 번째 이동 중 시트의 위치를 읽지 못함');
+      expect
+        .soft(
+          Math.abs(second.y - (start.y - 80)),
+          '핸들을 놓기 전 80px 이동에 시트가 따라와야 함',
+        )
+        .toBeLessThan(8);
+    } finally {
+      await page.mouse.up();
+    }
+  } finally {
+    article.article.description = savedDescription;
+  }
+}, 60000);
+
 test('normalArticleSheetsStartHalfAndDragNearTopWithSheetOnlyAiDisclosure', async () => {
   const savedDescription = article.article.description;
   const openSheetSource = async () => {
@@ -1388,7 +1964,7 @@ test('normalArticleSheetsStartHalfAndDragNearTopWithSheetOnlyAiDisclosure', asyn
       const heights: number[] = [];
       for (const description of [
         '짧은 기사 요약입니다.',
-        '동네 소식과 안전 안내를 확인해 주세요. '.repeat(10),
+        '동네 소식과 안전 안내를 확인해 주세요. '.repeat(120),
       ]) {
         article.article.description = description;
         const page =
@@ -1413,34 +1989,69 @@ test('normalArticleSheetsStartHalfAndDragNearTopWithSheetOnlyAiDisclosure', asyn
         await page
           .getByRole('heading', { name: article.article.title, exact: true })
           .waitFor();
-        const geometry = await size(page);
-        heights.push(geometry.height);
+        const detail = page.locator('[data-article-inline]');
+        await detail.waitFor({ state: 'visible', timeout: 5000 });
+        await detail
+          .getByRole('heading', { name: article.article.title, exact: true })
+          .waitFor();
         expect
           .soft(
-            await page.getByRole('dialog').getAttribute('data-expanded'),
-            entry + ' 기본은 접힘',
+            await page.getByRole('dialog').count(),
+            entry + ' 전체 상세 페이지',
           )
-          .toBe('false');
+          .toBe(0);
         expect
-          .soft(
-            Math.abs(
-              geometry.height -
-                Math.min(geometry.natural, geometry.viewport * 0.5352),
-            ),
-            entry + ' 기본은 내용 높이와 Figma 절반 상한',
-          )
-          .toBeLessThan(2);
-        expect
-          .soft(geometry.bottom, entry + ' 화면 아래 정렬')
-          .toBeCloseTo(geometry.viewport, 0);
+          .soft(await detail.textContent(), entry + ' 기사 본문 유지')
+          .toContain(description);
+        heights.push(
+          await page.evaluate(() => document.documentElement.scrollHeight),
+        );
         const context = page.context();
         contexts.splice(contexts.indexOf(context), 1);
         await context.close();
       }
       expect
-        .soft(heights[1], entry + ' 기본 상태도 내용이 짧으면 작게 열림')
+        .soft(heights[1], entry + ' 본문 길이에 따라 페이지가 늘어남')
         .toBeGreaterThan(heights[0] + 20);
     }
+
+    const sheetHeights: number[] = [];
+    for (const description of [
+      '짧은 기사 요약입니다.',
+      '동네 소식과 안전 안내를 확인해 주세요. '.repeat(10),
+    ]) {
+      article.article.description = description;
+      const page = await openList();
+      await page.emulateMedia({ reducedMotion: 'reduce' });
+      await page.goto(origin + '/sheet-test-fixture');
+      const sheet = page.getByRole('dialog');
+      await sheet
+        .getByRole('heading', { name: article.article.title, exact: true })
+        .waitFor();
+      const geometry = await size(page);
+      sheetHeights.push(geometry.height);
+      expect
+        .soft(await sheet.getAttribute('data-expanded'), '미리보기 기본은 접힘')
+        .toBe('false');
+      expect
+        .soft(
+          Math.abs(
+            geometry.height -
+              Math.min(geometry.natural, geometry.viewport * 0.5352),
+          ),
+          '미리보기는 내용 높이와 절반 상한',
+        )
+        .toBeLessThan(2);
+      expect
+        .soft(geometry.bottom, '미리보기는 화면 아래 정렬')
+        .toBeCloseTo(geometry.viewport, 0);
+      const context = page.context();
+      contexts.splice(contexts.indexOf(context), 1);
+      await context.close();
+    }
+    expect
+      .soft(sheetHeights[1], '내용이 짧으면 높이가 내용에 맞게 늘어남')
+      .toBeGreaterThan(sheetHeights[0] + 20);
 
     imageEnabled = true;
     article.article.description = '이미지 안내 위치를 확인하는 기사입니다.';
@@ -1458,7 +2069,7 @@ test('normalArticleSheetsStartHalfAndDragNearTopWithSheetOnlyAiDisclosure', asyn
     await images
       .getByRole('link', { name: article.article.title, exact: true })
       .click();
-    const detail = images.getByRole('dialog');
+    const detail = images.locator('[data-article-inline]');
     await detail
       .getByRole('heading', { name: article.article.title, exact: true })
       .waitFor();
@@ -1466,7 +2077,7 @@ test('normalArticleSheetsStartHalfAndDragNearTopWithSheetOnlyAiDisclosure', asyn
     await photo.evaluate((element) => (element as HTMLImageElement).decode());
     const caption = detail.locator('figcaption');
     expect
-      .soft((await caption.textContent())?.trim(), '시트에서만 정확한 AI 안내')
+      .soft((await caption.textContent())?.trim(), '상세의 정확한 AI 안내')
       .toBe('AI로 생성된 이미지입니다.');
     const photoBox = await photo.boundingBox(),
       captionBox = await caption.boundingBox();
@@ -1480,11 +2091,9 @@ test('normalArticleSheetsStartHalfAndDragNearTopWithSheetOnlyAiDisclosure', asyn
 
     article.article.description =
       '긴 본문을 읽고 안전 안내를 확인해 주세요. '.repeat(300);
-    const page = await openSheetSource();
+    const page = await openList();
     await page.emulateMedia({ reducedMotion: 'reduce' });
-    await page
-      .getByRole('link', { name: article.article.title, exact: true })
-      .click();
+    await page.goto(origin + '/sheet-test-fixture');
     const dialog = page.getByRole('dialog');
     await dialog
       .getByRole('heading', { name: article.article.title, exact: true })
@@ -1538,15 +2147,2111 @@ test('normalArticleSheetsStartHalfAndDragNearTopWithSheetOnlyAiDisclosure', asyn
     expect.soft(compact.readingHeight).toBeGreaterThan(24);
     await share.scrollIntoViewIfNeeded();
     expect.soft(await share.isVisible(), '작은 화면 공유 접근').toBe(true);
-    await dialog.getByRole('link', { name: '닫기', exact: true }).click();
+    await dialog.getByRole('button', { name: '닫기', exact: true }).click();
     await expect.poll(() => page.getByRole('dialog').count()).toBe(0);
     expect
       .soft(
-        await page.locator('[data-article-background]').getAttribute('inert'),
+        await page
+          .locator('[data-article-background]')
+          .first()
+          .getAttribute('inert'),
       )
       .toBeNull();
   } finally {
     imageEnabled = false;
     article.article.description = savedDescription;
+  }
+}, 60000);
+
+test('articleSheetClickAndKeyboardAnimateBetweenMeasuredHeights', async () => {
+  const savedDescription = article.article.description;
+  const page = await openList();
+  try {
+    await page.emulateMedia({ reducedMotion: 'no-preference' });
+    for (const [index, description] of [
+      '짧은 기사입니다.',
+      '긴 기사를 읽어요. '.repeat(300),
+    ].entries()) {
+      article.article.description = description;
+      await page.goto(origin + '/sheet-test-fixture');
+      const sheet = page.getByRole('dialog');
+      const handle = sheet.locator('button[aria-expanded]');
+      await sheet
+        .getByRole('heading', { name: article.article.title, exact: true })
+        .waitFor();
+      await sheet.evaluate(async (element) => {
+        await Promise.all(
+          element
+            .getAnimations()
+            .map((animation) => animation.finished.catch(() => undefined)),
+        );
+      });
+      const initial = (await sheet.boundingBox())!.height;
+      const observe = async (activate: () => Promise<unknown>) => {
+        await page.evaluate(() => {
+          const element =
+            document.querySelector<HTMLElement>('[role="dialog"]')!;
+          const button = element.querySelector<HTMLButtonElement>(
+            'button[aria-expanded]',
+          )!;
+          const state = { heights: [] as number[], runs: 0, done: false };
+          (window as unknown as { motionState: typeof state }).motionState =
+            state;
+          element.addEventListener('transitionrun', (event) => {
+            if (
+              event.target === element &&
+              (event as TransitionEvent).propertyName === 'height'
+            )
+              state.runs++;
+          });
+          button.addEventListener(
+            'click',
+            () => {
+              const started = performance.now();
+              const sample = (time: number) => {
+                state.heights.push(element.getBoundingClientRect().height);
+                if (time - started < 400) requestAnimationFrame(sample);
+                else state.done = true;
+              };
+              requestAnimationFrame(sample);
+            },
+            { once: true },
+          );
+        });
+        await activate();
+        await page.waitForFunction(
+          () =>
+            (window as unknown as { motionState: { done: boolean } })
+              .motionState?.done,
+        );
+        return page.evaluate(
+          () =>
+            (
+              window as unknown as {
+                motionState: { heights: number[]; runs: number };
+              }
+            ).motionState,
+        );
+      };
+      const assertMotion = (
+        samples: number[],
+        from: number,
+        to: number,
+        label: string,
+      ) => {
+        const low = Math.min(from, to),
+          high = Math.max(from, to);
+        expect(high - low, label + '은 실제로 다른 높이').toBeGreaterThan(50);
+        expect(
+          samples.some((height) => height > low + 2 && height < high - 2),
+          label + ' 중간 프레임',
+        ).toBe(true);
+      };
+      await handle.focus();
+      const expanding = await observe(() =>
+        index === 0 ? handle.click() : page.keyboard.press('Enter'),
+      );
+      const expanded = (await sheet.boundingBox())!.height;
+      expect(expanding.runs, '마우스 확장 높이 전환').toBeGreaterThan(0);
+      expect(await sheet.getAttribute('data-expanded')).toBe('true');
+      assertMotion(expanding.heights, initial, expanded, '확장');
+      expect(expanded).toBeCloseTo(852 - 49, 0);
+      await handle.focus();
+      const collapsing = await observe(() =>
+        index === 0 ? page.keyboard.press('Enter') : handle.click(),
+      );
+      const collapsed = (await sheet.boundingBox())!.height;
+      expect(collapsing.runs, '키보드 접기 높이 전환').toBeGreaterThan(0);
+      expect(await sheet.getAttribute('data-expanded')).toBe('false');
+      assertMotion(collapsing.heights, expanded, collapsed, '접기');
+      expect(
+        Math.abs(collapsed - initial),
+        '짧은 본문은 원래 내용 높이로',
+      ).toBeLessThan(2);
+      expect(
+        await sheet
+          .locator('button[aria-expanded]')
+          .evaluate((node) => node === document.activeElement),
+      ).toBe(true);
+    }
+  } finally {
+    article.article.description = savedDescription;
+  }
+}, 60000);
+
+test('articleSheetToggleKeepsBoundsOnResizeAndRespectsReducedMotion', async () => {
+  const page = await openList();
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
+  await page.goto(origin + '/sheet-test-fixture');
+  const sheet = page.getByRole('dialog');
+  const handle = sheet.locator('button[aria-expanded]');
+  await sheet
+    .getByRole('heading', { name: article.article.title, exact: true })
+    .waitFor();
+  await sheet.evaluate(async (element) => {
+    await Promise.all(
+      element
+        .getAnimations()
+        .map((animation) => animation.finished.catch(() => undefined)),
+    );
+  });
+  await handle.click();
+  await page.setViewportSize({ width: 320, height: 320 });
+  const waitForFrames = () =>
+    page.evaluate(
+      () =>
+        new Promise<void>((resolve) =>
+          requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+        ),
+    );
+  await waitForFrames();
+  const resized = await sheet.boundingBox();
+  expect(resized).not.toBeNull();
+  expect(
+    resized!.y,
+    '확장 중 회전해도 화면 위로 벗어나지 않음',
+  ).toBeGreaterThanOrEqual(0);
+  expect(
+    resized!.height,
+    '확장 중 회전해도 화면 높이를 넘지 않음',
+  ).toBeLessThanOrEqual(320);
+  expect(await sheet.getAttribute('data-expanded')).toBe('true');
+
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await handle.focus();
+  await page.keyboard.press('Space');
+  await waitForFrames();
+  const collapsed = await sheet.boundingBox();
+  expect(collapsed).not.toBeNull();
+  expect(collapsed!.height, '모션 축소 시 즉시 접힘').toBeLessThanOrEqual(
+    320 * 0.5352 + 1,
+  );
+  expect(await sheet.getAttribute('data-expanded')).toBe('false');
+  expect(
+    await sheet.evaluate(
+      (element) =>
+        element
+          .getAnimations()
+          .filter(
+            (animation) =>
+              animation instanceof CSSTransition &&
+              animation.transitionProperty === 'height',
+          ).length,
+    ),
+    '모션 축소에서는 높이 전환 없음',
+  ).toBe(0);
+  expect(
+    await handle.evaluate((element) => element === document.activeElement),
+  ).toBe(true);
+  await page.keyboard.press('Enter');
+  await waitForFrames();
+  const expanded = await sheet.boundingBox();
+  expect(expanded!.height, '모션 축소 시 즉시 확장').toBeCloseTo(320 - 49, 0);
+  expect(await sheet.getAttribute('data-expanded')).toBe('true');
+  expect(
+    await sheet.evaluate(
+      (element) =>
+        element
+          .getAnimations()
+          .filter(
+            (animation) =>
+              animation instanceof CSSTransition &&
+              animation.transitionProperty === 'height',
+          ).length,
+    ),
+  ).toBe(0);
+}, 60000);
+
+test('reportLayoutKeepsControlsReadableAndReachableOnSmallScreens', async () => {
+  const context = await browser!.newContext({
+    viewport: { width: 320, height: 568 },
+    deviceScaleFactor: 2,
+  });
+  contexts.push(context);
+  await context.route('https://reports.example.test/reports', (route) => {
+    const headers = {
+      'Access-Control-Allow-Origin': origin,
+      'Access-Control-Allow-Methods': 'POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Idempotency-Key, Content-Type',
+    };
+    if (route.request().method() === 'OPTIONS')
+      return route.fulfill({ status: 204, headers });
+    return route.fulfill({
+      status: 201,
+      headers,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        report_id: 'a'.repeat(32),
+        status: 'pending',
+        received_at: '2026-10-13T05:00:00Z',
+      }),
+    });
+  });
+  const page = await context.newPage();
+  await page.goto(origin + '/report');
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+  ).toBe(true);
+
+  const fields = [
+    page.getByLabel('카테고리 선택', { exact: true }),
+    page.getByLabel('발생 날짜 및 시간 (한국시간)', { exact: true }),
+    page.getByLabel('제보 제목', { exact: true }),
+    page.getByLabel('발생 위치', { exact: true }),
+  ];
+  const description = page.getByLabel('상세내용', { exact: true });
+  const attachment = page.getByLabel('사진/동영상 첨부', { exact: true });
+  const upload = attachment.locator('..');
+  const size = async (element: (typeof fields)[number]) =>
+    element.evaluate((node) => {
+      const bounds = node.getBoundingClientRect();
+      const style = getComputedStyle(node);
+      return {
+        height: bounds.height,
+        radius: Number.parseFloat(style.borderTopLeftRadius),
+        border: Number.parseFloat(style.borderTopWidth),
+      };
+    });
+
+  for (const field of fields) {
+    const geometry = await size(field);
+    expect(geometry.height).toBeCloseTo(44, 0);
+    expect(geometry.radius).toBeCloseTo(12, 0);
+    // Chromium can round a half-pixel border according to device scale.
+    expect(geometry.border).toBeGreaterThanOrEqual(1);
+    expect(geometry.border).toBeLessThanOrEqual(1.5);
+  }
+  expect((await size(description)).height).toBeCloseTo(100, 0);
+  expect((await size(upload)).height).toBeCloseTo(110, 0);
+  const plus = upload.locator('[aria-hidden="true"]');
+  expect((await plus.textContent())?.trim()).toBe('+');
+  expect(
+    await plus.evaluate((node) =>
+      Number.parseFloat(getComputedStyle(node).fontSize),
+    ),
+  ).toBe(26);
+
+  // A focused control must be inside the visible area and above the sticky
+  // submit bar. Inspect the center hit target as well as its bounding box.
+  await page.getByRole('link', { name: '제보 닫기' }).focus();
+  for (const field of [...fields, description, attachment]) {
+    // Native datetime controls may expose several keyboard segments.
+    for (let attempt = 0; attempt < 10; attempt++) {
+      await page.keyboard.press('Tab');
+      if (await field.evaluate((node) => document.activeElement === node))
+        break;
+    }
+    await expect
+      .poll(async () =>
+        field.evaluate((node) => {
+          const rect = node.getBoundingClientRect();
+          const header = document
+            .querySelector('header')
+            ?.getBoundingClientRect();
+          const submit = document
+            .querySelector<HTMLButtonElement>('button[type="submit"]')
+            ?.getBoundingClientRect();
+          const hit = document.elementFromPoint(
+            rect.left + rect.width / 2,
+            rect.top + rect.height / 2,
+          );
+          return {
+            name: node.getAttribute('name'),
+            focused: document.activeElement === node,
+            headerClear: rect.top >= (header?.bottom ?? 0),
+            footerClear: rect.bottom <= (submit?.top ?? window.innerHeight),
+            hit: hit === node || node.contains(hit),
+          };
+        }),
+      )
+      .toEqual({
+        name: await field.getAttribute('name'),
+        focused: true,
+        headerClear: true,
+        footerClear: true,
+        hit: true,
+      });
+  }
+
+  await fields[0].selectOption('society');
+  await fields[1].fill('2026-10-13T14:00');
+  await fields[2].fill('확인용 제목');
+  await fields[3].fill('서울');
+  await description.fill('확인용 본문');
+  await page.getByRole('button', { name: '제보 접수' }).click();
+  const heading = page.getByRole('heading', { name: '제보가 완료되었습니다' });
+  await heading.waitFor();
+  await expect
+    .poll(async () =>
+      heading.evaluate((node) => document.activeElement === node),
+    )
+    .toBe(true);
+  const check = page.locator('[role="status"] [aria-hidden="true"]');
+  const checkSize = await check.evaluate((node) => {
+    const box = node.getBoundingClientRect();
+    return {
+      width: box.width,
+      height: box.height,
+      font: Number.parseFloat(getComputedStyle(node).fontSize),
+    };
+  });
+  expect(checkSize).toEqual({ width: 78, height: 78, font: 38 });
+  expect(
+    await page.getByText('접수번호:', { exact: false }).textContent(),
+  ).toContain('a'.repeat(32));
+}, 120000);
+// Append to proxy-navigation.test.ts, which provides a test-only Next server
+// and an isolated headless browser context.
+test('recentSearchChipsScrollAndRemainKeyboardAccessible', async () => {
+  const context = await browser!.newContext({
+    viewport: { width: 320, height: 568 },
+  });
+  contexts.push(context);
+  const terms = [
+    '서울 소방서',
+    '서교동 화재',
+    '강남역',
+    '싱크홀',
+    '북한 무인기',
+    '아주 길게 입력한 최근 검색어 확인 예시',
+  ];
+  await context.addInitScript((keywords) => {
+    localStorage.setItem('hh:recent-searches:v1', JSON.stringify(keywords));
+  }, terms);
+  const page = await context.newPage();
+  await page.goto(origin + '/search');
+
+  const section = page.getByRole('region', { name: '최근 검색' });
+  const chips = section.locator('li');
+  await expect.poll(() => chips.count()).toBe(terms.length);
+  const horizontal = await section.locator('ul').evaluate((list) => {
+    const items = Array.from(list.querySelectorAll('li'));
+    const first = items[0].getBoundingClientRect();
+    const second = items[1].getBoundingClientRect();
+    return {
+      overflow: list.scrollWidth > list.clientWidth,
+      sameRow: Math.abs(first.top - second.top) < 1,
+      ordered: first.right < second.left,
+    };
+  });
+  expect(horizontal).toEqual({ overflow: true, sameRow: true, ordered: true });
+
+  const firstLink = section.getByRole('link', { name: terms[0], exact: true });
+  expect(await firstLink.getAttribute('href')).toBe(
+    '/search?q=' + encodeURIComponent(terms[0]),
+  );
+  await firstLink.focus();
+  await page.keyboard.press('Tab');
+  const firstDelete = section.getByRole('button', {
+    name: terms[0] + ' 삭제',
+    exact: true,
+  });
+  expect(
+    await firstDelete.evaluate((node) => document.activeElement === node),
+  ).toBe(true);
+  const visibleHitTarget = async (button: typeof firstDelete) =>
+    button.evaluate((node) => {
+      const rect = node.getBoundingClientRect();
+      const clip = node.closest('ul')!.getBoundingClientRect();
+      const hit = document.elementFromPoint(
+        rect.left + rect.width / 2,
+        rect.top + rect.height / 2,
+      );
+      return (
+        rect.width >= 32 &&
+        rect.height >= 32 &&
+        rect.left >= clip.left &&
+        rect.right <= clip.right &&
+        rect.top >= clip.top &&
+        rect.bottom <= clip.bottom &&
+        (hit === node || node.contains(hit))
+      );
+    });
+  expect(await visibleHitTarget(firstDelete)).toBe(true);
+
+  const lastLink = section.getByRole('link', {
+    name: terms.at(-1),
+    exact: true,
+  });
+  await lastLink.focus();
+  await expect
+    .poll(() => section.locator('ul').evaluate((list) => list.scrollLeft))
+    .toBeGreaterThan(0);
+  await page.keyboard.press('Tab');
+  const lastDelete = section.getByRole('button', {
+    name: terms.at(-1) + ' 삭제',
+    exact: true,
+  });
+  expect(
+    await lastDelete.evaluate((node) => document.activeElement === node),
+  ).toBe(true);
+  expect(await visibleHitTarget(lastDelete)).toBe(true);
+  await page.keyboard.press('Enter');
+  await expect.poll(() => chips.count()).toBe(terms.length - 1);
+  expect(
+    await page.evaluate(() =>
+      JSON.parse(localStorage.getItem('hh:recent-searches:v1') ?? '[]'),
+    ),
+  ).toEqual(terms.slice(0, -1));
+}, 120000);
+
+test('reportAttachmentTilesAreHorizontalAndKeepAccessibleFileControls', async () => {
+  const png = await readFile(join(process.cwd(), 'src/app/icon.png'));
+  const file = (name: string) => ({ name, mimeType: 'image/png', buffer: png });
+  for (const width of [320, 393]) {
+    const page = await openList(width);
+    try {
+      await page.goto(origin + '/report');
+      const input = page.locator('input[type="file"]');
+      await input.setInputFiles([file('one.png'), file('two.png')]);
+      const first = page.getByRole('button', {
+        name: 'one.png 삭제',
+        exact: true,
+      });
+      const second = page.getByRole('button', {
+        name: 'two.png 삭제',
+        exact: true,
+      });
+      await first.waitFor();
+      await second.waitFor();
+      const previews = page.locator('form ul li img[src^="blob:"]');
+      await expect.poll(() => previews.count()).toBe(2);
+      await previews.first().waitFor({ state: 'visible' });
+      await previews.last().waitFor({ state: 'visible' });
+      const boxes = await previews.evaluateAll((nodes) =>
+        nodes.map((node) => {
+          const rect = node.getBoundingClientRect();
+          return {
+            x: rect.x,
+            y: rect.y,
+            width: rect.width,
+            height: rect.height,
+          };
+        }),
+      );
+      expect(boxes[0].width).toBeCloseTo(76, 0);
+      expect(boxes[0].height).toBeCloseTo(76, 0);
+      expect(boxes[1].width).toBeCloseTo(76, 0);
+      expect(boxes[1].height).toBeCloseTo(76, 0);
+      expect(boxes[1].y).toBeCloseTo(boxes[0].y, 0);
+      expect(boxes[1].x).toBeGreaterThanOrEqual(boxes[0].x + boxes[0].width);
+      await page.getByText('2 / 3', { exact: true }).waitFor();
+      expect(
+        await page.getByLabel('첨부파일 추가', { exact: true }).count(),
+      ).toBe(1);
+      await first.click();
+      expect(await second.isVisible()).toBe(true);
+      await page.getByText('1 / 3', { exact: true }).waitFor();
+      await input.setInputFiles([file('three.png'), file('four.png')]);
+      await page.getByText('3 / 3', { exact: true }).waitFor();
+      expect(await second.isVisible()).toBe(true);
+      expect(
+        await page
+          .getByRole('button', { name: 'three.png 삭제', exact: true })
+          .isVisible(),
+      ).toBe(true);
+      expect(
+        await page
+          .getByRole('button', { name: 'four.png 삭제', exact: true })
+          .isVisible(),
+      ).toBe(true);
+      expect(await input.isDisabled()).toBe(true);
+    } finally {
+      await page.close();
+    }
+  }
+}, 120000);
+
+test('reportFieldFocusAndErrorsRemainAccessible', async () => {
+  const context = await browser!.newContext({
+    viewport: { width: 320, height: 568 },
+  });
+  contexts.push(context);
+  const page = await context.newPage();
+  let posts = 0;
+  page.on('request', (request) => {
+    if (
+      request.method() === 'POST' &&
+      new URL(request.url()).pathname === '/reports'
+    )
+      posts++;
+  });
+  await page.goto(origin + '/report');
+  const fields = [
+    page.getByLabel('카테고리 선택', { exact: true }),
+    page.getByLabel('발생 날짜 및 시간 (한국시간)', { exact: true }),
+    page.getByLabel('제보 제목', { exact: true }),
+    page.getByLabel('발생 위치', { exact: true }),
+    page.getByLabel('상세내용', { exact: true }),
+  ];
+  const attachment = page.getByLabel('사진/동영상 첨부', { exact: true });
+  const upload = attachment.locator('..');
+  await page.getByRole('link', { name: '제보 닫기' }).focus();
+  await page.keyboard.press('Tab');
+  expect(
+    await fields[0].evaluate((node) => document.activeElement === node),
+  ).toBe(true);
+  expect(
+    await fields[0].evaluate((node) => {
+      const style = getComputedStyle(node);
+      return (
+        style.outlineStyle !== 'none' && parseFloat(style.outlineWidth) >= 2
+      );
+    }),
+  ).toBe(true);
+
+  for (const field of fields) {
+    await field.focus();
+    expect(await field.getAttribute('aria-invalid')).toBeNull();
+    const focus = await field.evaluate((node) => {
+      const style = getComputedStyle(node);
+      return { border: style.borderTopColor, shadow: style.boxShadow };
+    });
+    expect(focus.border).toBe('rgb(234, 26, 45)');
+    expect(focus.shadow).not.toBe('none');
+  }
+  await attachment.focus();
+  expect(
+    await upload.evaluate((node) => getComputedStyle(node).borderTopColor),
+  ).toBe('rgb(234, 26, 45)');
+
+  await page.getByRole('button', { name: '제보 접수', exact: true }).click();
+  for (const field of fields) {
+    expect(await field.getAttribute('aria-invalid')).toBe('true');
+    const error = await field.evaluate((node) => {
+      const id = node.getAttribute('aria-describedby');
+      const style = getComputedStyle(node);
+      return {
+        message: id ? document.getElementById(id)?.textContent : null,
+        border: style.borderTopColor,
+        background: style.backgroundColor,
+      };
+    });
+    expect(error.message).toContain('필수 항목이에요');
+    expect(error.border).toBe('rgb(234, 26, 45)');
+    expect(error.background).toBe('rgb(255, 245, 245)');
+  }
+  expect(posts).toBe(0);
+
+  await attachment.setInputFiles({
+    name: '허용되지않음.svg',
+    mimeType: 'image/svg+xml',
+    buffer: Buffer.from('<svg/>'),
+  });
+  expect(await attachment.getAttribute('aria-invalid')).toBe('true');
+  const attachmentError = await attachment.evaluate((node) => {
+    const id = node.getAttribute('aria-describedby');
+    const parent = node.parentElement!;
+    const style = getComputedStyle(parent);
+    return {
+      message: id ? document.getElementById(id)?.textContent : null,
+      border: style.borderTopColor,
+      background: style.backgroundColor,
+    };
+  });
+  expect(attachmentError.message).toContain('JPEG');
+  expect(attachmentError.border).toBe('rgb(234, 26, 45)');
+  expect(attachmentError.background).toBe('rgb(255, 245, 245)');
+  expect(posts).toBe(0);
+}, 120000);
+// Append to proxy-navigation.test.ts: uses its isolated Next server and browser.
+test('searchInputCanClearDraftAndSubmitAfterComposition', async () => {
+  const context = await browser!.newContext({
+    viewport: { width: 320, height: 568 },
+  });
+  contexts.push(context);
+  const page = await context.newPage();
+  await page.goto(origin + '/search');
+
+  const form = page.locator('form[action="/search"]');
+  const input = page.getByRole('searchbox', { name: '기사 키워드 검색' });
+  const formHeight = await form.evaluate(
+    (element) => element.getBoundingClientRect().height,
+  );
+  expect(formHeight).toBeCloseTo(44, 0);
+  expect((await form.getAttribute('method'))?.toLowerCase()).toBe('get');
+
+  await input.fill('서울 & 화재');
+  const clearDraft = page.getByRole('button', {
+    name: '검색어 초기화',
+    exact: true,
+  });
+  await clearDraft.click();
+  expect(await input.inputValue()).toBe('');
+  expect(
+    await input.evaluate((element) => document.activeElement === element),
+  ).toBe(true);
+  expect(
+    await page.getByRole('button', { name: '검색어 초기화' }).count(),
+  ).toBe(0);
+
+  await input.fill('한글 화재');
+  await input.evaluate((element: HTMLInputElement) => {
+    element.dispatchEvent(
+      new CompositionEvent('compositionstart', { bubbles: true }),
+    );
+    element.form!.requestSubmit();
+  });
+  expect(new URL(page.url()).searchParams.has('q')).toBe(false);
+  await input.evaluate((element) =>
+    element.dispatchEvent(
+      new CompositionEvent('compositionend', { bubbles: true }),
+    ),
+  );
+  await input.press('Enter');
+  await page.waitForURL(
+    (url) =>
+      url.pathname === '/search' && url.searchParams.get('q') === '한글 화재',
+  );
+  expect(
+    await page
+      .getByRole('searchbox', { name: '기사 키워드 검색' })
+      .inputValue(),
+  ).toBe('한글 화재');
+  const reset = page.getByRole('link', { name: '검색어 초기화', exact: true });
+  expect(await reset.getAttribute('href')).toBe('/search');
+
+  // Clearing an edited field on a results page must retain the original
+  // navigation back to the initial search screen.
+  await input.fill('');
+  expect(await reset.count()).toBe(1);
+  await input.fill('두 번째 검색');
+  await input.press('Enter');
+  await page.waitForURL(
+    (url) =>
+      url.pathname === '/search' &&
+      url.searchParams.get('q') === '두 번째 검색',
+  );
+  expect(await input.inputValue()).toBe('두 번째 검색');
+  await page.goBack();
+  await page.waitForURL(
+    (url) =>
+      url.pathname === '/search' && url.searchParams.get('q') === '한글 화재',
+  );
+  await expect.poll(() => input.inputValue()).toBe('한글 화재');
+
+  await reset.click();
+  await page.waitForURL((url) => url.pathname === '/search' && !url.search);
+  expect(await input.inputValue()).toBe('');
+
+  const noJsContext = await browser!.newContext({ javaScriptEnabled: false });
+  contexts.push(noJsContext);
+  const noJs = await noJsContext.newPage();
+  await noJs.goto(origin + '/search');
+  await noJs
+    .getByRole('searchbox', { name: '기사 키워드 검색' })
+    .fill('서울 & 화재');
+  await noJs.getByRole('button', { name: '검색', exact: true }).click();
+  await noJs.waitForURL(
+    (url) =>
+      url.pathname === '/search' && url.searchParams.get('q') === '서울 & 화재',
+  );
+}, 120000);
+
+test('detailCloseIconKeepsAccessibleHitTargetAndReturnsToMap', async () => {
+  for (const entry of ['list', 'direct']) {
+    const page = await openList();
+
+    if (entry === 'list') {
+      await page
+        .getByRole('link', { name: article.article.title, exact: true })
+        .click();
+    } else {
+      await page.goto(origin + '/incidents/' + id);
+    }
+
+    const detail = page.locator('[data-article-inline]');
+    await detail
+      .getByRole('heading', { level: 1, name: article.article.title })
+      .waitFor();
+    const close = detail.getByRole('link', { name: '닫기', exact: true });
+    const icon = close.locator('img');
+    expect(await close.getAttribute('href')).toBe('/');
+    expect(await icon.getAttribute('alt')).toBe('');
+    expect(await icon.getAttribute('src')).toBe(
+      '/article-detail/header-close.svg',
+    );
+    const geometry = await close.evaluate((node) => {
+      const link = node.getBoundingClientRect();
+      const img = node.querySelector('img')!.getBoundingClientRect();
+      const hit = document.elementFromPoint(
+        link.left + link.width / 2,
+        link.top + link.height / 2,
+      );
+      return {
+        width: link.width,
+        height: link.height,
+        iconWidth: img.width,
+        iconHeight: img.height,
+        hit: hit === node || node.contains(hit),
+      };
+    });
+    expect(geometry.width).toBeGreaterThanOrEqual(44);
+    expect(geometry.height).toBeGreaterThanOrEqual(44);
+    expect(geometry.iconWidth).toBeCloseTo(24, 0);
+    expect(geometry.iconHeight).toBeCloseTo(24, 0);
+    expect(geometry.hit).toBe(true);
+    await close.focus();
+    expect(
+      await close.evaluate((node) => node === document.activeElement),
+    ).toBe(true);
+    await Promise.all([
+      page.waitForURL((url) => url.pathname === '/'),
+      close.click(),
+    ]);
+    await page.close();
+  }
+}, 120000);
+
+test('articleDocumentReadsOnceAndOmitsUnexpectedUpstreamFields', async () => {
+  const before = detailRequests.length;
+  failAfterDetailRequest = before + 1;
+  largePrivateDetail = true;
+  try {
+    const response = await fetch(origin + '/incidents/' + id);
+    const html = await response.text();
+    expect(response.status).toBe(200);
+    expect(detailRequests.length - before).toBe(1);
+    expect(html).toContain('끝표식');
+    expect(html).not.toContain('PRIVATE_UNEXPECTED_FIELD');
+    expect(html).not.toContain('PRIVATE_NESTED_FIELD');
+    expect(html).toContain('https://hyunghyung.vercel.app/incidents/' + id);
+  } finally {
+    failAfterDetailRequest = Number.POSITIVE_INFINITY;
+    largePrivateDetail = false;
+  }
+}, 30000);
+
+test('articleDocumentUpstreamFailureReturns503WithNoJsRecovery', async () => {
+  failDetail = true;
+  try {
+    const response = await fetch(origin + '/incidents/' + id);
+    const html = await response.text();
+
+    expect(response.status).toBe(503);
+    expect(response.headers.get('cache-control')).toContain('no-store');
+    expect(response.headers.get('retry-after')).toBe('60');
+    expect(response.headers.get('content-type')).toContain('text/html');
+    expect(html).not.toContain('QA_PRIVATE_DETAIL');
+    expect(html).not.toContain('127.0.0.1');
+    expect(html).not.toContain('noindex');
+
+    const head = await fetch(origin + '/incidents/' + id, { method: 'HEAD' });
+    expect(head.status).toBe(503);
+    expect(head.headers.get('retry-after')).toBe('60');
+    expect(await head.text()).toBe('');
+    const invalid = await fetch(origin + '/article-unavailable/invalid');
+    expect(invalid.status).toBe(404);
+
+    const context = await browser!.newContext({
+      javaScriptEnabled: false,
+      viewport: { width: 320, height: 568 },
+    });
+    contexts.push(context);
+    const page = await context.newPage();
+    const documentResponse = await page.goto(origin + '/incidents/' + id);
+    expect(documentResponse?.status()).toBe(503);
+    expect(
+      await page
+        .getByRole('heading', { name: '이 소식을 다시 열어볼까요?' })
+        .count(),
+    ).toBe(1);
+    expect(
+      await page.getByRole('link', { name: '다시 시도' }).getAttribute('href'),
+    ).toBe('/incidents/' + id);
+    expect(
+      await page.getByRole('link', { name: '목록으로' }).getAttribute('href'),
+    ).toBe('/incidents');
+    expect(
+      await page.getByRole('link', { name: '지도로' }).getAttribute('href'),
+    ).toBe('/');
+
+    const retry = page.getByRole('link', { name: '다시 시도' });
+    const bounds = await retry.boundingBox();
+    expect(bounds?.height).toBeGreaterThanOrEqual(44);
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= window.innerWidth,
+      ),
+    ).toBe(true);
+    await retry.focus();
+    expect(
+      await retry.evaluate((element) => document.activeElement === element),
+    ).toBe(true);
+
+    failDetail = false;
+    await retry.click();
+    await page.getByRole('heading', { name: article.article.title }).waitFor();
+  } finally {
+    failDetail = false;
+  }
+}, 30000);
+
+test('articleDocument503RetryModifiedClickOpensANewTab', async () => {
+  failDetail = true;
+  try {
+    const context = await browser!.newContext();
+    contexts.push(context);
+    const page = await context.newPage();
+    await page.goto(origin + '/incidents/' + id);
+    const retry = page.getByRole('link', { name: '다시 시도' });
+    const [popup] = await Promise.all([
+      context.waitForEvent('page'),
+      retry.click({
+        modifiers: [process.platform === 'darwin' ? 'Meta' : 'Control'],
+      }),
+    ]);
+    await popup.waitForLoadState('domcontentloaded');
+    expect(new URL(popup.url()).pathname).toBe('/incidents/' + id);
+    expect(await retry.getAttribute('aria-busy')).toBe('false');
+    expect(await retry.getAttribute('aria-disabled')).toBeNull();
+    expect(
+      await page
+        .getByRole('heading', { name: '이 소식을 다시 열어볼까요?' })
+        .count(),
+    ).toBe(1);
+    await popup.close();
+  } finally {
+    failDetail = false;
+  }
+}, 30000);
+
+test('articleDocument503RetryRecoversAfterNavigationIsStopped', async () => {
+  failDetail = true;
+  const context = await browser!.newContext();
+  contexts.push(context);
+  const page = await context.newPage();
+  const client = await context.newCDPSession(page);
+
+  try {
+    await page.goto(origin + '/incidents/' + id);
+    const retry = page.getByRole('link', { name: '다시 시도' });
+    await retry.waitFor();
+    const box = await retry.boundingBox();
+    if (!box) throw new Error('재시도 링크의 위치를 읽지 못함');
+    const x = box.x + box.width / 2;
+    const y = box.y + box.height / 2;
+    holdDetails = true;
+    const before = detailRequests.length;
+    const pendingStates: Array<{
+      busy: string | null;
+      spinnerVisible: boolean;
+    }> = [];
+    await page.exposeFunction(
+      'observeRetryBeforeNavigation',
+      (state: (typeof pendingStates)[number]) => pendingStates.push(state),
+    );
+    await retry.evaluate((element) => {
+      element.addEventListener(
+        'click',
+        () => {
+          const spinner = element.querySelector<HTMLElement>('[role="status"]');
+          const state = {
+            busy: element.getAttribute('aria-busy'),
+            spinnerVisible: Boolean(spinner && !spinner.hidden),
+          };
+          void (
+            window as unknown as {
+              observeRetryBeforeNavigation: (
+                value: typeof state,
+              ) => Promise<void>;
+            }
+          ).observeRetryBeforeNavigation(state);
+        },
+        { once: true },
+      );
+    });
+    const firstClick = retry.click({ noWaitAfter: true }).catch(() => {});
+    await expect
+      .poll(() => waitingDetails.length, { timeout: 3000 })
+      .toBeGreaterThan(0);
+    await expect.poll(() => pendingStates[0], { timeout: 2000 }).toBeDefined();
+    expect(pendingStates[0]).toEqual({ busy: 'true', spinnerVisible: true });
+    await page.mouse.click(x, y);
+    await page.keyboard.press('Enter');
+    await wait(100);
+    expect(detailRequests.length - before).toBe(1);
+    await client.send('Page.stopLoading');
+    const evaluate = async (expression: string) =>
+      (
+        await client.send('Runtime.evaluate', {
+          expression,
+          returnByValue: true,
+        })
+      ).result.value;
+    await expect
+      .poll(
+        () =>
+          evaluate(
+            "document.querySelector('[data-detail-retry]').getAttribute('aria-busy')",
+          ),
+        { timeout: 3000 },
+      )
+      .toBe('false');
+    expect(
+      await evaluate(
+        "document.querySelector('[data-detail-retry]').hasAttribute('aria-disabled')",
+      ),
+    ).toBe(false);
+    expect(await evaluate("document.querySelector('.spinner').hidden")).toBe(
+      true,
+    );
+    await firstClick;
+    holdDetails = false;
+    failDetail = false;
+    for (const response of waitingDetails.splice(0))
+      if (!response.destroyed) response.end(JSON.stringify(article));
+    await retry.click();
+    await page.getByRole('heading', { name: article.article.title }).waitFor();
+  } finally {
+    failDetail = false;
+    holdDetails = false;
+    for (const response of waitingDetails.splice(0))
+      if (!response.destroyed) response.end(JSON.stringify(article));
+    await client.detach();
+  }
+}, 30000);
+
+test('articleDocument503RetryWithoutNavigationApiRecoversAfterThirtySeconds', async () => {
+  const script = await readFile(
+    join(process.cwd(), 'public/article-detail/error-retry.js'),
+    'utf8',
+  );
+  let attempts = 0;
+  let recover = false;
+  const pending = new Set<ServerResponse>();
+  const fixture = createServer((request, response) => {
+    if (request.url === '/retry.js') {
+      response
+        .writeHead(200, { 'Content-Type': 'text/javascript' })
+        .end(script);
+    } else if (request.url === '/pending') {
+      attempts++;
+      if (recover)
+        response
+          .writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' })
+          .end('<h1>복구된 기사</h1>');
+      else {
+        pending.add(response);
+        response.on('close', () => pending.delete(response));
+      }
+    } else {
+      response
+        .writeHead(503, { 'Content-Type': 'text/html; charset=utf-8' })
+        .end(
+          '<!doctype html><html lang="ko"><body><a data-detail-retry aria-label="다시 시도" aria-busy="false" href="/pending"><span class="spinner" hidden></span>다시 시도</a><script src="/retry.js" defer></script></body></html>',
+        );
+    }
+  });
+  const port = await listen(fixture);
+  const context = await browser!.newContext();
+  contexts.push(context);
+  await context.addInitScript(() => {
+    Object.defineProperty(window, 'navigation', {
+      value: undefined,
+      configurable: true,
+    });
+  });
+  const page = await context.newPage();
+  const client = await context.newCDPSession(page);
+
+  try {
+    await page.clock.install();
+    await page.goto('http://127.0.0.1:' + port + '/error');
+    const retry = page.getByRole('link', { name: '다시 시도' });
+    const box = await retry.boundingBox();
+    if (!box) throw new Error('재시도 링크의 위치를 읽지 못함');
+    const x = box.x + box.width / 2;
+    const y = box.y + box.height / 2;
+    await retry.click({ noWaitAfter: true });
+    await expect.poll(() => attempts, { timeout: 3000 }).toBe(1);
+    await page.mouse.click(x, y);
+    await page.keyboard.press('Enter');
+    await wait(100);
+    expect(attempts).toBe(1);
+    await client.send('Page.stopLoading');
+    await page.clock.fastForward(29000);
+    await page.mouse.click(x, y);
+    await page.keyboard.press('Enter');
+    await wait(100);
+    expect(attempts).toBe(1);
+    expect(await retry.getAttribute('aria-busy')).toBe('true');
+    expect(
+      await retry
+        .locator('.spinner')
+        .evaluate((node) => (node as HTMLElement).hidden),
+    ).toBe(false);
+    await page.clock.fastForward(1000);
+    expect(await retry.getAttribute('aria-busy')).toBe('false');
+    expect(await retry.getAttribute('aria-disabled')).toBeNull();
+    expect(
+      await retry
+        .locator('.spinner')
+        .evaluate((node) => (node as HTMLElement).hidden),
+    ).toBe(true);
+    recover = true;
+    await Promise.all([page.waitForURL('**/pending'), retry.click()]);
+    await page.getByRole('heading', { name: '복구된 기사' }).waitFor();
+    expect(attempts).toBe(2);
+
+    recover = false;
+    await page.goto('http://127.0.0.1:' + port + '/error');
+    const slowRetry = page.getByRole('link', { name: '다시 시도' });
+    const slowBox = await slowRetry.boundingBox();
+    if (!slowBox) throw new Error('느린 재시도 링크의 위치를 읽지 못함');
+    await slowRetry.click({ noWaitAfter: true });
+    await expect.poll(() => attempts, { timeout: 3000 }).toBe(3);
+    await page.mouse.click(
+      slowBox.x + slowBox.width / 2,
+      slowBox.y + slowBox.height / 2,
+    );
+    await page.keyboard.press('Enter');
+    await wait(1500);
+    expect(attempts).toBe(3);
+    recover = true;
+    for (const response of pending)
+      if (!response.destroyed)
+        response
+          .writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' })
+          .end('<h1>복구된 기사</h1>');
+    pending.clear();
+    await page.getByRole('heading', { name: '복구된 기사' }).waitFor();
+    expect(attempts).toBe(3);
+  } finally {
+    for (const response of pending) response.destroy();
+    fixture.closeAllConnections();
+    await new Promise<void>((resolve) => fixture.close(() => resolve()));
+    await client.detach();
+  }
+}, 30000);
+
+test('detailLocationApiReturnsOnlyVerifiedTargetAndRelatedArticles', async () => {
+  const otherId = 'b'.repeat(64);
+  const unrelatedId = 'c'.repeat(64);
+  const evidence = { field: 'description', text: '내부 이동 검증용 기사' };
+  const location = {
+    latitude: 37.5,
+    longitude: 127.1,
+    label: '서울 검증 지역',
+    precision: 'region',
+    evidence,
+  };
+  const item = (articleId: string, label: string, latitude: number) => ({
+    ...article,
+    collection_id: 'detail-location-fixture',
+    article_id: articleId,
+    location_status: 'resolved',
+    location_reason: null,
+    location: { ...location, label, latitude },
+  });
+  mapArticlesFixture = {
+    total: 3,
+    items: [
+      item(id, location.label, location.latitude),
+      item(otherId, location.label, location.latitude),
+      item(unrelatedId, '다른 지역', 35),
+    ],
+  };
+  try {
+    const response = await fetch(origin + '/api/incidents/' + id + '/location');
+    expect(response.status).toBe(200);
+    expect(response.headers.get('cache-control')).toContain('no-store');
+    const text = await response.text();
+    const body = JSON.parse(text) as {
+      location: {
+        latitude: number;
+        longitude: number;
+        label: string;
+        precision: string;
+      } | null;
+      related: Array<{ articleId: string }>;
+    };
+    expect(body.location).toEqual({
+      latitude: 37.5,
+      longitude: 127.1,
+      label: '서울 검증 지역',
+      precision: 'region',
+    });
+    expect(body.related.map((item) => item.articleId)).toEqual([otherId]);
+    expect(text).not.toContain(unrelatedId);
+    expect(text).not.toContain('fixture.invalid');
+    expect(text).not.toContain('127.0.0.1');
+    expect(text).not.toContain('evidence');
+  } finally {
+    mapArticlesFixture = { total: 0, items: [] };
+  }
+}, 120000);
+
+test('detailLocationClientAbortReachesTheUpstreamRequest', async () => {
+  holdMap = true;
+  const controller = new AbortController();
+  const start = waitingMap.length;
+  const pending = fetch(origin + '/api/incidents/' + id + '/location', {
+    signal: controller.signal,
+  }).catch((error: unknown) => error);
+
+  try {
+    await expect
+      .poll(() => waitingMap.length - start, { timeout: 5000 })
+      .toBe(1);
+    const upstream = waitingMap[start];
+    controller.abort();
+    await pending;
+    await expect.poll(() => upstream.destroyed, { timeout: 2000 }).toBe(true);
+  } finally {
+    holdMap = false;
+    controller.abort();
+    for (const response of waitingMap.splice(start)) {
+      if (!response.destroyed)
+        response.end(JSON.stringify({ total: 0, items: [] }));
+    }
+  }
+}, 120000);
+
+test('articleSheetTouchInterruptsSnapWithoutJumpAndCanRetoggle', async () => {
+  const savedDescription = article.article.description;
+  article.article.description = '실제 드래그 실험을 위한 긴 기사. '.repeat(300);
+  try {
+    const page = await openList(393);
+    await page.emulateMedia({ reducedMotion: 'no-preference' });
+    await page.goto(origin + '/sheet-test-fixture');
+    const sheet = page.getByRole('dialog');
+    const handle = sheet.locator('button[aria-expanded]');
+    await sheet
+      .getByRole('heading', { name: article.article.title, exact: true })
+      .waitFor();
+    await sheet.evaluate(async (element) => {
+      await Promise.all(
+        element
+          .getAnimations()
+          .map((animation) => animation.finished.catch(() => undefined)),
+      );
+    });
+    const client = await page.context().newCDPSession(page);
+    await client.send('Animation.enable');
+    await client.send('Animation.setPlaybackRate', { playbackRate: 1 });
+    await handle.evaluate((el) => {
+      const events: unknown[] = [];
+      (window as unknown as { touchEvents: unknown[] }).touchEvents = events;
+      for (const type of [
+        'pointerdown',
+        'pointermove',
+        'pointerup',
+        'pointercancel',
+        'click',
+      ])
+        el.addEventListener(
+          type,
+          (event) => {
+            const e = event as PointerEvent;
+            const rect = el.getBoundingClientRect();
+            events.push({
+              type,
+              pointerType: e.pointerType,
+              trusted: e.isTrusted,
+              detail: e.detail,
+              y: e.clientY,
+              gripY: rect.y,
+              gripBottom: rect.bottom,
+            });
+          },
+          true,
+        );
+    });
+    await handle.click();
+    await client.send('Animation.setPlaybackRate', { playbackRate: 0 });
+    await page.evaluate(() => {
+      (window as unknown as { touchEvents: unknown[] }).touchEvents.length = 0;
+    });
+    const sample = await page.evaluate(() => {
+      const element = document.querySelector<HTMLElement>('[role="dialog"]')!;
+      const grip = element.querySelector<HTMLElement>('button[aria-expanded]')!;
+      const animation = element
+        .getAnimations()
+        .find((a) => a.playState === 'running');
+      const rect = grip.getBoundingClientRect();
+      return {
+        x: rect.x + rect.width / 2,
+        y: rect.y + rect.height / 2,
+        ySheet: element.getBoundingClientRect().y,
+        animationRunning: Boolean(animation),
+        animationTime: animation?.currentTime,
+      };
+    });
+    await client.send('Input.dispatchTouchEvent', {
+      type: 'touchStart',
+      touchPoints: [{ x: sample.x, y: sample.y }],
+    });
+    await client.send('Animation.setPlaybackRate', { playbackRate: 1 });
+    const down = (await sheet.boundingBox())!;
+    await page.waitForTimeout(60);
+    const held = (await sheet.boundingBox())!;
+    await client.send('Input.dispatchTouchEvent', {
+      type: 'touchMove',
+      touchPoints: [{ x: sample.x, y: sample.y - 20 }],
+    });
+    await page.evaluate(
+      () =>
+        new Promise<void>((r) =>
+          requestAnimationFrame(() => requestAnimationFrame(() => r())),
+        ),
+    );
+    const moved = (await sheet.boundingBox())!;
+    await client.send('Input.dispatchTouchEvent', {
+      type: 'touchEnd',
+      touchPoints: [],
+    });
+    const events = await page.evaluate(
+      () =>
+        (
+          window as unknown as {
+            touchEvents: Array<{
+              type: string;
+              pointerType: string;
+              trusted: boolean;
+              y: number;
+              gripY: number;
+              gripBottom: number;
+            }>;
+          }
+        ).touchEvents,
+    );
+    const downEvent = events.find((event) => event.type === 'pointerdown');
+    expect(sample.animationRunning, 'the sheet is still transitioning').toBe(
+      true,
+    );
+    expect(downEvent?.pointerType).toBe('touch');
+    expect(downEvent?.trusted).toBe(true);
+    expect(downEvent!.y).toBeGreaterThanOrEqual(downEvent!.gripY - 12);
+    expect(downEvent!.y).toBeLessThanOrEqual(downEvent!.gripBottom + 12);
+    expect(
+      Math.abs(held.y - down.y),
+      'holding the moving handle freezes the sheet',
+    ).toBeLessThan(4);
+    expect(
+      Math.abs(moved.y - (down.y - 20)),
+      'the sheet follows the touch while held',
+    ).toBeLessThan(5);
+    await sheet.evaluate(async (element) => {
+      await Promise.all(
+        element
+          .getAnimations()
+          .map((animation) => animation.finished.catch(() => undefined)),
+      );
+    });
+    await handle.click();
+    expect(await sheet.getAttribute('data-expanded')).toBe('false');
+    await client.send('Animation.setPlaybackRate', { playbackRate: 0 });
+    const tap = await handle.boundingBox();
+    if (!tap) throw new Error('transitioning handle is not visible');
+    await client.send('Input.dispatchTouchEvent', {
+      type: 'touchStart',
+      touchPoints: [{ x: tap.x + tap.width / 2, y: tap.y + tap.height / 2 }],
+    });
+    await client.send('Animation.setPlaybackRate', { playbackRate: 1 });
+    await client.send('Input.dispatchTouchEvent', {
+      type: 'touchEnd',
+      touchPoints: [],
+    });
+    await expect.poll(() => sheet.getAttribute('data-expanded')).toBe('true');
+    const finalEvents = await page.evaluate(
+      () =>
+        (
+          window as unknown as {
+            touchEvents: Array<{
+              type: string;
+              pointerType: string;
+              trusted: boolean;
+            }>;
+          }
+        ).touchEvents,
+    );
+    expect(
+      finalEvents.filter(
+        (event) =>
+          event.type === 'pointerdown' &&
+          event.pointerType === 'touch' &&
+          event.trusted,
+      ),
+    ).toHaveLength(2);
+    expect(
+      finalEvents.some(
+        (event) =>
+          event.type === 'click' &&
+          event.pointerType === 'touch' &&
+          event.trusted,
+      ),
+    ).toBe(true);
+    await client.send('Animation.setPlaybackRate', { playbackRate: 1 });
+  } finally {
+    article.article.description = savedDescription;
+  }
+}, 60000);
+
+test.each(['pointercancel', 'lostpointercapture'])(
+  'articleSheetCancelDuringCollapseResumesSmoothly: %s',
+  async (kind) => {
+    const savedDescription = article.article.description;
+    article.article.description = '취소 동작 검증을 위한 긴 기사. '.repeat(300);
+    try {
+      const page = await openList(393);
+      await page.emulateMedia({ reducedMotion: 'no-preference' });
+      await page.goto(origin + '/sheet-test-fixture');
+      const sheet = page.getByRole('dialog');
+      const handle = sheet.locator('button[aria-expanded]');
+      await sheet
+        .getByRole('heading', { name: article.article.title, exact: true })
+        .waitFor();
+      await sheet.evaluate(async (e) => {
+        await Promise.all(
+          e.getAnimations().map((a) => a.finished.catch(() => undefined)),
+        );
+      });
+      await handle.click();
+      await sheet.evaluate(async (e) => {
+        await Promise.all(
+          e.getAnimations().map((a) => a.finished.catch(() => undefined)),
+        );
+      });
+      const client = await page.context().newCDPSession(page);
+      await client.send('Animation.enable');
+      await handle.evaluate((el) => {
+        const state = { pointerId: 0, events: [] as string[] };
+        (window as unknown as { cancelAudit: typeof state }).cancelAudit =
+          state;
+        for (const type of [
+          'pointerdown',
+          'gotpointercapture',
+          'pointercancel',
+          'lostpointercapture',
+        ])
+          el.addEventListener(type, (event) => {
+            const pointer = event as PointerEvent;
+            state.pointerId = pointer.pointerId;
+            state.events.push(type);
+          });
+      });
+      await handle.click();
+      await page.evaluate(() => {
+        const state = (
+          window as unknown as {
+            cancelAudit: { pointerId: number; events: string[] };
+          }
+        ).cancelAudit;
+        state.pointerId = 0;
+        state.events = [];
+      });
+      await client.send('Animation.setPlaybackRate', { playbackRate: 0 });
+      const box = await handle.boundingBox();
+      if (!box) throw new Error('no handle');
+      await client.send('Input.dispatchTouchEvent', {
+        type: 'touchStart',
+        touchPoints: [{ x: box.x + box.width / 2, y: box.y + box.height / 2 }],
+      });
+      await client.send('Input.dispatchTouchEvent', {
+        type: 'touchMove',
+        touchPoints: [
+          { x: box.x + box.width / 2, y: box.y + box.height / 2 - 2 },
+        ],
+      });
+      await expect
+        .poll(async () =>
+          page.evaluate(
+            () =>
+              (window as unknown as { cancelAudit: { events: string[] } })
+                .cancelAudit.events,
+          ),
+        )
+        .toContain('gotpointercapture');
+      await client.send('Animation.setPlaybackRate', { playbackRate: 1 });
+      const before = await sheet.boundingBox();
+      await client.send('Animation.setPlaybackRate', { playbackRate: 0 });
+      if (kind === 'pointercancel') {
+        await client.send('Input.dispatchTouchEvent', {
+          type: 'touchCancel',
+          touchPoints: [],
+        });
+      } else {
+        const pointerId = await page.evaluate(
+          () =>
+            (window as unknown as { cancelAudit: { pointerId: number } })
+              .cancelAudit.pointerId,
+        );
+        expect(pointerId).toBeGreaterThan(0);
+        await handle.evaluate(
+          (el, id) => el.releasePointerCapture(id),
+          pointerId,
+        );
+        await client.send('Input.dispatchTouchEvent', {
+          type: 'touchMove',
+          touchPoints: [
+            { x: box.x + box.width / 2, y: box.y + box.height / 2 },
+          ],
+        });
+      }
+      await page.evaluate(
+        () =>
+          new Promise<void>((r) =>
+            requestAnimationFrame(() => requestAnimationFrame(() => r())),
+          ),
+      );
+      const cancelEvents = await page.evaluate(
+        () =>
+          (window as unknown as { cancelAudit: { events: string[] } })
+            .cancelAudit.events,
+      );
+      expect(cancelEvents).toContain('pointerdown');
+      expect(cancelEvents).toContain(kind);
+      if (kind === 'lostpointercapture')
+        await client.send('Input.dispatchTouchEvent', {
+          type: 'touchCancel',
+          touchPoints: [],
+        });
+      const after = await sheet.boundingBox();
+      await client.send('Animation.setPlaybackRate', { playbackRate: 1 });
+      if (!before || !after) throw new Error('missing sheet');
+      expect(
+        Math.abs(after.height - before.height),
+        '취소 직후 높이 불연속',
+      ).toBeLessThan(4);
+      await expect
+        .poll(async () => (await sheet.boundingBox())?.height ?? 0, {
+          timeout: 3000,
+        })
+        .toBeCloseTo(852 * 0.5352, 0);
+      expect(await sheet.getAttribute('data-expanded')).toBe('false');
+    } finally {
+      article.article.description = savedDescription;
+    }
+  },
+  60000,
+);
+
+test('articleSheetIgnoresOtherPointerClickDuringDrag', async () => {
+  const savedDescription = article.article.description;
+  article.article.description = '다중 포인터 검증을 위한 긴 기사. '.repeat(300);
+  try {
+    const page = await openList(393);
+    await page.emulateMedia({ reducedMotion: 'no-preference' });
+    await page.goto(origin + '/sheet-test-fixture');
+    const sheet = page.getByRole('dialog');
+    const handle = sheet.locator('button[aria-expanded]');
+    await sheet
+      .getByRole('heading', { name: article.article.title, exact: true })
+      .waitFor();
+    await sheet.evaluate(async (e) => {
+      await Promise.all(
+        e.getAnimations().map((a) => a.finished.catch(() => undefined)),
+      );
+    });
+    const client = await page.context().newCDPSession(page);
+    await handle.evaluate((el) => {
+      (window as unknown as { otherPointerClicks: number }).otherPointerClicks =
+        0;
+      el.addEventListener(
+        'click',
+        (event) => {
+          if (event.isTrusted)
+            (window as unknown as { otherPointerClicks: number })
+              .otherPointerClicks++;
+        },
+        true,
+      );
+    });
+    const box = await handle.boundingBox();
+    if (!box) throw new Error('no handle');
+    const x = box.x + box.width / 2,
+      y = box.y + box.height / 2;
+    await client.send('Input.dispatchTouchEvent', {
+      type: 'touchStart',
+      touchPoints: [{ x, y }],
+    });
+    await client.send('Input.dispatchTouchEvent', {
+      type: 'touchMove',
+      touchPoints: [{ x, y: y - 50 }],
+    });
+    await page.evaluate(
+      () =>
+        new Promise<void>((r) =>
+          requestAnimationFrame(() => requestAnimationFrame(() => r())),
+        ),
+    );
+    const current = await handle.boundingBox();
+    if (!current) throw new Error('no moved handle');
+    await page.mouse.click(
+      current.x + current.width / 2,
+      current.y + current.height / 2,
+    );
+    const expanded = await sheet.getAttribute('data-expanded');
+    expect(
+      await page.evaluate(
+        () =>
+          (window as unknown as { otherPointerClicks: number })
+            .otherPointerClicks,
+      ),
+    ).toBe(1);
+    await client.send('Input.dispatchTouchEvent', {
+      type: 'touchEnd',
+      touchPoints: [],
+    });
+    expect(expanded, '다른 포인터의 클릭이 드래그 중 상태를 바꾸지 않음').toBe(
+      'false',
+    );
+  } finally {
+    article.article.description = savedDescription;
+  }
+}, 60000);
+
+test('articleDocumentAndRscWorkWithExplicitLoopbackHostname', async () => {
+  const reservation = createServer();
+  const port = await listen(reservation);
+  await new Promise<void>((resolve) => reservation.close(() => resolve()));
+  const apiPort = (api.address() as AddressInfo).port;
+  const next = join(process.cwd(), 'node_modules/next/dist/bin/next');
+  const child = spawn(
+    process.execPath,
+    [next, 'start', '--hostname', '127.0.0.1', '--port', String(port)],
+    {
+      cwd: directory,
+      env: {
+        ...process.env,
+        NEWS_API_BASE_URL: 'http://127.0.0.1:' + apiPort,
+        NEXT_TELEMETRY_DISABLED: '1',
+      },
+      stdio: ['ignore', 'pipe', 'pipe'],
+    },
+  );
+  let output = '';
+  child.stdout?.on('data', (chunk) => {
+    output += String(chunk);
+  });
+  child.stderr?.on('data', (chunk) => {
+    output += String(chunk);
+  });
+  const base = 'http://127.0.0.1:' + port;
+  const originalItems = listArticles;
+  listArticles = [article];
+  try {
+    await ready(base, child, () => output);
+    const before = detailRequests.length;
+    const success = await fetch(base + '/incidents/' + id + '?source=share');
+    const html = await success.text();
+    expect(success.status).toBe(200);
+    expect(detailRequests.length - before).toBe(1);
+    expect(success.headers.get('cache-control')).toContain('no-store');
+    expect(success.headers.get('x-middleware-rewrite')).toBe(
+      '/article-document/' + id + '?source=share',
+    );
+    expect(html).toContain(article.article.title);
+    expect(html).toContain('https://hyunghyung.vercel.app/incidents/' + id);
+    const successHead = await fetch(base + '/incidents/' + id, {
+      method: 'HEAD',
+    });
+    expect(successHead.status).toBe(200);
+    expect(await successHead.text()).toBe('');
+    expect((await fetch(base + '/incidents/' + missingId)).status).toBe(404);
+    expect(
+      (await fetch(base + '/incidents/' + missingId, { method: 'HEAD' }))
+        .status,
+    ).toBe(404);
+    failDetail = true;
+    const unavailable = await fetch(base + '/incidents/' + id);
+    expect(unavailable.status).toBe(503);
+    expect(await unavailable.text()).not.toContain('QA_PRIVATE_DETAIL');
+    const unavailableHead = await fetch(base + '/incidents/' + id, {
+      method: 'HEAD',
+    });
+    expect(unavailableHead.status).toBe(503);
+    expect(await unavailableHead.text()).toBe('');
+    failDetail = false;
+    const spoofedHeaders: HeadersInit[] = [
+      { host: 'attacker.invalid' },
+      { 'x-forwarded-host': 'attacker.invalid' },
+      { 'x-forwarded-host': 'attacker.invalid', 'x-forwarded-proto': 'https' },
+    ];
+    for (const headers of spoofedHeaders) {
+      const response = await fetch(base + '/incidents/' + id, { headers });
+      expect(response.status).toBe(200);
+      expect(response.headers.get('x-middleware-rewrite')).toBe(
+        '/article-document/' + id,
+      );
+    }
+    const rsc = await fetch(base + '/incidents/' + id, {
+      headers: { rsc: '1' },
+    });
+    expect(rsc.headers.get('content-type')).toContain('text/x-component');
+    for (const path of [
+      '/article-document/' + id,
+      '/article-document/%61' + id.slice(1),
+      '/_next/data/fake/article-document/' + id + '.json',
+    ])
+      expect((await fetch(base + path)).status).toBe(404);
+    const context = await browser!.newContext();
+    contexts.push(context);
+    const page = await context.newPage();
+    const errors: string[] = [];
+    page.on('pageerror', (error) => errors.push(error.message));
+    await page.goto(base + '/incidents');
+    await page
+      .getByRole('link', { name: article.article.title, exact: true })
+      .click();
+    await page
+      .locator('[data-article-inline]')
+      .getByRole('heading', { name: article.article.title })
+      .waitFor();
+    await page.goBack();
+    await page.waitForURL(base + '/incidents');
+    expect(errors).toEqual([]);
+  } finally {
+    failDetail = false;
+    listArticles = originalItems;
+    await stop(child);
+  }
+}, 60000);
+
+test('articleListOriginalLinkWorksWithMouseAndKeyboard', async () => {
+  for (const mode of ['mouse', 'keyboard']) {
+    const page = await openList(320);
+    await page.route('https://publisher.example.invalid/**', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'text/html; charset=utf-8',
+        body: '<!doctype html><title>원문 fixture</title>',
+      });
+    });
+    const card = page.locator('article:visible').first();
+    const title = card.getByRole('link', {
+      name: article.article.title,
+      exact: true,
+    });
+    const source = card.getByRole('link', { name: '기사 원문', exact: true });
+    expect(await source.getAttribute('href')).toBe(
+      article.article.originallink,
+    );
+    if (mode === 'keyboard') {
+      await title.focus();
+      await page.keyboard.press('Tab');
+      expect(await source.evaluate((el) => el === document.activeElement)).toBe(
+        true,
+      );
+      await page.keyboard.press('Enter');
+    } else await source.click();
+    await page.waitForURL(article.article.originallink);
+    expect(await page.title()).toBe('원문 fixture');
+    await page.close();
+  }
+}, 60000);
+test('mapSelectionRendersVisibleDotAndGroupRingWithAccessibleRestoration', async () => {
+  const otherId = 'b'.repeat(64);
+  const thirdId = 'c'.repeat(64);
+  const located = (articleId: string, label: string, latitude: number) => ({
+    ...article,
+    article_id: articleId,
+    collection_id: 'selection-fixture',
+    article: {
+      ...article.article,
+      title: `${label} 검증 기사 ${articleId[0]}`,
+      description: `${label} 검증용 기사`,
+    },
+    location_status: 'resolved',
+    location_reason: null,
+    location: {
+      latitude,
+      longitude: latitude,
+      label,
+      precision: 'region',
+      evidence: { field: 'description', text: `${label} 검증용 기사` },
+    },
+  });
+  const saved = mapArticlesFixture;
+  mapArticlesFixture = {
+    total: 3,
+    items: [
+      located(id, '단일지역', 35),
+      located(otherId, '묶음지역', 36),
+      located(thirdId, '묶음지역', 36),
+    ],
+  };
+  const context = await browser!.newContext({
+    viewport: { width: 393, height: 852 },
+    reducedMotion: 'reduce',
+  });
+  contexts.push(context);
+  await context.addInitScript({
+    content: `
+    Object.defineProperty(navigator, 'geolocation', { configurable: true, value: { getCurrentPosition(ok) { ok({ coords: { latitude: 35, longitude: 35 } }); } } });
+    (() => {
+      class LatLng { constructor(latitude, longitude) { this.latitude = latitude; this.longitude = longitude; } lat() { return this.latitude; } lng() { return this.longitude; } }
+      class Map { constructor(element, options) { this.element = element; this.center = options.center; this.zoom = options.zoom; } destroy() {} setSize() {} setCenter(value) { this.center = value; } getCenter() { return this.center; } getZoom() { return this.zoom; } }
+      class Marker { constructor(options) { this.node = options.icon?.content; if (this.node) { this.node.style.position = 'absolute'; this.node.style.left = options.position.lat() === 35 ? '80px' : '240px'; this.node.style.top = '200px'; options.map.element.append(this.node); } } setMap(value) { if (!value) this.node?.remove(); } }
+      window.naver = { maps: { LatLng, Map, Marker, Point: class { constructor(x, y) { this.x = x; this.y = y; } }, Size: class {}, Event: { addListener(target, name, callback) { if (name === 'click' && target.node) target.node.addEventListener('click', callback); return { target, name, callback }; }, removeListener(entry) { if (entry.name === 'click' && entry.target.node) entry.target.node.removeEventListener('click', entry.callback); } } } };
+    })();
+  `,
+  });
+  await context.route('https://oapi.map.naver.com/**', (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: 'text/javascript',
+      body: '/* local SDK fixture */',
+    }),
+  );
+  const page = await context.newPage();
+  try {
+    await page.goto(origin + '/');
+    const single = page.locator(
+      'button[aria-label^="지역 대표 위치: 단일지역"]',
+    );
+    const group = page.locator(
+      'button[aria-label^="지역 대표 위치: 묶음지역"]',
+    );
+    await single.waitFor();
+    await group.waitFor();
+    expect(await single.getAttribute('aria-pressed')).toBe('false');
+    expect(await group.getAttribute('aria-pressed')).toBe('false');
+    await single.click();
+    expect(await single.getAttribute('aria-pressed')).toBe('true');
+    expect(await group.getAttribute('aria-pressed')).toBe('false');
+    const visual = await single.evaluate((button) => {
+      const dot = button.querySelector<HTMLElement>(
+        'span[aria-hidden="true"]',
+      )!;
+      const middle = dot.firstElementChild as HTMLElement;
+      const outerStyle = getComputedStyle(button);
+      const dotStyle = getComputedStyle(dot);
+      const centerStyle = getComputedStyle(middle);
+      return {
+        width: dotStyle.width,
+        height: dotStyle.height,
+        display: dotStyle.display,
+        border: dotStyle.borderTopColor,
+        background: dotStyle.backgroundColor,
+        center: centerStyle.backgroundColor,
+        fontSize: outerStyle.fontSize,
+        label: button.getAttribute('aria-label'),
+      };
+    });
+    expect(visual.width).toBe('26px');
+    expect(visual.height).toBe('26px');
+    expect(visual.display).toBe('grid');
+    expect(visual.background).toBe('rgb(255, 255, 255)');
+    expect(visual.border).not.toBe(visual.background);
+    expect(visual.center).toBe(visual.border);
+    expect(visual.fontSize).toBe('0px');
+    expect(visual.label).toContain('지역 대표 위치');
+    await page.getByRole('button', { name: '기사 선택 닫기' }).click();
+    expect(await single.getAttribute('aria-pressed')).toBe('false');
+    expect(
+      await single.evaluate((button) => document.activeElement === button),
+    ).toBe(true);
+    expect(
+      await single.evaluate(
+        (button) =>
+          getComputedStyle(button.querySelector('span[aria-hidden="true"]')!)
+            .display,
+      ),
+    ).toBe('none');
+    await group.click();
+    expect(await group.getAttribute('aria-pressed')).toBe('true');
+    expect(await group.textContent()).toBe('2');
+    const shadow = await group.evaluate(
+      (button) => getComputedStyle(button).boxShadow,
+    );
+    expect(shadow).toContain('rgb(255, 255, 255) 0px 0px 0px 2px');
+    expect(shadow).toContain('0px 0px 0px 4px');
+    expect(await single.getAttribute('aria-pressed')).toBe('false');
+    await page.getByRole('button', { name: '기사 선택 닫기' }).click();
+    expect(await group.getAttribute('aria-pressed')).toBe('false');
+    expect(
+      await group.evaluate((button) => document.activeElement === button),
+    ).toBe(true);
+  } finally {
+    mapArticlesFixture = saved;
+    await context.close();
+  }
+}, 30000);
+
+test('articleListIsVisibleWithoutJavascriptAndInInitialBotHtml', async () => {
+  for (const userAgent of [
+    'Mozilla/5.0 Chrome/140.0.0.0 Safari/537.36',
+    'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)',
+    'Mozilla/5.0 (compatible; bingbot/2.0; +http://www.bing.com/bingbot.htm)',
+  ]) {
+    const context = await browser!.newContext({
+      javaScriptEnabled: false,
+      userAgent,
+      viewport: { width: 320, height: 852 },
+    });
+    contexts.push(context);
+    const page = await context.newPage();
+    const response = await page.goto(origin + '/incidents');
+    const html = await response!.text();
+    expect(response?.status()).toBe(200);
+    expect(html).toContain(article.article.title);
+    const card = page.locator('article:visible').first();
+    expect(
+      await card
+        .getByRole('link', { name: article.article.title, exact: true })
+        .isVisible(),
+    ).toBe(true);
+    expect(
+      await card
+        .getByRole('link', { name: '기사 원문', exact: true })
+        .isVisible(),
+    ).toBe(true);
+    expect(
+      await card
+        .getByText(article.article.description, { exact: true })
+        .isVisible(),
+    ).toBe(true);
+    expect(
+      await page.locator('[role="status"][aria-busy="true"]').count(),
+    ).toBe(0);
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      ),
+    ).toBe(true);
+    const bounds = await card.evaluate((element) => {
+      const source = element.querySelector<HTMLAnchorElement>(
+        'a[href^="https://"]',
+      )!;
+      const time = element.querySelector<HTMLElement>('time')!;
+      const row = source.parentElement!.getBoundingClientRect();
+      const left = source.getBoundingClientRect();
+      const right = time.getBoundingClientRect();
+      return {
+        rowRight: row.right,
+        leftRight: left.right,
+        rightLeft: right.left,
+        rightRight: right.right,
+      };
+    });
+    expect(bounds.leftRight).toBeLessThanOrEqual(bounds.rightLeft);
+    expect(bounds.rightRight).toBeLessThanOrEqual(bounds.rowRight + 0.5);
+    await context.close();
+  }
+}, 60000);
+
+test('articleListNavigationShowsSkeletonWhileTheServerIsPending', async () => {
+  const context = await browser!.newContext({
+    viewport: { width: 393, height: 852 },
+  });
+  contexts.push(context);
+  await context.route('**/*', async (route) => {
+    const h = route.request().headers();
+    if (h['next-router-prefetch'] || h.purpose === 'prefetch')
+      await route.abort();
+    else await route.continue();
+  });
+  const page = await context.newPage();
+  try {
+    await page.goto(origin + '/');
+    await page
+      .getByRole('navigation', { name: '주 메뉴' })
+      .getByRole('link', { name: '목록', exact: true })
+      .waitFor();
+    holdList = true;
+    await page
+      .getByRole('navigation', { name: '주 메뉴' })
+      .getByRole('link', { name: '목록', exact: true })
+      .click();
+    await expect
+      .poll(() => waitingLists.length, { timeout: 5000 })
+      .toBeGreaterThan(0);
+    const loading = page.locator('[data-list-navigation-pending]');
+    await expect.poll(() => loading.isVisible()).toBe(true);
+    expect(
+      await loading.locator('[role="status"][aria-busy="true"]').count(),
+    ).toBe(1);
+    holdList = false;
+    for (const response of waitingLists.splice(0))
+      response.end(
+        JSON.stringify({ total: listArticles.length, items: listArticles }),
+      );
+    await page.waitForURL(origin + '/incidents');
+    await page
+      .getByRole('link', { name: article.article.title, exact: true })
+      .waitFor();
+    expect(await page.locator('[data-list-navigation-pending]').count()).toBe(
+      0,
+    );
+  } finally {
+    holdList = false;
+    for (const response of waitingLists.splice(0))
+      if (!response.destroyed)
+        response.end(
+          JSON.stringify({ total: listArticles.length, items: listArticles }),
+        );
+  }
+}, 60000);
+
+test('articleListSharedLinksExposePendingOnDifferentSourcePages', async () => {
+  for (const [path, name] of [
+    ['/about', '기사 목록'],
+    ['/archive', '최신 기사 목록'],
+    ['/not-a-page', '사건 목록'],
+  ]) {
+    const context = await browser!.newContext({
+      viewport: { width: 393, height: 852 },
+    });
+    contexts.push(context);
+    await context.route('**/*', async (route) => {
+      const h = route.request().headers();
+      if (h['next-router-prefetch'] || h.purpose === 'prefetch')
+        await route.abort();
+      else await route.continue();
+    });
+    const page = await context.newPage();
+    try {
+      await page.goto(origin + path);
+      const link = page
+        .locator('main')
+        .getByRole('link', { name, exact: true });
+      await link.waitFor();
+      await link.focus();
+      holdList = true;
+      const click = link.click();
+      await expect
+        .poll(() => waitingLists.length, { timeout: 5000 })
+        .toBeGreaterThan(0);
+      const pending = page.locator('[data-list-navigation-pending]');
+      await expect
+        .poll(() => pending.isVisible(), { timeout: 3000 })
+        .toBe(true);
+      await expect
+        .poll(() =>
+          page.locator('main').evaluate((node) => (node as HTMLElement).inert),
+        )
+        .toBe(true);
+      holdList = false;
+      for (const response of waitingLists.splice(0))
+        response.end(
+          JSON.stringify({ total: listArticles.length, items: listArticles }),
+        );
+      await click;
+      await page.waitForURL(origin + '/incidents');
+      await page
+        .getByRole('link', { name: article.article.title, exact: true })
+        .waitFor();
+      expect(await page.locator('[data-list-navigation-pending]').count()).toBe(
+        0,
+      );
+      expect(
+        await page
+          .locator('main')
+          .evaluate((node) => (node as HTMLElement).inert),
+      ).toBe(false);
+    } finally {
+      holdList = false;
+      for (const response of waitingLists.splice(0))
+        if (!response.destroyed)
+          response.end(
+            JSON.stringify({ total: listArticles.length, items: listArticles }),
+          );
+      await context.close();
+    }
+  }
+}, 120000);
+
+test('articleListLinkKeepsNoJsAndModifiedClickBehaviour', async () => {
+  const nojs = await browser!.newContext({ javaScriptEnabled: false });
+  contexts.push(nojs);
+  const p = await nojs.newPage();
+  await p.goto(origin + '/about');
+  const nojsLink = p.getByRole('link', { name: '기사 목록', exact: true });
+  expect(await nojsLink.getAttribute('href')).toBe('/incidents');
+  expect(await p.locator('[data-list-navigation-pending]').count()).toBe(0);
+  await nojsLink.click();
+  await p.waitForURL(origin + '/incidents');
+  expect(
+    await p
+      .getByRole('link', { name: article.article.title, exact: true })
+      .isVisible(),
+  ).toBe(true);
+  await nojs.close();
+  const context = await browser!.newContext();
+  contexts.push(context);
+  const page = await context.newPage();
+  await page.goto(origin + '/about');
+  const link = page.getByRole('link', { name: '기사 목록', exact: true });
+  const [popup] = await Promise.all([
+    context.waitForEvent('page'),
+    link.click({
+      modifiers: [process.platform === 'darwin' ? 'Meta' : 'Control'],
+    }),
+  ]);
+  await popup.waitForURL(origin + '/incidents');
+  expect(new URL(page.url()).pathname).toBe('/about');
+  expect(await page.locator('[data-list-navigation-pending]').count()).toBe(0);
+  expect(
+    await page.locator('main').evaluate((node) => (node as HTMLElement).inert),
+  ).toBe(false);
+  await context.close();
+}, 60000);
+
+test('fixedNavigationDoesNotCoverContentLinks', async () => {
+  for (const width of [320, 393, 1440]) {
+    for (const [path, name] of [
+      ['/about', '기사 목록'],
+      ['/archive', '최신 기사 목록'],
+      ['/not-a-page', '사건 목록'],
+    ]) {
+      const context = await browser!.newContext({
+        javaScriptEnabled: false,
+        hasTouch: true,
+        viewport: { width, height: 700 },
+      });
+      contexts.push(context);
+      const page = await context.newPage();
+      try {
+        await page.goto(origin + path);
+        const link = page
+          .locator('main')
+          .getByRole('link', { name, exact: true });
+        await link.evaluate((element) =>
+          element.scrollIntoView({ block: 'end' }),
+        );
+        const visible = await link.evaluate((element) => {
+          const rect = element.getBoundingClientRect();
+          const top = document.elementFromPoint(
+            (rect.left + rect.right) / 2,
+            (rect.top + rect.bottom) / 2,
+          );
+          return top === element || element.contains(top);
+        });
+        expect(visible, path + ' at ' + width).toBe(true);
+        await link.tap({ timeout: 3000 });
+        await page.waitForURL(origin + '/incidents');
+        await page.goto(origin + path);
+        let reached = false;
+        for (let step = 0; step < 30; step++) {
+          await page.keyboard.press('Tab');
+          if (
+            await link.evaluate((element) => document.activeElement === element)
+          ) {
+            reached = true;
+            break;
+          }
+        }
+        expect(reached).toBe(true);
+        expect(
+          await link.evaluate((element) => {
+            const rect = element.getBoundingClientRect();
+            const top = document.elementFromPoint(
+              (rect.left + rect.right) / 2,
+              (rect.top + rect.bottom) / 2,
+            );
+            return top === element || element.contains(top);
+          }),
+          'keyboard ' + path + ' at ' + width,
+        ).toBe(true);
+        await page.keyboard.press('Enter');
+        await page.waitForURL(origin + '/incidents');
+      } finally {
+        await context.close();
+      }
+    }
   }
 }, 60000);

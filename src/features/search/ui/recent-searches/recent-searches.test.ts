@@ -159,7 +159,7 @@ test('recentSearchesTolerateInvalidOrUnavailableStorage', async () => {
   await mount();
   expect(terms()).toEqual([]);
   expect(container.querySelector('form[action="/search"]')).not.toBeNull();
-  expect(container.textContent).toContain('추천 검색어');
+  expect(container.textContent).not.toContain('추천 검색어');
 });
 
 test('recentSearchesIgnoreMalformedUnicodeWithoutBreakingSearch', async () => {
@@ -174,4 +174,31 @@ test('recentSearchesIgnoreMalformedUnicodeWithoutBreakingSearch', async () => {
   await mount('소방');
   expect(stored()).toEqual(['소방', '정상 검색어', '🔥 화재']);
   expect(request).toHaveBeenCalledTimes(1);
+});
+
+test('입력 중 기존 검색 내용을 감추고 지우면 다시 보여준다', async () => {
+  localStorage.setItem(storageKey, JSON.stringify(['서울 소방서']));
+  await mount();
+  const section = recent();
+  const wrapper = section.parentElement!;
+  const input = container.querySelector<HTMLInputElement>('input[name="q"]')!;
+  expect(wrapper.hidden).toBe(false);
+  await act(async () => {
+    Object.getOwnPropertyDescriptor(
+      HTMLInputElement.prototype,
+      'value',
+    )!.set!.call(input, '서울 화재');
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+  });
+  expect(wrapper.hidden).toBe(true);
+  expect(wrapper.hasAttribute('inert')).toBe(true);
+  const clear = container.querySelector<HTMLButtonElement>(
+    'button[aria-label="검색어 초기화"]',
+  )!;
+  expect(clear).not.toBeNull();
+  await act(async () => clear.click());
+  expect(input.value).toBe('');
+  expect(wrapper.hidden).toBe(false);
+  expect(terms()).toEqual(['서울 소방서']);
+  expect(document.activeElement).toBe(input);
 });

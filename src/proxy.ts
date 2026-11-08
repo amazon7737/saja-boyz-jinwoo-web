@@ -1,60 +1,30 @@
 import { NextResponse, type NextRequest } from 'next/server';
 
-// Next 16.3.8 renders a page-thrown 404 as an empty document without JS.
-// A routing-level 404 has server HTML; keep this workaround off RSC navigation.
-export async function proxy(request: NextRequest) {
-  const next = () => NextResponse.next();
-  const match = request.nextUrl.pathname.match(/^\/incidents\/([^/]+)$/);
+export function proxy(request: NextRequest) {
+  const pathname = request.nextUrl.pathname;
 
   if (
-    !match ||
-    request.headers.get('rsc') === '1' ||
-    (request.method !== 'GET' && request.method !== 'HEAD')
+    pathname.startsWith('/article-document/') ||
+    /^\/_next\/data\/[^/]+\/article-document(?:\/|\.json$)/.test(pathname)
   )
-    return next();
+    return new Response(null, { status: 404 });
+  if (
+    request.headers.get('rsc') === '1' ||
+    !['GET', 'HEAD'].includes(request.method)
+  )
+    return NextResponse.next();
+  const match = pathname.match(/^\/incidents\/([^/]+)$/);
 
-  const id = match[1];
-  let missing = !/^[a-f0-9]{64}$/.test(id);
+  if (!match) return NextResponse.next();
+  // skipProxyUrlNormalize preserves the server origin in request.url.
+  // NextURL normalizes loopback hosts and can turn this into an external rewrite.
+  const next = new URL(request.url);
 
-  if (!missing) {
-    try {
-      const base = new URL(process.env.NEWS_API_BASE_URL ?? '');
+  next.pathname = '/article-document/' + match[1];
 
-      if (
-        (base.protocol !== 'https:' && base.protocol !== 'http:') ||
-        base.username ||
-        base.password
-      )
-        return next();
-
-      const response = await fetch(new URL('/news/' + id, base), {
-        method: 'GET',
-        cache: 'no-store',
-        signal: AbortSignal.timeout(5000),
-      });
-
-      missing = response.status === 404;
-      await response.body?.cancel().catch(() => {});
-    } catch {
-      return next();
-    }
-  }
-
-  if (!missing) return next();
-
-  const fallback = request.nextUrl.clone();
-
-  fallback.pathname = '/__missing-article';
-  fallback.search = '';
-  const response = NextResponse.rewrite(fallback, {
-    status: 404,
-  });
-
-  response.headers.set('Cache-Control', 'private, no-store');
-
-  return response;
+  return NextResponse.rewrite(next);
 }
 
 export const config = {
-  matcher: ['/incidents/:id'],
+  matcher: ['/incidents/:id', '/article-document/:id', '/_next/data/:path*'],
 };

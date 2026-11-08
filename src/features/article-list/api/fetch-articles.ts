@@ -26,6 +26,7 @@ export async function fetchArticleList(
   keyword?: string,
   offset = 0,
   sort: 'recent' | 'popular' = 'recent',
+  signal?: AbortSignal,
 ) {
   if (!Number.isSafeInteger(offset) || offset < 0) return null;
 
@@ -56,7 +57,9 @@ export async function fetchArticleList(
     const response = await fetch(url, {
       method: 'GET',
       cache: 'no-store',
-      signal: AbortSignal.timeout(5000),
+      signal: signal
+        ? AbortSignal.any([signal, AbortSignal.timeout(5000)])
+        : AbortSignal.timeout(5000),
     });
 
     if (!response.ok) return null;

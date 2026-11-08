@@ -151,3 +151,28 @@ test('discards a page set whose total changes instead of presenting a partial se
   vi.stubGlobal('fetch', fetcher);
   expect(await fetchMapArticles()).toBeNull();
 });
+
+test('callerCancellationAbortsTheSharedUpstreamRequest', async () => {
+  vi.stubEnv('NEWS_API_BASE_URL', 'https://news.example.com');
+  const caller = new AbortController();
+  let receivedSignal: AbortSignal | undefined;
+  const fetcher = vi.fn((_url: URL, options: RequestInit) => {
+    receivedSignal = options.signal ?? undefined;
+
+    return new Promise<Response>((_resolve, reject) => {
+      receivedSignal?.addEventListener(
+        'abort',
+        () => reject(new DOMException('aborted', 'AbortError')),
+        { once: true },
+      );
+    });
+  });
+  vi.stubGlobal('fetch', fetcher);
+
+  const pending = fetchMapArticles(caller.signal);
+  expect(receivedSignal?.aborted).toBe(false);
+  caller.abort();
+  expect(await pending).toBeNull();
+  expect(receivedSignal?.aborted).toBe(true);
+  expect(fetcher).toHaveBeenCalledOnce();
+});

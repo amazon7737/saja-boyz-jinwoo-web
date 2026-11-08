@@ -1,16 +1,20 @@
-import Link from 'next/link';
-
+import { ListLink } from '@/components/layout/list-link/list-link';
 import { IconText } from '@/components/ui/icon-text/icon-text';
 import { Notice } from '@/components/feedback/notice';
 
 import { MapCarouselCard } from '../map-carousel-card/map-carousel-card';
-import type { MapArticleResult } from '../../model/map-article.types';
+import type {
+  LocatedArticle,
+  MapArticleResult,
+} from '../../model/map-article.types';
 import { recentMapArticles } from '../../model/map-carousel-articles';
 
 export function MapArticleCarousel({
   articles,
+  onSelect,
 }: {
   articles: MapArticleResult;
+  onSelect(item: LocatedArticle, opener: HTMLAnchorElement): void;
 }) {
   return (
     <section
@@ -19,12 +23,9 @@ export function MapArticleCarousel({
     >
       <div className="flex items-center justify-between px-4">
         <h2 className="m-0 flex items-center gap-1.5 text-[14px]/[17px] font-extrabold text-text">
-          🔥 지금 핫한 사건
+          🔥 최근 보도 기사
         </h2>
-        <Link
-          href="/incidents"
-          className="text-[11px]/[normal] font-bold text-brand"
-        >
+        <ListLink className="text-[11px]/[normal] font-bold text-brand">
           <IconText
             icon="arrow-right"
             size="compact"
@@ -33,7 +34,7 @@ export function MapArticleCarousel({
           >
             전체보기
           </IconText>
-        </Link>
+        </ListLink>
       </div>
       <div className="flex snap-x snap-proximity gap-2.5 overflow-x-auto overscroll-x-contain px-4 [scroll-padding-inline:16px]">
         {articles.items.length === 0 && (
@@ -48,6 +49,7 @@ export function MapArticleCarousel({
               key={item.article_id}
               item={item}
               apiOrigin={articles.apiOrigin}
+              onSelect={onSelect}
             />
           ))}
       </div>

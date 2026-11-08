@@ -1,10 +1,13 @@
 // file: src/features/map/ui/map-home/map-articles.test.ts
 // @vitest-environment jsdom
-import { act, createElement, type ReactNode } from 'react';
+import { act, createElement, useState, type ReactNode } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, expect, test, vi } from 'vitest';
 
 import { MapHome } from './map-home';
+import { AppShell } from '@/components/layout/app-shell/app-shell';
+
+vi.mock('next/navigation', () => ({ usePathname: () => '/' }));
 import { DetailSheet } from '@/features/article-detail/ui/detail-sheet/detail-sheet';
 import {
   ArticleSheetContext,
@@ -43,9 +46,37 @@ const data: MapArticleResult = {
   ],
 };
 
+function TestMapShell({ children }: { children: ReactNode }) {
+  const [visible, setMapPreviewVisible] = useState(false);
+  const route: ArticleSheetRoute = {
+    active: false,
+    sourcePath: '/',
+    height: 0,
+    mapArticles: [],
+    openArticle: vi.fn(),
+    close: vi.fn(),
+    setHeight: vi.fn(),
+    registerMapArticles: vi.fn(),
+    retry: vi.fn(),
+    setMapPreviewVisible,
+  };
+  const shellProps = {
+    backgroundPath: '/',
+    hideMapControls: visible,
+    children,
+  };
+
+  return createElement(
+    ArticleSheetContext,
+    { value: route },
+    createElement(AppShell, shellProps),
+  );
+}
+
 async function mount(
   result: MapArticleResult | null = data,
   sheetRoute: ArticleSheetRoute | null = null,
+  withShell = false,
 ) {
   vi.stubGlobal('IS_REACT_ACT_ENVIRONMENT', true);
   const positions: unknown[] = [];
@@ -78,7 +109,7 @@ async function mount(
       positions.push(options);
       if (options.icon?.content) {
         container
-          .querySelector('[aria-label="주변 지도"] > div')
+          .querySelector('[aria-label="주변 지도"] > div:nth-of-type(2)')
           ?.append(options.icon.content);
       }
     }
@@ -119,15 +150,29 @@ async function mount(
   const draw = async (
     route: ArticleSheetRoute | null = sheetRoute,
     overlay?: ReactNode,
+    nextResult: MapArticleResult | null = result,
   ) => {
     await act(async () =>
       root!.render(
-        createElement(
-          ArticleSheetContext,
-          { value: route },
-          createElement(MapHome, { clientId: 'test', articles: result }),
-          overlay,
-        ),
+        withShell
+          ? createElement(
+              TestMapShell,
+              null,
+              createElement(MapHome, {
+                clientId: 'test',
+                articles: nextResult,
+              }),
+              overlay,
+            )
+          : createElement(
+              ArticleSheetContext,
+              { value: route },
+              createElement(MapHome, {
+                clientId: 'test',
+                articles: nextResult,
+              }),
+              overlay,
+            ),
       ),
     );
   };
@@ -298,7 +343,7 @@ test('shows the selected article in the Figma sheet with its real image and publ
     close?.querySelector<HTMLElement>('span')?.style.backgroundImage,
   ).toContain('/article-detail/close.svg');
   expect(sheet?.querySelector('h2 a')?.textContent).toBe('장림동 공장 화재');
-  expect(sheet?.querySelector('article img')?.getAttribute('src')).toBe(
+  expect(sheet?.querySelector('article figure img')?.getAttribute('src')).toBe(
     `https://news.example.com/images/${'a'.repeat(64)}.jpg`,
   );
   expect(sheet?.textContent).toContain('AI로 생성된 이미지입니다.');
@@ -464,12 +509,21 @@ test('mapArticleSheetPreservesGroupedChoices', async () => {
   await act(async () => fixture.selected[0]());
   expect(
     openArticle,
-    '단건 원은 공통 상세 주소로 바로 진입',
-  ).toHaveBeenCalledWith(data.items[0].article_id);
+    '단건 원 선택 시 미리보기부터 표시',
+  ).not.toHaveBeenCalled();
+  expect(
+    document
+      .querySelector('[aria-label="선택한 기사"]')
+      ?.querySelectorAll('a[href^="/incidents/"]'),
+  ).toHaveLength(1);
   await fixture.draw({ ...route, active: true });
   expect(document.querySelector('[aria-label="선택한 기사"]')).toBeNull();
   await fixture.draw(route);
-  expect(document.querySelector('[aria-label="선택한 기사"]')).toBeNull();
+  expect(
+    document
+      .querySelector('[aria-label="선택한 기사"]')
+      ?.querySelectorAll('a[href^="/incidents/"]'),
+  ).toHaveLength(1);
   for (const [index, count] of [
     [1, 2],
     [2, 12],
@@ -566,13 +620,24 @@ test('mapGroupedSheetRestoresExpandedReadingPositionAndArticleFocus', async () =
         '수정키 클릭은 기존 링크 동작 유지',
       ).not.toHaveBeenCalled();
       await act(async () => article.click());
+      expect(
+        openArticle,
+        '선택한 기사는 미리보기부터 표시',
+      ).not.toHaveBeenCalled();
+      const preview = document.querySelector<HTMLElement>(
+        '[aria-label="선택한 기사"]',
+      )!;
+      expect(preview.textContent).toContain(items[9].article.title);
+      const detailLink = preview.querySelector<HTMLAnchorElement>(
+        'a[href="/incidents/' + items[9].article_id + '"]',
+      )!;
+      await act(async () => detailLink.click());
     } finally {
       document.removeEventListener('click', preventNavigation);
     }
-    expect(
-      openArticle,
-      '포털 링크도 공통 상세 진입으로 opener 보존',
-    ).toHaveBeenCalledWith(items[9].article_id);
+    expect(openArticle, '미리보기 링크로 공통 상세 진입').toHaveBeenCalledWith(
+      items[9].article_id,
+    );
 
     container.dataset.articleOverlay = 'true';
     container.inert = true;
@@ -589,7 +654,9 @@ test('mapGroupedSheetRestoresExpandedReadingPositionAndArticleFocus', async () =
         ),
       ),
     );
-    const detail = document.querySelector<HTMLElement>('[role="dialog"]')!;
+    const detail = document.querySelector<HTMLElement>(
+      '[data-article-inline]',
+    )!;
     expect(chooser.isConnected, '그룹 시트를 버리지 않고 읽기 상태 보존').toBe(
       true,
     );
@@ -597,22 +664,29 @@ test('mapGroupedSheetRestoresExpandedReadingPositionAndArticleFocus', async () =
     expect(chooser.hasAttribute('inert')).toBe(true);
     expect(chooser.getAttribute('role')).toBeNull();
     expect(document.querySelector('[aria-label="선택한 기사"]')).toBeNull();
-    expect(document.querySelectorAll('[role="dialog"]')).toHaveLength(1);
+    expect(document.querySelectorAll('[role="dialog"]')).toHaveLength(0);
     expect(
       detail.contains(document.activeElement),
       '새 상세가 포커스를 소유',
     ).toBe(true);
-    expect(document.body.style.overflow).toBe('hidden');
-    marker.focus();
-    expect(
-      detail.contains(document.activeElement),
-      '숨은 그룹이 포커스를 가로채지 않음',
-    ).toBe(true);
+    expect(document.body.style.overflow).toBe('auto');
 
     delete container.dataset.articleOverlay;
     container.inert = false;
     container.removeAttribute('aria-hidden');
     await fixture.draw(route);
+    const restoredPreview = document.querySelector<HTMLElement>(
+      '[aria-label="선택한 기사"]',
+    )!;
+    expect(restoredPreview).not.toBe(chooser);
+    expect(restoredPreview.textContent).toContain(items[9].article.title);
+    await act(async () =>
+      restoredPreview
+        .querySelector<HTMLButtonElement>(
+          'button[aria-label="기사 선택 닫기"]',
+        )!
+        .click(),
+    );
     expect(document.querySelector('[aria-label="선택한 기사"]')).toBe(chooser);
     expect(chooser.hidden).toBe(false);
     expect(chooser.hasAttribute('inert')).toBe(false);
@@ -647,4 +721,763 @@ test('mapGroupedSheetRestoresExpandedReadingPositionAndArticleFocus', async () =
     document.body.style.overflow = overflow;
     document.body.style.paddingRight = padding;
   }
+});
+
+test('groupedMarkerShowsSelectedArticlePreviewBeforeDetailAndRestoresChooser', async () => {
+  const items = Array.from({ length: 12 }, (_, index) => ({
+    ...data.items[0],
+    article_id: (3000 + index).toString(16).padStart(64, '0'),
+    article: {
+      ...data.items[0].article,
+      title: '미리보기 선택 기사 ' + index,
+      description: '선택한 기사 내용 ' + index,
+    },
+  }));
+  const openArticle = vi.fn();
+  const route: ArticleSheetRoute = {
+    active: false,
+    sourcePath: '/',
+    height: 456,
+    mapArticles: items,
+    openArticle,
+    close: vi.fn(),
+    setHeight: vi.fn(),
+    registerMapArticles: vi.fn(),
+    retry: vi.fn(),
+  };
+  const fixture = await mount({ ...data, total: items.length, items }, route);
+  const originalUrl = window.location.href;
+  await act(async () => fixture.selected[0]());
+  const chooser = document.querySelector<HTMLElement>(
+    '[aria-label="선택한 기사"]',
+  )!;
+  const scroller = chooser.querySelector<HTMLElement>('[tabindex="0"]')!;
+  const selected = chooser.querySelectorAll<HTMLAnchorElement>(
+    'a[href^="/incidents/"]',
+  )[9];
+  const toggle = chooser.querySelector<HTMLButtonElement>(
+    'button[aria-expanded]',
+  )!;
+  await act(async () => toggle.click());
+  scroller.scrollTop = 640;
+  await act(async () => scroller.dispatchEvent(new Event('scroll')));
+  selected.focus();
+  const preventNavigation = (event: MouseEvent) => event.preventDefault();
+  document.addEventListener('click', preventNavigation);
+  try {
+    await act(async () =>
+      selected.dispatchEvent(
+        new MouseEvent('click', {
+          bubbles: true,
+          cancelable: true,
+          ctrlKey: true,
+        }),
+      ),
+    );
+    expect(
+      openArticle,
+      '수정키 선택은 네이티브 링크 유지',
+    ).not.toHaveBeenCalled();
+    expect(chooser.hidden).toBe(false);
+    await act(async () => selected.click());
+    expect(
+      openArticle,
+      '기사 선택은 상세로 이동하지 않음',
+    ).not.toHaveBeenCalled();
+    expect(window.location.href).toBe(originalUrl);
+    expect(chooser.isConnected).toBe(true);
+    expect(chooser.hidden).toBe(true);
+    const preview = document.querySelector<HTMLElement>(
+      '[aria-label="선택한 기사"]',
+    )!;
+    expect(preview).not.toBe(chooser);
+    expect(preview.textContent).toContain(items[9].article.title);
+    expect(preview.textContent).toContain(items[9].article.description);
+    expect(preview.textContent).not.toContain(items[8].article.title);
+    const detail = preview.querySelector<HTMLAnchorElement>(
+      'a[href="/incidents/' + items[9].article_id + '"]',
+    )!;
+    expect(detail.textContent).toContain('자세히 보기');
+    await act(async () =>
+      detail.dispatchEvent(
+        new MouseEvent('click', {
+          bubbles: true,
+          cancelable: true,
+          metaKey: true,
+        }),
+      ),
+    );
+    expect(
+      openArticle,
+      '미리보기 상세 링크 수정키 동작 유지',
+    ).not.toHaveBeenCalled();
+    await act(async () => detail.click());
+    expect(openArticle).toHaveBeenCalledOnce();
+    expect(openArticle).toHaveBeenCalledWith(items[9].article_id);
+    await fixture.draw({ ...route, active: true });
+    expect(document.querySelector('[aria-label="선택한 기사"]')).toBeNull();
+    await fixture.draw(route);
+    expect(document.querySelector('[aria-label="선택한 기사"]')).toBe(preview);
+    const close = preview.querySelector<HTMLButtonElement>(
+      'button[aria-label="기사 선택 닫기"]',
+    )!;
+    await act(async () => close.click());
+    expect(document.querySelector('[aria-label="선택한 기사"]')).toBe(chooser);
+    expect(chooser.dataset.expanded).toBe('true');
+    expect(scroller.scrollTop).toBe(640);
+    expect(document.activeElement).toBe(selected);
+    expect(fixture.positions).toHaveLength(1);
+    expect(fixture.removed).not.toHaveBeenCalled();
+    expect(fixture.setCenter).not.toHaveBeenCalled();
+    expect(fixture.setZoom).not.toHaveBeenCalled();
+    expect(fixture.fitBounds).not.toHaveBeenCalled();
+  } finally {
+    document.removeEventListener('click', preventNavigation);
+  }
+});
+
+test('singleMapMarkerShowsArticlePreviewBeforeOpeningDetail', async () => {
+  const item = {
+    ...data.items[0],
+    image_status: 'ready',
+    image_url: `/images/${data.items[0].article_id}.jpg`,
+  };
+  const openArticle = vi.fn();
+  const route: ArticleSheetRoute = {
+    active: false,
+    sourcePath: '/',
+    height: 0,
+    mapArticles: [item],
+    openArticle,
+    close: vi.fn(),
+    setHeight: vi.fn(),
+    registerMapArticles: vi.fn(),
+    retry: vi.fn(),
+  };
+  const originalUrl = window.location.href;
+  const fixture = await mount({ ...data, items: [item] }, route);
+  expect(fixture.positions).toHaveLength(1);
+  const marker = (
+    fixture.positions[0] as { icon: { content: HTMLButtonElement } }
+  ).icon.content;
+  marker.focus();
+
+  await act(async () => fixture.selected[0]());
+
+  expect(
+    openArticle,
+    '마커 선택만으로 상세 경로에 진입하지 않음',
+  ).not.toHaveBeenCalled();
+  expect(window.location.href, '미리보기는 지도 주소에서 열림').toBe(
+    originalUrl,
+  );
+  expect(marker.getAttribute('aria-pressed')).toBe('true');
+  const sheets = document.querySelectorAll<HTMLElement>('[role="dialog"]');
+  expect(sheets, '기사 미리보기 하나만 표시').toHaveLength(1);
+  const sheet = sheets[0];
+  expect(sheet.textContent).toContain('장림동 공장 화재');
+  expect(sheet.textContent).toContain(item.article.description);
+  expect(sheet.textContent).toContain(item.location.label);
+  expect(sheet.textContent).toContain('실제 발생 지점과 다를 수 있습니다');
+  expect(sheet.querySelector('b'), '기사 HTML은 텍스트로 표시').toBeNull();
+  const imageUrl = `${data.apiOrigin}${item.image_url}`;
+  expect(
+    sheet.querySelector(`img[src="${imageUrl}"]`),
+    '미리보기는 선택한 기사의 실제 이미지를 표시',
+  ).not.toBeNull();
+
+  const href = `/incidents/${item.article_id}`;
+  const detail = sheet.querySelector<HTMLAnchorElement>(`a[href="${href}"]`);
+  expect(detail, '실제 기사의 상세 주소가 있는 링크').not.toBeNull();
+  expect(detail?.getAttribute('href')).toBe(href);
+  expect(new URL(detail!.href).origin).toBe(window.location.origin);
+
+  const close = sheet.querySelector<HTMLButtonElement>(
+    'button[aria-label="기사 선택 닫기"], button[aria-label="닫기"]',
+  );
+  expect(close, '키보드로 접근할 수 있는 미리보기 닫기').not.toBeNull();
+  await act(async () => close!.click());
+  expect(document.querySelector('[role="dialog"]')).toBeNull();
+  expect(marker.getAttribute('aria-pressed')).toBe('false');
+  expect(document.activeElement, '닫으면 선택한 지도 원으로 복귀').toBe(marker);
+  expect(window.location.href).toBe(originalUrl);
+  expect(fixture.positions).toHaveLength(1);
+  expect(fixture.setCenter).not.toHaveBeenCalled();
+  expect(fixture.setZoom).not.toHaveBeenCalled();
+  expect(fixture.fitBounds).not.toHaveBeenCalled();
+});
+test('singlePreviewAlignsLocationAndDateLikeFigma', async () => {
+  const fixture = await mount();
+  await act(async () => fixture.selected[0]());
+  const preview = document.querySelector<HTMLElement>(
+    '[role="dialog"][aria-label="선택한 기사"]',
+  )!;
+  const article = preview.querySelector('article')!;
+  const title = article.querySelector('h2')!;
+  const location = [...article.querySelectorAll('p')].find((node) =>
+    node.textContent?.includes(data.items[0].location.label),
+  )!;
+  const date = article.querySelector('time')!.closest('p')!;
+  const locationIcon = location.querySelector(
+    'img[src="/figma/preview-location.svg"]',
+  );
+  const dateIcon = date.querySelector('img[src="/figma/preview-date.svg"]');
+  for (const icon of [locationIcon, dateIcon]) {
+    expect(icon).not.toBeNull();
+    expect(icon?.getAttribute('width')).toBe('16');
+    expect(icon?.getAttribute('height')).toBe('16');
+    expect(icon?.getAttribute('alt')).toBe('');
+    expect(icon?.parentElement?.classList.contains('gap-1')).toBe(true);
+    expect(icon?.parentElement?.classList.contains('items-center')).toBe(true);
+  }
+  expect(title.parentElement).toBe(location.parentElement?.parentElement);
+  expect(title.parentElement?.classList.contains('gap-3')).toBe(true);
+  expect(location.parentElement?.classList.contains('gap-1')).toBe(true);
+  expect(article.textContent).toContain(
+    '지역 대표 위치 · 실제 발생 지점과 다를 수 있습니다',
+  );
+  expect(article.querySelector('time')?.getAttribute('datetime')).toBe(
+    '2026-10-13T23:00:00.000Z',
+  );
+});
+
+test('mapPreviewShowsSelectedArticleDetailsAndSafeSourceBeforeNavigation', async () => {
+  const item = {
+    ...data.items[0],
+    image_status: 'ready',
+    image_url: `/images/${data.items[0].article_id}.jpg`,
+    article: {
+      ...data.items[0].article,
+      title: '장림동 <b>공장</b> 화재',
+      description: '부산 사하구에서 불이 났습니다.',
+      originallink: 'javascript:alert(1)',
+      link: 'https://publisher.example.invalid/story',
+    },
+  };
+  const openArticle = vi.fn();
+  const route: ArticleSheetRoute = {
+    active: false,
+    sourcePath: '/',
+    height: 0,
+    mapArticles: [item],
+    openArticle,
+    close: vi.fn(),
+    setHeight: vi.fn(),
+    registerMapArticles: vi.fn(),
+    retry: vi.fn(),
+  };
+  const fixture = await mount({ ...data, total: 1, items: [item] }, route);
+  const marker = (
+    fixture.positions[0] as { icon: { content: HTMLButtonElement } }
+  ).icon.content;
+  marker.focus();
+  const initialUrl = window.location.href;
+
+  await act(async () => fixture.selected[0]());
+
+  const preview = document.querySelector<HTMLElement>(
+    '[role="dialog"][aria-label="선택한 기사"]',
+  )!;
+  expect(preview).not.toBeNull();
+  expect(preview.textContent).toContain('장림동 공장 화재');
+  expect(preview.querySelector('b')).toBeNull();
+  expect(preview.textContent).toContain(item.location.label);
+  expect(preview.textContent).toContain(item.article.description);
+  expect(preview.querySelector('time')?.getAttribute('datetime')).toBe(
+    '2026-10-13T23:00:00.000Z',
+  );
+  const image = preview.querySelector<HTMLImageElement>(
+    `img[src="${data.apiOrigin}${item.image_url}"]`,
+  );
+  expect(image).not.toBeNull();
+  expect(image?.getAttribute('width')).toBe('361');
+  expect(image?.getAttribute('height')).toBe('140');
+  expect(preview.textContent).toContain('AI로 생성된 이미지입니다.');
+  const source = preview.querySelector<HTMLAnchorElement>(
+    'a[href="https://publisher.example.invalid/story"]',
+  );
+  expect(source?.getAttribute('target')).toBe('_blank');
+  expect(source?.getAttribute('rel')).toContain('noopener');
+  expect(preview.querySelector('a[href^="javascript:"]')).toBeNull();
+
+  const detail = preview.querySelector<HTMLAnchorElement>(
+    `a[href="/incidents/${item.article_id}"]`,
+  );
+  expect(detail?.textContent).toContain('자세히 보기');
+  expect(window.location.href).toBe(initialUrl);
+  expect(openArticle).not.toHaveBeenCalled();
+  const preventNavigation = (event: MouseEvent) => event.preventDefault();
+  document.addEventListener('click', preventNavigation);
+  try {
+    await act(async () => detail!.click());
+    expect(openArticle).toHaveBeenCalledOnce();
+    expect(openArticle).toHaveBeenCalledWith(item.article_id);
+    await fixture.draw({ ...route, active: true });
+    expect(document.querySelector('[aria-label="선택한 기사"]')).toBeNull();
+    await fixture.draw(route);
+    expect(document.querySelector('[aria-label="선택한 기사"]')).toBe(preview);
+    expect(document.activeElement).toBe(detail);
+    await act(async () =>
+      preview
+        .querySelector<HTMLButtonElement>(
+          'button[aria-label="기사 선택 닫기"]',
+        )!
+        .click(),
+    );
+    expect(document.activeElement).toBe(marker);
+  } finally {
+    document.removeEventListener('click', preventNavigation);
+  }
+});
+
+test('mapCarouselCardShowsPreviewAndRestoresCardFocus', async () => {
+  const item = data.items[0];
+  const openArticle = vi.fn();
+  const route: ArticleSheetRoute = {
+    active: false,
+    sourcePath: '/',
+    height: 0,
+    mapArticles: [item],
+    openArticle,
+    close: vi.fn(),
+    setHeight: vi.fn(),
+    registerMapArticles: vi.fn(),
+    retry: vi.fn(),
+  };
+  const fixture = await mount(data, route);
+  const origin = window.location.href;
+  const card = container.querySelector<HTMLAnchorElement>(
+    `section[aria-label="지도 기사"] a[href="/incidents/${item.article_id}"]`,
+  )!;
+  expect(card).not.toBeNull();
+  expect(card.getAttribute('href')).toBe(`/incidents/${item.article_id}`);
+  const nativeClickStates: boolean[] = [];
+  const preventNavigation = (event: MouseEvent) => {
+    nativeClickStates.push(event.defaultPrevented);
+    event.preventDefault();
+  };
+  document.addEventListener('click', preventNavigation);
+  try {
+    for (const modifier of [
+      { ctrlKey: true },
+      { metaKey: true },
+      { shiftKey: true },
+      { altKey: true },
+      { button: 1 },
+    ]) {
+      await act(async () =>
+        card.dispatchEvent(
+          new MouseEvent('click', {
+            bubbles: true,
+            cancelable: true,
+            ...modifier,
+          }),
+        ),
+      );
+      expect(
+        nativeClickStates.at(-1),
+        '수정키/보조 클릭은 브라우저에 전달',
+      ).toBe(false);
+      expect(document.querySelector('[role="dialog"]')).toBeNull();
+      expect(openArticle).not.toHaveBeenCalled();
+    }
+    await act(async () => card.click());
+    expect(window.location.href).toBe(origin);
+    expect(openArticle).not.toHaveBeenCalled();
+    const preview = document.querySelector<HTMLElement>(
+      '[aria-label="선택한 기사"]',
+    )!;
+    expect(preview).not.toBeNull();
+    expect(preview.textContent).toContain('장림동 공장 화재');
+    expect(preview.textContent).toContain(item.article.description);
+    const detail = preview.querySelector<HTMLAnchorElement>(
+      `a[href="/incidents/${item.article_id}"]`,
+    )!;
+    expect(detail.textContent).toContain('자세히 보기');
+    await act(async () => detail.click());
+    expect(openArticle).toHaveBeenCalledOnce();
+    expect(openArticle).toHaveBeenCalledWith(item.article_id);
+    await fixture.draw({ ...route, active: true });
+    expect(document.querySelector('[aria-label="선택한 기사"]')).toBeNull();
+    await fixture.draw(route);
+    expect(document.querySelector('[aria-label="선택한 기사"]')).toBe(preview);
+    expect(document.activeElement).toBe(detail);
+    await act(async () =>
+      preview
+        .querySelector<HTMLButtonElement>(
+          'button[aria-label="기사 선택 닫기"]',
+        )!
+        .click(),
+    );
+    expect(document.querySelector('[role="dialog"]')).toBeNull();
+    expect(document.activeElement).toBe(card);
+    expect(fixture.positions).toHaveLength(1);
+    expect(fixture.removed).not.toHaveBeenCalled();
+    expect(fixture.setCenter).not.toHaveBeenCalled();
+    expect(fixture.setZoom).not.toHaveBeenCalled();
+    expect(fixture.fitBounds).not.toHaveBeenCalled();
+  } finally {
+    document.removeEventListener('click', preventNavigation);
+  }
+});
+
+test('carouselPreviewRestoresMapFocusWhenSourceCardLeavesLatestFour', async () => {
+  const selected = data.items[0];
+  const route: ArticleSheetRoute = {
+    active: false,
+    sourcePath: '/',
+    height: 0,
+    mapArticles: [selected],
+    openArticle: vi.fn(),
+    close: vi.fn(),
+    setHeight: vi.fn(),
+    registerMapArticles: vi.fn(),
+    retry: vi.fn(),
+  };
+  const fixture = await mount(data, route);
+  const card = container.querySelector<HTMLAnchorElement>(
+    `section[aria-label="지도 기사"] a[href="/incidents/${selected.article_id}"]`,
+  )!;
+  const preventNavigation = (event: MouseEvent) => event.preventDefault();
+  document.addEventListener('click', preventNavigation);
+  try {
+    await act(async () => card.click());
+    const preview = document.querySelector<HTMLElement>(
+      '[aria-label="선택한 기사"]',
+    )!;
+    expect(preview.textContent).toContain('장림동 공장 화재');
+    const newer = Array.from({ length: 4 }, (_, index) => ({
+      ...selected,
+      article_id: (index + 1).toString(16).padStart(64, '0'),
+      article: {
+        ...selected.article,
+        title: '새 기사 ' + index,
+        pubDate: '2027-01-01T00:00:00Z',
+      },
+    }));
+    const items = [...newer, selected];
+    await fixture.draw(route, undefined, {
+      ...data,
+      total: items.length,
+      items,
+    });
+    expect(card.isConnected, '선택 카드는 최신 4개 바깥으로 이동').toBe(false);
+    expect(document.querySelector('[aria-label="선택한 기사"]')).toBe(preview);
+    await act(async () =>
+      preview
+        .querySelector<HTMLButtonElement>(
+          'button[aria-label="기사 선택 닫기"]',
+        )!
+        .click(),
+    );
+    expect(document.querySelector('[role="dialog"]')).toBeNull();
+    expect(document.activeElement, '사라진 카드 대신 지도 영역으로 복귀').toBe(
+      container.querySelector('[aria-label="주변 지도"]'),
+    );
+    expect(fixture.setCenter).not.toHaveBeenCalled();
+    expect(fixture.setZoom).not.toHaveBeenCalled();
+  } finally {
+    document.removeEventListener('click', preventNavigation);
+  }
+});
+
+test('carouselPreviewRestoresMapFocusWhenSelectedArticleIsRemoved', async () => {
+  const selected = data.items[0];
+  const route: ArticleSheetRoute = {
+    active: false,
+    sourcePath: '/',
+    height: 0,
+    mapArticles: [selected],
+    openArticle: vi.fn(),
+    close: vi.fn(),
+    setHeight: vi.fn(),
+    registerMapArticles: vi.fn(),
+    retry: vi.fn(),
+  };
+  const fixture = await mount(data, route);
+  const card = container.querySelector<HTMLAnchorElement>(
+    `section[aria-label="지도 기사"] a[href="/incidents/${selected.article_id}"]`,
+  )!;
+  const preventNavigation = (event: MouseEvent) => event.preventDefault();
+  document.addEventListener('click', preventNavigation);
+  try {
+    await act(async () => card.click());
+    expect(document.querySelector('[aria-label="선택한 기사"]')).not.toBeNull();
+    const replacement = {
+      ...selected,
+      article_id: 'b'.repeat(64),
+      article: { ...selected.article, title: '새 기사' },
+    };
+    await fixture.draw(route, undefined, { ...data, items: [replacement] });
+    expect(card.isConnected).toBe(false);
+    expect(document.querySelector('[role="dialog"]')).toBeNull();
+    expect(
+      document.activeElement,
+      '기사가 사라져 시트가 닫히면 지도 영역으로 복귀',
+    ).toBe(container.querySelector('[aria-label="주변 지도"]'));
+    expect(fixture.setCenter).not.toHaveBeenCalled();
+    expect(fixture.setZoom).not.toHaveBeenCalled();
+  } finally {
+    document.removeEventListener('click', preventNavigation);
+  }
+});
+
+test('removingCarouselArticleKeepsDetailFocusUntilReturningToMap', async () => {
+  const selected = data.items[0];
+  const route: ArticleSheetRoute = {
+    active: false,
+    sourcePath: '/',
+    height: 0,
+    mapArticles: [selected],
+    openArticle: vi.fn(),
+    close: vi.fn(),
+    setHeight: vi.fn(),
+    registerMapArticles: vi.fn(),
+    retry: vi.fn(),
+  };
+  const fixture = await mount(data, route);
+  const card = container.querySelector<HTMLAnchorElement>(
+    `section[aria-label="지도 기사"] a[href="/incidents/${selected.article_id}"]`,
+  )!;
+  const preventNavigation = (event: MouseEvent) => event.preventDefault();
+  document.addEventListener('click', preventNavigation);
+  try {
+    await act(async () => card.click());
+    const preview = document.querySelector<HTMLElement>(
+      '[aria-label="선택한 기사"]',
+    )!;
+    await act(async () =>
+      preview
+        .querySelector<HTMLAnchorElement>(
+          `a[href="/incidents/${selected.article_id}"]`,
+        )!
+        .click(),
+    );
+    const activeRoute = { ...route, active: true };
+    const detail = createElement(
+      DetailSheet,
+      { titleId: 'removed-card-detail' },
+      createElement(
+        'h1',
+        { id: 'removed-card-detail' },
+        selected.article.title,
+      ),
+    );
+    await fixture.draw(activeRoute, detail);
+    const inline = document.querySelector<HTMLElement>(
+      '[data-article-inline]',
+    )!;
+    expect(inline.contains(document.activeElement)).toBe(true);
+    const replacement = {
+      ...selected,
+      article_id: 'b'.repeat(64),
+      article: { ...selected.article, title: '새 기사' },
+    };
+    const nextResult = { ...data, items: [replacement] };
+    await fixture.draw(activeRoute, detail, nextResult);
+    expect(
+      inline.contains(document.activeElement),
+      '상세를 읽는 중에 포커스 유지',
+    ).toBe(true);
+    await fixture.draw(route, undefined, nextResult);
+    expect(document.activeElement, '지도로 돌아온 뒤 대체 위치 복귀').toBe(
+      container.querySelector('[aria-label="주변 지도"]'),
+    );
+  } finally {
+    document.removeEventListener('click', preventNavigation);
+  }
+});
+
+test('실제 기사 미리보기에서만 지도 상단과 메뉴를 숨기고 닫으면 포커스와 필터를 복원한다', async () => {
+  const fixture = await mount(data, null, true);
+  const filter = container.querySelector<HTMLElement>(
+    '[aria-label="기사 필터"]',
+  )!;
+  const marker = (
+    fixture.positions[0] as { icon: { content: HTMLButtonElement } }
+  ).icon.content;
+  const header = () => container.querySelector('header');
+  const nav = () => container.querySelector('nav[aria-label="주 메뉴"]');
+  expect(header()).not.toBeNull();
+  expect(nav()).not.toBeNull();
+  expect(filter.hidden).toBe(false);
+  marker.focus();
+  await act(async () =>
+    marker.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }),
+    ),
+  );
+  expect(document.querySelector('[aria-label="선택한 기사"]')).not.toBeNull();
+  expect(header()).toBeNull();
+  expect(nav()).toBeNull();
+  expect(filter.hidden).toBe(true);
+  expect(filter.hasAttribute('inert')).toBe(true);
+  const close = document.querySelector<HTMLButtonElement>(
+    'button[aria-label="기사 선택 닫기"]',
+  )!;
+  expect(document.activeElement).toBe(close);
+  await act(async () =>
+    close.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }),
+    ),
+  );
+  expect(document.querySelector('[aria-label="선택한 기사"]')).toBeNull();
+  expect(header()).not.toBeNull();
+  expect(nav()).not.toBeNull();
+  expect(container.querySelector('[aria-label="기사 필터"]')).toBe(filter);
+  expect(filter.hidden).toBe(false);
+  expect(document.activeElement).toBe(marker);
+});
+
+test('선택 결과가 사라진 빈 기사 그룹에서는 지도 컨트롤을 계속 보여준다', async () => {
+  const fixture = await mount(data, null, true);
+  await fixture.draw(null, undefined, { ...data, total: 0, items: [] });
+  await act(async () => fixture.selected[0]());
+  expect(document.querySelector('[aria-label="선택한 기사"]')).toBeNull();
+  expect(container.querySelector('header')).not.toBeNull();
+  expect(container.querySelector('nav[aria-label="주 메뉴"]')).not.toBeNull();
+  expect(
+    container.querySelector<HTMLElement>('[aria-label="기사 필터"]')?.hidden,
+  ).toBe(false);
+});
+test('carousel selection marks only the matching group through data refresh and restores focus', async () => {
+  const selected = data.items[0];
+  const companion = {
+    ...selected,
+    article_id: 'b'.repeat(64),
+    article: { ...selected.article, title: '같은 지역 두 번째 기사' },
+  };
+  const elsewhere = {
+    ...selected,
+    article_id: 'c'.repeat(64),
+    article: { ...selected.article, title: '다른 지역 기사' },
+    location: {
+      ...selected.location,
+      label: '다른 지역',
+      latitude: 36,
+      longitude: 127,
+    },
+  };
+  const items = [selected, companion, elsewhere];
+  const route: ArticleSheetRoute = {
+    active: false,
+    sourcePath: '/',
+    height: 0,
+    mapArticles: items,
+    openArticle: vi.fn(),
+    close: vi.fn(),
+    setHeight: vi.fn(),
+    registerMapArticles: vi.fn(),
+    retry: vi.fn(),
+  };
+  const fixture = await mount({ ...data, total: items.length, items }, route);
+  const marker = (
+    fixture.positions[0] as { icon: { content: HTMLButtonElement } }
+  ).icon.content;
+  const other = (
+    fixture.positions[1] as { icon: { content: HTMLButtonElement } }
+  ).icon.content;
+  const card = container.querySelector<HTMLAnchorElement>(
+    `section[aria-label="지도 기사"] a[href="/incidents/${selected.article_id}"]`,
+  )!;
+  const prevent = (event: MouseEvent) => event.preventDefault();
+  document.addEventListener('click', prevent);
+  try {
+    card.focus();
+    await act(async () => card.click());
+    expect(marker.getAttribute('aria-pressed')).toBe('true');
+    expect(marker.textContent).toBe('2');
+    expect(marker.style.boxShadow).toContain('0 0 0 4px');
+    expect(marker.getAttribute('aria-label')).toContain('지역 대표 위치');
+    expect(marker.getAttribute('aria-label')).toContain('기사 2건');
+    expect(other.getAttribute('aria-pressed')).toBe('false');
+    const preview = document.querySelector<HTMLElement>(
+      '[aria-label="선택한 기사"]',
+    )!;
+    expect(preview.textContent).toContain('장림동 공장 화재');
+    expect(preview.textContent).not.toContain('같은 지역 두 번째 기사');
+
+    const refreshed = items.map((item) => ({
+      ...item,
+      article: { ...item.article },
+    }));
+    await fixture.draw(route, undefined, {
+      ...data,
+      total: items.length,
+      items: refreshed,
+    });
+    const current = [
+      ...container.querySelectorAll<HTMLButtonElement>(
+        'button[aria-pressed="true"]',
+      ),
+    ].find((button) =>
+      button.getAttribute('aria-label')?.includes('기사 2건'),
+    )!;
+    expect(current).toBeTruthy();
+    expect(current).not.toBe(marker);
+    expect(current.textContent).toBe('2');
+    expect(current.style.boxShadow).toContain('0 0 0 4px');
+    expect(
+      document.querySelector('[aria-label="선택한 기사"]')?.textContent,
+    ).toContain('장림동 공장 화재');
+    await act(async () =>
+      document
+        .querySelector<HTMLButtonElement>(
+          'button[aria-label="기사 선택 닫기"]',
+        )!
+        .click(),
+    );
+    expect(current.getAttribute('aria-pressed')).toBe('false');
+    expect(current.style.boxShadow).not.toContain('0 0 0 4px');
+    expect(document.activeElement).toBe(card);
+    expect(fixture.setCenter).not.toHaveBeenCalled();
+    expect(fixture.setZoom).not.toHaveBeenCalled();
+  } finally {
+    document.removeEventListener('click', prevent);
+  }
+});
+
+test('filtering changes the group count without retaining a stale selected marker', async () => {
+  const recent = {
+    ...data.items[0],
+    article: { ...data.items[0].article, pubDate: new Date().toISOString() },
+  };
+  const old = {
+    ...data.items[0],
+    article_id: 'b'.repeat(64),
+    article: {
+      ...data.items[0].article,
+      title: '지난 기사',
+      pubDate: '2000-01-01T00:00:00Z',
+    },
+  };
+  const fixture = await mount({ ...data, total: 2, items: [recent, old] });
+  const marker = (
+    fixture.positions[0] as { icon: { content: HTMLButtonElement } }
+  ).icon.content;
+  await act(async () => fixture.selected[0]());
+  expect(marker.getAttribute('aria-pressed')).toBe('true');
+  expect(marker.textContent).toBe('2');
+  await act(async () =>
+    document
+      .querySelector<HTMLButtonElement>('button[aria-label="기사 선택 닫기"]')!
+      .click(),
+  );
+  const period = container.querySelector<HTMLButtonElement>(
+    'button[aria-label="기간"]',
+  )!;
+  await act(async () => period.click());
+  const option = [
+    ...container.querySelectorAll<HTMLButtonElement>('button'),
+  ].find((button) => button.textContent?.trim() === '최근 24시간')!;
+  await act(async () => option.click());
+  const remaining = [
+    ...container.querySelectorAll<HTMLButtonElement>(
+      'button[aria-label^="지역 대표 위치:"]',
+    ),
+  ];
+  expect(remaining).toHaveLength(1);
+  expect(remaining[0].textContent).toBe('1');
+  expect(remaining[0].getAttribute('aria-pressed')).toBe('false');
+  expect(document.querySelector('[aria-label="선택한 기사"]')).toBeNull();
 });

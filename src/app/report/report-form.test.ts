@@ -144,6 +144,187 @@ void [
   expectFieldError,
 ];
 
+test('reportImagePreviewRemainsForRetryAndReleasesAfterConfirmedReceipt', async () => {
+  const create = vi.fn(() => 'blob:local-preview');
+  const revoke = vi.fn();
+  const NativeURL = URL;
+  class MockURL extends NativeURL {
+    static createObjectURL = create;
+    static revokeObjectURL = revoke;
+  }
+  vi.stubGlobal('URL', MockURL);
+  fetchMock.mockRejectedValueOnce(new TypeError('network'));
+  fetchMock.mockResolvedValueOnce(receiptResponse(200));
+  await renderReport();
+  await fillValid();
+  const photo = testFile('현장.png', 'image/png');
+  await selectFiles([photo]);
+  const image = () => container.querySelector('img[src="blob:local-preview"]');
+  expect(create).toHaveBeenCalledWith(photo);
+  expect(image()).not.toBeNull();
+
+  await checkInput();
+  expect(container.querySelector('[role="alert"]')?.textContent).toContain(
+    '접수 여부를 확인하지 못했어요',
+  );
+  expect(field('title').value).toBe('도로 점검 제보');
+  expect(
+    container.querySelector('button[aria-label="현장.png 삭제"]'),
+  ).not.toBeNull();
+  expect(image()).not.toBeNull();
+  expect(revoke).not.toHaveBeenCalledWith('blob:local-preview');
+  const first = fetchMock.mock.calls[0][1];
+  assert(first?.body instanceof FormData);
+  expect(first.body.getAll('attachments')).toEqual([photo]);
+  const requestKey = new Headers(first.headers).get('Idempotency-Key');
+  expect(requestKey).toBeTruthy();
+
+  await checkInput();
+  const retry = fetchMock.mock.calls[1][1];
+  assert(retry?.body instanceof FormData);
+  expect(retry.body.getAll('attachments')).toEqual([photo]);
+  expect(new Headers(retry.headers).get('Idempotency-Key')).toBe(requestKey);
+  expect(container.querySelector('[role="status"]')?.textContent).toContain(
+    receipt.report_id,
+  );
+  expect(image()).toBeNull();
+  expect(revoke).toHaveBeenCalledTimes(1);
+  expect(revoke).toHaveBeenCalledWith('blob:local-preview');
+});
+
+test('reportVideoPreviewRemainsForRetryAndReleasesAfterConfirmedReceipt', async () => {
+  const create = vi.fn(() => 'blob:local-video');
+  const revoke = vi.fn();
+  const NativeURL = URL;
+  class MockURL extends NativeURL {
+    static createObjectURL = create;
+    static revokeObjectURL = revoke;
+  }
+  vi.stubGlobal('URL', MockURL);
+  fetchMock.mockRejectedValueOnce(new TypeError('network'));
+  fetchMock.mockResolvedValueOnce(receiptResponse(200));
+  await renderReport();
+  await fillValid();
+  const videoFile = testFile('현장.webm', 'video/webm');
+  await selectFiles([videoFile]);
+  const preview = () =>
+    container.querySelector('video[src="blob:local-video"]');
+  expect(create).toHaveBeenCalledWith(videoFile);
+  expect(preview()).not.toBeNull();
+
+  await checkInput();
+  expect(container.querySelector('[role="alert"]')?.textContent).toContain(
+    '접수 여부를 확인하지 못했어요',
+  );
+  expect(field('title').value).toBe('도로 점검 제보');
+  expect(
+    container.querySelector('button[aria-label="현장.webm 삭제"]'),
+  ).not.toBeNull();
+  expect(preview()).not.toBeNull();
+  expect(revoke).not.toHaveBeenCalledWith('blob:local-video');
+  const first = fetchMock.mock.calls[0][1];
+  assert(first?.body instanceof FormData);
+  expect(first.body.getAll('attachments')).toEqual([videoFile]);
+  const requestKey = new Headers(first.headers).get('Idempotency-Key');
+  expect(requestKey).toBeTruthy();
+
+  await checkInput();
+  const retry = fetchMock.mock.calls[1][1];
+  assert(retry?.body instanceof FormData);
+  expect(retry.body.getAll('attachments')).toEqual([videoFile]);
+  expect(new Headers(retry.headers).get('Idempotency-Key')).toBe(requestKey);
+  expect(container.querySelector('[role="status"]')?.textContent).toContain(
+    receipt.report_id,
+  );
+  expect(preview()).toBeNull();
+  expect(revoke).toHaveBeenCalledTimes(1);
+  expect(revoke).toHaveBeenCalledWith('blob:local-video');
+});
+
+test('reportVideoPreviewReleasesItsObjectUrlWhenRemoved', async () => {
+  const create = vi.fn(() => 'blob:local-video');
+  const revoke = vi.fn();
+  const NativeURL = URL;
+  class MockURL extends NativeURL {
+    static createObjectURL = create;
+    static revokeObjectURL = revoke;
+  }
+  vi.stubGlobal('URL', MockURL);
+  await renderReport();
+  const file = testFile('현장.webm', 'video/webm');
+  await selectFiles([file]);
+  expect(create).toHaveBeenCalledWith(file);
+  const preview = container.querySelector<HTMLVideoElement>(
+    'video[src="blob:local-video"]',
+  );
+  assert(preview);
+  expect(preview.autoplay).toBe(false);
+  expect(preview.muted).toBe(true);
+  expect(preview.getAttribute('preload')).toBe('metadata');
+  expect(container.textContent).toContain('현장.webm');
+  expect(fetchMock).not.toHaveBeenCalled();
+  await act(async () => preview.dispatchEvent(new Event('error')));
+  const remove = container.querySelector('button[aria-label="현장.webm 삭제"]');
+  assert(remove instanceof HTMLButtonElement);
+  expect(container.textContent).toContain('현장.webm');
+  await act(async () => remove.click());
+  expect(container.querySelector('video[src="blob:local-video"]')).toBeNull();
+  expect(revoke).toHaveBeenCalledWith('blob:local-video');
+  expect(fetchMock).not.toHaveBeenCalled();
+});
+
+test('reportImagePreviewReleasesItsObjectUrlWhenRemoved', async () => {
+  const create = vi.fn(() => 'blob:local-preview');
+  const revoke = vi.fn();
+  const NativeURL = URL;
+  class MockURL extends NativeURL {
+    static createObjectURL = create;
+    static revokeObjectURL = revoke;
+  }
+  vi.stubGlobal('URL', MockURL);
+  await renderReport();
+  const photo = testFile('현장.png', 'image/png');
+  await selectFiles([photo]);
+  expect(create).toHaveBeenCalledWith(photo);
+  expect(
+    container.querySelector('img[src="blob:local-preview"]'),
+  ).not.toBeNull();
+  expect(container.textContent).toContain('현장.png');
+  expect(fetchMock).not.toHaveBeenCalled();
+  const remove = container.querySelector('button[aria-label="현장.png 삭제"]');
+  assert(remove instanceof HTMLButtonElement);
+  await act(async () => remove.click());
+  expect(container.querySelector('img[src="blob:local-preview"]')).toBeNull();
+  expect(revoke).toHaveBeenCalledWith('blob:local-preview');
+  expect(fetchMock).not.toHaveBeenCalled();
+});
+
+test('reportAttachmentDeletionKeepsKeyboardFocusInAttachments', async () => {
+  await renderReport();
+  await selectFiles([
+    testFile('one.png', 'image/png'),
+    testFile('two.png', 'image/png'),
+  ]);
+  const first = container.querySelector<HTMLButtonElement>(
+    'button[aria-label="one.png 삭제"]',
+  );
+  const second = container.querySelector<HTMLButtonElement>(
+    'button[aria-label="two.png 삭제"]',
+  );
+  assert(first && second);
+  first.focus();
+  await act(async () => first.click());
+  const remaining = container.querySelector<HTMLButtonElement>(
+    'button[aria-label="two.png 삭제"]',
+  );
+  assert(remaining);
+  expect(document.activeElement).toBe(remaining);
+  await act(async () => remaining.click());
+  expect(document.activeElement).toBe(
+    container.querySelector('input[type="file"]'),
+  );
+});
+
 test('reportAttachments: valid files can be selected removed and selected again', async () => {
   await renderReport();
   const image = testFile('road.jpg', 'image/jpeg', 10 * 1024 * 1024);
@@ -285,7 +466,7 @@ test('reportSubmissionRequiredFields: whitespace errors are linked and corrected
   }
   expect(fetchMock).toHaveBeenCalledTimes(1);
   expect(container.querySelector('[role="status"]')?.textContent).toContain(
-    '제보가 접수됐어요',
+    '제보가 완료되었습니다',
   );
   expect(field('title').value).toBe('도로 점검 제보');
 });
@@ -303,7 +484,7 @@ test('reportSubmissionTextLimits: trimmed field limits reject overflow and allow
     await checkInput();
     expectFieldError(name, `${limit}자를 초과했어요`);
     expect(fetchMock).toHaveBeenCalledTimes(completed);
-    expect(container.textContent).not.toContain('제보가 접수됐어요');
+    expect(container.textContent).not.toContain('제보가 완료되었습니다');
     expect(container.textContent).not.toContain(receipt.report_id);
     await changeField(name, `  ${'가'.repeat(limit)}  `);
     await checkInput();
@@ -311,7 +492,7 @@ test('reportSubmissionTextLimits: trimmed field limits reject overflow and allow
     expect(fetchMock).toHaveBeenCalledTimes(completed);
     expect(field(name).getAttribute('aria-invalid')).not.toBe('true');
     expect(container.querySelector('[role="status"]')?.textContent).toContain(
-      '제보가 접수됐어요',
+      '제보가 완료되었습니다',
     );
     expect(field(name).value.trim()).toBe('가'.repeat(limit));
     const restart = Array.from(container.querySelectorAll('button')).find(
@@ -401,7 +582,7 @@ test('reportSubmissionPending: double submit is locked until a real receipt arri
   expect(fetchMock).toHaveBeenCalledTimes(1);
   await act(async () => release(receiptResponse()));
   expect(container.querySelector('[role="status"]')?.textContent).toContain(
-    '제보가 접수됐어요',
+    '제보가 완료되었습니다',
   );
   expect(container.querySelector('[role="status"]')?.textContent).toContain(
     receipt.report_id,
@@ -491,7 +672,7 @@ test('reportSubmissionFailures: rejected or malformed responses never claim rece
       container.querySelector('[role="alert"]')?.textContent?.trim(),
     ).toBeTruthy();
     expect(container.textContent).not.toContain('private-internal-error');
-    expect(container.textContent).not.toContain('제보가 접수됐어요');
+    expect(container.textContent).not.toContain('제보가 완료되었습니다');
     for (const name of fieldNames) {
       expect(field(name).value).toBe(originalValues[name]);
       expect(field(name).matches(':disabled')).toBe(false);
@@ -522,7 +703,7 @@ test('reportSubmissionConfiguration: missing or unsafe public endpoint does not 
     expect(container.textContent).toContain(
       '제보 접수 연결이 준비되지 않았어요',
     );
-    expect(container.textContent).not.toContain('제보가 접수됐어요');
+    expect(container.textContent).not.toContain('제보가 완료되었습니다');
     expect(fetchMock).not.toHaveBeenCalled();
   }
 });
@@ -547,7 +728,7 @@ test('reportSubmissionEditedRetry: changed content uses a new request key after 
   expect(nextKey).not.toBe(previousKey);
   assert(nextRequest?.body instanceof FormData);
   expect(nextRequest.body.get('title')).toBe('수정한 제보 제목');
-  expect(container.textContent).not.toContain('제보가 접수됐어요');
+  expect(container.textContent).not.toContain('제보가 완료되었습니다');
   await selectFiles([testFile('added.png', 'image/png')]);
   await checkInput();
   expect(fetchMock).toHaveBeenCalledTimes(3);
@@ -563,4 +744,106 @@ test('reportSubmissionEditedRetry: changed content uses a new request key after 
   expect(container.querySelector('[role="status"]')?.textContent).toContain(
     receipt.report_id,
   );
+});
+
+test('reportCompletionScreenRequiresValidReceiptAndKeepsRecovery', async () => {
+  await renderReport();
+  await fillValid();
+  const attachment = testFile('road.png', 'image/png');
+  await selectFiles([attachment]);
+  const form = container.querySelector('form');
+  assert(form);
+  const values = Object.fromEntries(
+    fieldNames.map((name) => [name, field(name).value]),
+  );
+
+  for (const [status, body] of [
+    [202, receipt],
+    [201, { ...receipt, status: 'published' }],
+    [201, { ...receipt, report_id: '../../private' }],
+    [200, { ...receipt, received_at: 'not-a-date' }],
+  ] as const) {
+    fetchMock.mockResolvedValueOnce(
+      new Response(JSON.stringify(body), {
+        status,
+        headers: { 'Content-Type': 'application/json' },
+      }),
+    );
+    await checkInput();
+    const request = fetchMock.mock.lastCall?.[1];
+    assert(request?.body instanceof FormData);
+    expect(
+      request.body.getAll('attachments'),
+      '선택한 실제 파일로 재시도',
+    ).toEqual([attachment]);
+    expect(container.querySelector('[role="alert"]')).not.toBeNull();
+    expect(container.textContent).not.toContain('제보가 완료되었습니다');
+    expect(container.textContent).not.toContain(receipt.report_id);
+    expect(container.querySelector('form'), '실패 시 같은 폼 유지').toBe(form);
+    for (const name of fieldNames) {
+      expect(field(name).value, `${name} 입력 유지`).toBe(values[name]);
+      expect(field(name).disabled).toBe(false);
+    }
+    expect(
+      container.querySelector('button[aria-label="road.png 삭제"]'),
+      '실패 시 선택한 첨부 유지',
+    ).not.toBeNull();
+  }
+
+  for (const status of [201, 200]) {
+    fetchMock.mockResolvedValueOnce(receiptResponse(status));
+    await checkInput();
+    const message = container.querySelector('[role="status"]');
+    expect(message?.textContent).toContain('제보가 완료되었습니다');
+    expect(message?.textContent).toContain(receipt.report_id);
+    const heading = [...container.querySelectorAll('h1, h2, h3')].find(
+      (element) => element.textContent?.includes('제보가 완료되었습니다'),
+    );
+    assert(heading, '완료 화면에 제목 제공');
+    expect(document.activeElement, '완료 화면으로 포커스 이동').toBe(heading);
+    const visibleForm = container.querySelector('form');
+    const formIsHidden =
+      !visibleForm ||
+      [
+        ...(function* () {
+          for (
+            let element: HTMLElement | null = visibleForm;
+            element && element !== container;
+            element = element.parentElement
+          )
+            yield element;
+        })(),
+      ].some(
+        (element) =>
+          element.hidden || getComputedStyle(element).display === 'none',
+      );
+    expect(formIsHidden, '접수 완료 화면에서 입력 폼을 감춤').toBe(true);
+    const close = [
+      ...container.querySelectorAll<HTMLAnchorElement>('a[href="/"]'),
+    ].find((link) => link.textContent?.trim() === '닫기');
+    expect(close, '닫기는 지도 주소로 이동하는 실제 링크').toBeDefined();
+    expect(close?.getAttribute('href')).toBe('/');
+    expect(close?.tabIndex).toBeGreaterThanOrEqual(0);
+
+    const restart = [...container.querySelectorAll('button')].find(
+      (button) => button.textContent?.trim() === '새 제보 작성',
+    );
+    assert(restart, '새 제보 작성으로 다시 시작할 수 있음');
+    const requests = fetchMock.mock.calls.length;
+    await act(async () => restart.click());
+    expect(fetchMock).toHaveBeenCalledTimes(requests);
+    expect(field('title').value).toBe('');
+    expect(document.activeElement, '새 제보 첫 항목으로 포커스 복귀').toBe(
+      field('category'),
+    );
+    expect(
+      container.querySelector('button[aria-label="road.png 삭제"]'),
+    ).toBeNull();
+    expect(container.textContent).not.toContain(receipt.report_id);
+    if (status === 201) {
+      await fillValid();
+      await selectFiles([attachment]);
+    }
+  }
+  expect(fetchMock).toHaveBeenCalledTimes(6);
 });

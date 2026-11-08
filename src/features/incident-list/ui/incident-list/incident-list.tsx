@@ -9,6 +9,7 @@ import {
   statusLabels,
 } from '@/features/incidents/model/labels';
 import type { Incident } from '@/features/incidents/model/types';
+import { formatRelativeTime } from '@/lib/relative-time';
 
 import styles from './incident-list.module.css';
 
@@ -25,21 +26,6 @@ function getIncidentHref(id: string): string | null {
     if (error instanceof URIError) return null;
     throw error;
   }
-}
-
-function formatRelativeTime(occurredAt: string, now: Date) {
-  const minutes = Math.floor(
-    (now.getTime() - new Date(occurredAt).getTime()) / 60_000,
-  );
-
-  if (minutes < 1) return '방금 전';
-  if (minutes < 60) return `${minutes}분 전`;
-
-  const hours = Math.floor(minutes / 60);
-
-  if (hours < 24) return `${hours}시간 전`;
-
-  return `${Math.floor(hours / 24)}일 전`;
 }
 
 export function IncidentList(props: IncidentListProps) {

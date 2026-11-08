@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { cache } from 'react';
 
+import { ListLink } from '@/components/layout/list-link/list-link';
 import { Notice } from '@/components/feedback/notice';
 import { fetchArticleList } from '@/features/article-list/api/fetch-articles';
 import { ArticleList } from '@/features/article-list/ui/article-list/article-list';
@@ -73,9 +74,9 @@ export default async function ArchivePage({ searchParams }: ArchiveProps) {
         수집된 기사를 페이지별로 살펴보세요. 새 기사가 수집되면 페이지의 기사
         위치가 바뀔 수 있어요.
       </p>
-      <Link href="/incidents" className="ui-link text-brand underline">
+      <ListLink className="ui-link text-brand underline">
         최신 기사 목록
-      </Link>
+      </ListLink>
       {result ? (
         <ArticleList items={result.items} apiOrigin={result.apiOrigin} />
       ) : (

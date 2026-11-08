@@ -1,7 +1,9 @@
 'use client';
 
 import Link from 'next/link';
+import { flushSync } from 'react-dom';
 import {
+  useCallback,
   useEffect,
   useLayoutEffect,
   useRef,
@@ -9,6 +11,8 @@ import {
   type ReactNode,
   type MouseEvent,
 } from 'react';
+
+import { ListLink } from '@/components/layout/list-link/list-link';
 
 import { DetailInline } from './detail-inline';
 import { useArticleSheetRoute } from '../../model/article-sheet-context';
@@ -56,16 +60,13 @@ type DetailSheetProps = {
 };
 
 export function DetailSheet(props: DetailSheetProps) {
-  const route = useArticleSheetRoute();
-
-  if (
-    route?.active &&
-    route.sourcePath === '/incidents' &&
-    !props.onClose &&
-    props.active !== false
-  )
+  if (!props.onClose && props.active !== false)
     return (
-      <DetailInline titleId={props.titleId} footer={props.footer}>
+      <DetailInline
+        titleId={props.titleId}
+        footer={props.footer}
+        closeLabel={props.closeLabel}
+      >
         {props.children}
       </DetailInline>
     );
@@ -95,7 +96,165 @@ function ModalDetailSheet({
   const route = useArticleSheetRoute();
   const [expanded, setExpanded] = useState(() => initialExpanded ?? false);
   const localClose = Boolean(onClose);
-  const drag = useRef<{ start: number; moved: boolean } | null>(null);
+  const drag = useRef<{
+    pointerId: number;
+    start: number;
+    last: number;
+    distanceBeforeResize: number;
+    startHeight: number;
+    collapsedHeight: number;
+    expandedHeight: number;
+    initialExpanded: boolean;
+    moved: boolean;
+  } | null>(null);
+  const suppressClick = useRef(false);
+  const settleTimer = useRef<ReturnType<typeof setTimeout> | undefined>(
+    undefined,
+  );
+  const [dragHeight, setDragHeight] = useState<number | null>(null);
+  const [dragging, setDragging] = useState(false);
+
+  const [previousActive, setPreviousActive] = useState(active);
+
+  if (previousActive !== active) {
+    setPreviousActive(active);
+    setDragHeight(null);
+    setDragging(false);
+  }
+
+  useEffect(() => {
+    return () => {
+      drag.current = null;
+      suppressClick.current = false;
+      clearTimeout(settleTimer.current);
+    };
+  }, [active]);
+
+  const measureSnapHeights = useCallback(() => {
+    const element = panel.current;
+    const reading = scroller.current;
+
+    if (!element || !reading) return null;
+    const panelHeight = element.getBoundingClientRect().height;
+    const readingHeight = reading.getBoundingClientRect().height;
+    const readingStyle = window.getComputedStyle(reading);
+    const visible = Array.from(reading.children).filter((child) => {
+      const style = window.getComputedStyle(child);
+
+      return (
+        style.display !== 'none' &&
+        style.position !== 'absolute' &&
+        style.position !== 'fixed'
+      );
+    });
+    const pixels = (value: string) => Number.parseFloat(value) || 0;
+    const contentHeight = visible.reduce((height, child) => {
+      const style = window.getComputedStyle(child);
+
+      return (
+        height +
+        child.getBoundingClientRect().height +
+        pixels(style.marginTop) +
+        pixels(style.marginBottom)
+      );
+    }, 0);
+    const naturalHeight =
+      panelHeight -
+      readingHeight +
+      contentHeight +
+      pixels(readingStyle.paddingTop) +
+      pixels(readingStyle.paddingBottom) +
+      pixels(readingStyle.rowGap) * Math.max(0, visible.length - 1);
+    const probe = document.createElement('div');
+    const collapsedProbe = document.createElement('div');
+    const expandedProbe = document.createElement('div');
+
+    probe.setAttribute('aria-hidden', 'true');
+    probe.style.cssText =
+      'position:fixed;top:0;left:0;visibility:hidden;pointer-events:none;width:0;';
+    collapsedProbe.style.height = '53.52dvh';
+    expandedProbe.style.height =
+      'calc(100dvh - max(49px, env(safe-area-inset-top)))';
+    probe.append(collapsedProbe, expandedProbe);
+    document.body.append(probe);
+    const collapsedLimit = collapsedProbe.getBoundingClientRect().height;
+    const expandedHeight = expandedProbe.getBoundingClientRect().height;
+
+    probe.remove();
+
+    return {
+      startHeight: panelHeight,
+      collapsedHeight: Math.min(naturalHeight, collapsedLimit),
+      expandedHeight,
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!active) return;
+
+    const handleResize = () => {
+      const current = drag.current;
+
+      if (!current) {
+        clearTimeout(settleTimer.current);
+        setDragHeight(null);
+        setDragging(false);
+
+        return;
+      }
+
+      const heights = measureSnapHeights();
+
+      if (!heights) return;
+      const height = Math.min(
+        heights.expandedHeight,
+        Math.max(heights.collapsedHeight, heights.startHeight),
+      );
+
+      current.distanceBeforeResize += current.last - current.start;
+      current.start = current.last;
+      current.startHeight = height;
+      current.collapsedHeight = heights.collapsedHeight;
+      current.expandedHeight = heights.expandedHeight;
+      setDragging(true);
+      setDragHeight(height);
+    };
+
+    window.addEventListener('resize', handleResize);
+
+    return () => window.removeEventListener('resize', handleResize);
+  }, [active, measureSnapHeights]);
+
+  function finishDrag(expand: boolean, targetHeight: number) {
+    setExpanded(expand);
+    setDragging(false);
+
+    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
+      setDragHeight(null);
+
+      return;
+    }
+
+    setDragHeight(targetHeight);
+    clearTimeout(settleTimer.current);
+    settleTimer.current = setTimeout(() => setDragHeight(null), 240);
+  }
+
+  function cancelDrag(pointerId: number) {
+    const current = drag.current;
+
+    if (!current || current.pointerId !== pointerId) return;
+    drag.current = null;
+    suppressClick.current = current.moved;
+
+    finishDrag(
+      current.initialExpanded,
+      current.initialExpanded
+        ? current.expandedHeight
+        : current.collapsedHeight,
+    );
+  }
+
   const reportHeight = localClose
     ? onHeightChange
     : route?.active
@@ -208,7 +367,27 @@ function ModalDetailSheet({
       aria-hidden={!active || undefined}
       hidden={!active}
       inert={!active || undefined}
-      style={active ? undefined : { display: 'none' }}
+      style={
+        !active
+          ? { display: 'none' }
+          : dragHeight === null
+            ? undefined
+            : {
+                height: `${dragHeight}px`,
+                maxHeight: 'none',
+                ...(dragging ? { transition: 'none' } : {}),
+              }
+      }
+      onTransitionEnd={(event) => {
+        if (
+          event.target === event.currentTarget &&
+          event.propertyName === 'height' &&
+          !drag.current
+        ) {
+          clearTimeout(settleTimer.current);
+          setDragHeight(null);
+        }
+      }}
       tabIndex={active ? -1 : undefined}
       onFocusCapture={(event) => {
         if (active && event.target instanceof HTMLElement)
@@ -262,38 +441,117 @@ function ModalDetailSheet({
           aria-expanded={expanded}
           className="ui-control relative flex h-5 w-full touch-none after:absolute after:inset-x-0 after:-inset-y-3 after:content-[''] cursor-grab items-start justify-center border-0 bg-transparent p-0 active:cursor-grabbing"
           onClick={(event) => {
-            if (event.detail > 0 && drag.current?.moved) {
-              drag.current = null;
+            if (drag.current) {
+              event.preventDefault();
 
               return;
             }
 
-            drag.current = null;
-            setExpanded((value) => !value);
+            if (event.detail > 0 && suppressClick.current) {
+              suppressClick.current = false;
+
+              return;
+            }
+
+            suppressClick.current = false;
+            clearTimeout(settleTimer.current);
+            const expand = !expanded;
+            const heights = measureSnapHeights();
+
+            if (
+              !heights ||
+              window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+            ) {
+              setExpanded(expand);
+              setDragHeight(null);
+              setDragging(false);
+
+              return;
+            }
+
+            // Freeze the current rendered height before changing the target.
+            // Reading geometry commits that style so CSS can interpolate it.
+            flushSync(() => {
+              setExpanded(expand);
+              setDragHeight(heights.startHeight);
+              setDragging(true);
+            });
+            panel.current?.getBoundingClientRect();
+            finishDrag(
+              expand,
+              expand ? heights.expandedHeight : heights.collapsedHeight,
+            );
           }}
           onPointerDown={(event) => {
-            drag.current = { start: event.clientY, moved: false };
+            if (event.button !== 0 || drag.current) return;
+            const heights = measureSnapHeights();
+
+            if (!heights) return;
+            clearTimeout(settleTimer.current);
+            suppressClick.current = false;
+            drag.current = {
+              pointerId: event.pointerId,
+              start: event.clientY,
+              last: event.clientY,
+              distanceBeforeResize: 0,
+              ...heights,
+              initialExpanded: expanded,
+              moved: false,
+            };
+            // Stop any in-flight snap at the height under the pointer.
+            flushSync(() => {
+              setDragHeight(heights.startHeight);
+              setDragging(true);
+            });
             event.currentTarget.setPointerCapture?.(event.pointerId);
           }}
           onPointerMove={(event) => {
-            if (
-              drag.current &&
-              Math.abs(event.clientY - drag.current.start) > 12
-            )
-              drag.current.moved = true;
+            const current = drag.current;
+
+            if (!current || current.pointerId !== event.pointerId) return;
+            const delta = event.clientY - current.start;
+            const distance = current.distanceBeforeResize + delta;
+
+            current.last = event.clientY;
+            if (Math.abs(distance) > 12) current.moved = true;
+            if (delta === 0 && !current.moved) return;
+            setDragging(true);
+            setDragHeight(
+              Math.min(
+                current.expandedHeight,
+                Math.max(current.collapsedHeight, current.startHeight - delta),
+              ),
+            );
           }}
           onPointerUp={(event) => {
-            if (!drag.current) return;
-            const delta = event.clientY - drag.current.start;
+            const current = drag.current;
 
-            if (Math.abs(delta) > 24) {
-              drag.current.moved = true;
-              setExpanded(delta < 0);
-            }
-          }}
-          onPointerCancel={() => {
+            if (!current || current.pointerId !== event.pointerId) return;
             drag.current = null;
+            suppressClick.current = current.moved;
+
+            if (!current.moved) {
+              setDragging(false);
+              // A native touch click follows pointerup; keep the moving
+              // handle under that click, then release if no click arrives.
+              clearTimeout(settleTimer.current);
+              settleTimer.current = setTimeout(() => setDragHeight(null), 240);
+
+              return;
+            }
+
+            const distance =
+              current.distanceBeforeResize + event.clientY - current.start;
+            const expand =
+              Math.abs(distance) > 24 ? distance < 0 : current.initialExpanded;
+
+            finishDrag(
+              expand,
+              expand ? current.expandedHeight : current.collapsedHeight,
+            );
           }}
+          onPointerCancel={(event) => cancelDrag(event.pointerId)}
+          onLostPointerCapture={(event) => cancelDrag(event.pointerId)}
         >
           <span
             aria-hidden="true"
@@ -305,14 +563,13 @@ function ModalDetailSheet({
           className="relative z-10 flex h-6 items-center justify-end"
         >
           {!onClose && (
-            <Link
-              href="/incidents"
+            <ListLink
               scroll={false}
               aria-label="목록으로"
               className="sr-only focus:not-sr-only focus:mr-auto focus:text-sm"
             >
               목록으로
-            </Link>
+            </ListLink>
           )}
           {onClose ? (
             <button

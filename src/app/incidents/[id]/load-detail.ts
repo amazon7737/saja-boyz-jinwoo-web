@@ -24,13 +24,13 @@ function isDetailItem(
   );
 }
 
-export const loadDetail = cache(async (id: string) => {
+export const loadDetail = cache(async (id: string, signal?: AbortSignal) => {
   if (!/^[a-f0-9]{64}$/.test(id)) return { status: 'not-found' } as const;
 
-  return fetchDetail(id);
+  return fetchDetail(id, signal);
 });
 
-async function fetchDetail(id: string) {
+async function fetchDetail(id: string, signal?: AbortSignal) {
   try {
     const base = new URL(process.env.NEWS_API_BASE_URL ?? '');
 
@@ -46,7 +46,9 @@ async function fetchDetail(id: string) {
     const response = await fetch(url, {
       method: 'GET',
       cache: 'no-store',
-      signal: AbortSignal.timeout(5000),
+      signal: signal
+        ? AbortSignal.any([signal, AbortSignal.timeout(5000)])
+        : AbortSignal.timeout(5000),
     });
 
     if (response.status === 404) return { status: 'not-found' } as const;

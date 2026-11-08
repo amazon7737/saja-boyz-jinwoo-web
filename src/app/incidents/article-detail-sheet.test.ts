@@ -12,7 +12,7 @@ vi.mock('next/navigation', () => ({
   },
 }));
 
-test('articleDetailServerSheetPreservesDiscovery', async () => {
+test('articleDetailServerPagePreservesDiscovery', async () => {
   const id = 'd'.repeat(64);
   const article = {
     title: '마포구 <b>화재</b> 후속 보도',
@@ -37,9 +37,9 @@ test('articleDetailServerSheetPreservesDiscovery', async () => {
     const tree = await DetailPage({ params: Promise.resolve({ id }) });
     const view = document.createElement('div');
     view.innerHTML = renderToStaticMarkup(tree);
-    const sheet = view.querySelector('[role="dialog"]');
-    expect(sheet, '직접 접속도 공통 상세 시트로 표시').not.toBeNull();
-    expect(sheet?.getAttribute('aria-modal')).toBe('true');
+    const sheet = view.querySelector('[data-article-inline]');
+    expect(sheet, '직접 접속은 전체 상세 페이지로 표시').not.toBeNull();
+    expect(view.querySelector('[role="dialog"]')).toBeNull();
     const title = sheet?.querySelector('h1');
     expect(title?.textContent).toBe('마포구 화재 후속 보도');
     expect(title?.id).toBeTruthy();
@@ -53,9 +53,7 @@ test('articleDetailServerSheetPreservesDiscovery', async () => {
     );
     expect(source?.getAttribute('target')).toBe('_blank');
     expect(source?.getAttribute('rel')).toContain('noopener');
-    expect(sheet?.querySelector('button')?.closest('[role="dialog"]')).toBe(
-      sheet,
-    );
+    expect(sheet?.querySelector('button')).not.toBeNull();
     expect(sheet?.textContent).toContain('공유');
     expect(
       view.querySelector('script[type="application/ld+json"]')?.textContent,
@@ -67,7 +65,7 @@ test('articleDetailServerSheetPreservesDiscovery', async () => {
   }
 });
 
-test('articleSheetInteractionPreservesBackground', async () => {
+test('mapPreviewSheetInteractionPreservesBackground', async () => {
   const id = 'd'.repeat(64);
   vi.stubEnv('NEWS_API_BASE_URL', 'https://news.example.invalid');
   vi.stubGlobal(
@@ -87,8 +85,10 @@ test('articleSheetInteractionPreservesBackground', async () => {
       }),
     ),
   );
-  const { act } = await import('react');
+  const { act, createElement } = await import('react');
   const { createRoot } = await import('react-dom/client');
+  const { DetailSheet } =
+    await import('@/features/article-detail/ui/detail-sheet/detail-sheet');
   vi.stubGlobal('IS_REACT_ACT_ENVIRONMENT', true);
   const caller = document.createElement('button');
   const container = document.createElement('div');
@@ -97,19 +97,16 @@ test('articleSheetInteractionPreservesBackground', async () => {
   const previousOverflow = document.body.style.overflow;
   document.body.style.overflow = 'auto';
   const root = createRoot(container);
-  let closedTo = '';
-  const captureClose = (event: MouseEvent) => {
-    const link = (event.target as Element).closest('a[aria-label="닫기"]');
-    if (link) {
-      event.preventDefault();
-      closedTo = link.getAttribute('href') ?? '';
-    }
-  };
-  document.addEventListener('click', captureClose);
+  const onClose = vi.fn();
   try {
-    const tree = await DetailPage({ params: Promise.resolve({ id }) });
     await act(async () => {
-      root.render(tree);
+      root.render(
+        createElement(
+          DetailSheet,
+          { titleId: 'preview-title', onClose },
+          createElement('h1', { id: 'preview-title' }, '시트 조작 검증 기사'),
+        ),
+      );
     });
     const dialog = container.querySelector<HTMLElement>('[role="dialog"]')!;
     expect(document.body.style.overflow, '시트가 열리면 배경 스크롤 차단').toBe(
@@ -137,9 +134,10 @@ test('articleSheetInteractionPreservesBackground', async () => {
         new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }),
       );
     });
-    expect(closedTo, '직접 유입은 외부 히스토리 대신 지도 주소로 닫기').toBe(
-      '/',
-    );
+    expect(
+      onClose,
+      'Escape를 누르면 지도 미리보기를 닫음',
+    ).toHaveBeenCalledOnce();
   } finally {
     await act(async () => {
       root.unmount();
@@ -147,7 +145,6 @@ test('articleSheetInteractionPreservesBackground', async () => {
     expect(document.body.style.overflow).toBe('auto');
     expect(document.activeElement, '진입한 요소로 포커스 복구').toBe(caller);
     document.body.style.overflow = previousOverflow;
-    document.removeEventListener('click', captureClose);
     caller.remove();
     container.remove();
     vi.unstubAllGlobals();
@@ -155,7 +152,7 @@ test('articleSheetInteractionPreservesBackground', async () => {
   }
 });
 
-test('articleSheetDragKeepsReadingAndShareWithinReach', async () => {
+test('mapPreviewSheetDragKeepsReadingAndShareWithinReach', async () => {
   const id = 'd'.repeat(64);
   vi.stubGlobal('IS_REACT_ACT_ENVIRONMENT', true);
   vi.stubEnv('NEWS_API_BASE_URL', 'https://news.example.invalid');
@@ -176,14 +173,31 @@ test('articleSheetDragKeepsReadingAndShareWithinReach', async () => {
       }),
     ),
   );
-  const { act } = await import('react');
+  const { act, createElement } = await import('react');
   const { createRoot } = await import('react-dom/client');
+  const { DetailSheet } =
+    await import('@/features/article-detail/ui/detail-sheet/detail-sheet');
+  const { DetailShare } = await import('./[id]/detail-share');
   const host = document.createElement('div');
   document.body.append(host);
   const root = createRoot(host);
   try {
     await act(async () =>
-      root.render(await DetailPage({ params: Promise.resolve({ id }) })),
+      root.render(
+        createElement(
+          DetailSheet,
+          {
+            titleId: 'preview-drag-title',
+            onClose: vi.fn(),
+            footer: createElement(DetailShare, {
+              id,
+              title: '드래그 검증 기사',
+            }),
+          },
+          createElement('h1', { id: 'preview-drag-title' }, '드래그 검증 기사'),
+          createElement('p', null, '긴 요약 '.repeat(80)),
+        ),
+      ),
     );
     const handle = host.querySelector<HTMLButtonElement>(
       'button[aria-expanded]',
@@ -269,7 +283,7 @@ test('articleShareAndFallbackStayInTheReadingScrollFlow', async () => {
       ),
     );
     const summary = host.querySelector('section[aria-label="기사 요약"]')!;
-    const reading = summary.closest('[tabindex="0"]')!;
+    const reading = summary.closest('[data-article-inline]')!;
     const share = [...host.querySelectorAll('button')].find((button) =>
       button.textContent?.includes('공유'),
     )!;
@@ -293,18 +307,108 @@ test('articleShareAndFallbackStayInTheReadingScrollFlow', async () => {
       '복사 실패 복구도 같은 읽기 영역에서 접근',
     ).toBe(true);
     manual.focus();
-    await act(async () =>
-      manual.dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'Tab', bubbles: true }),
-      ),
+    const tab = new KeyboardEvent('keydown', {
+      key: 'Tab',
+      bubbles: true,
+      cancelable: true,
+    });
+    await act(async () => manual.dispatchEvent(tab));
+    expect(tab.defaultPrevented, '상세 페이지는 포커스를 가두지 않음').toBe(
+      false,
     );
-    expect(
-      document.activeElement,
-      '마지막 공유 컨트롤 뒤에는 시트 핸들로 포커스 순환',
-    ).toBe(host.querySelector('button[aria-expanded]'));
   } finally {
     await act(async () => root.unmount());
     host.remove();
     vi.unstubAllGlobals();
   }
+});
+
+test('directArticlePageMovesFocusWithoutLockingScroll', async () => {
+  const id = 'd'.repeat(64);
+  vi.stubEnv('NEWS_API_BASE_URL', 'https://news.example.invalid');
+  vi.stubGlobal('IS_REACT_ACT_ENVIRONMENT', true);
+  vi.stubGlobal(
+    'fetch',
+    vi.fn().mockResolvedValue(
+      Response.json({
+        article_id: id,
+        article: {
+          title: '직접 접속 기사',
+          description: '검증용 요약',
+          pubDate: '2026-10-22T12:20:00Z',
+          originallink: 'https://publisher.example.invalid/report',
+          link: '',
+        },
+        image_status: 'disabled',
+        image_url: null,
+      }),
+    ),
+  );
+  const { act } = await import('react');
+  const { createRoot } = await import('react-dom/client');
+  const host = document.createElement('div');
+  document.body.append(host);
+  const root = createRoot(host);
+  const previousOverflow = document.body.style.overflow;
+  document.body.style.overflow = 'auto';
+  try {
+    const tree = await DetailPage({ params: Promise.resolve({ id }) });
+    await act(async () => root.render(tree));
+    const detail = host.querySelector<HTMLElement>('[data-article-inline]');
+    expect(detail).not.toBeNull();
+    expect(document.activeElement).toBe(detail);
+    expect(host.querySelector('[role="dialog"]')).toBeNull();
+    expect(document.body.style.overflow).toBe('auto');
+    expect(
+      detail?.querySelector('a[aria-label="목록으로"]')?.getAttribute('href'),
+    ).toBe('/incidents');
+    expect(
+      detail?.querySelector('a[aria-label="닫기"]')?.getAttribute('href'),
+    ).toBe('/');
+  } finally {
+    await act(async () => root.unmount());
+    document.body.style.overflow = previousOverflow;
+    host.remove();
+    vi.unstubAllGlobals();
+    vi.unstubAllEnvs();
+  }
+});
+
+// Add to article-detail-sheet.test.ts. Tests the real server-rendered control
+// and the committed asset; it does not depend on a CSS class or /tmp file.
+test('detailCloseUsesAccessibleFigmaIcon', async () => {
+  const { readFile } = await import('node:fs/promises');
+  const { createElement } = await import('react');
+  const { DetailInline } =
+    await import('@/features/article-detail/ui/detail-sheet/detail-inline');
+  const view = document.createElement('div');
+  view.innerHTML = renderToStaticMarkup(
+    createElement(
+      DetailInline,
+      { titleId: 'heading' },
+      createElement('h1', { id: 'heading' }, '기사 상세'),
+    ),
+  );
+  const link = view.querySelector<HTMLAnchorElement>(
+    'nav[aria-label="기사 상세 탐색"] a[aria-label="닫기"]',
+  );
+  expect(link?.getAttribute('href')).toBe('/');
+  const image = link?.querySelector<HTMLImageElement>('img');
+  expect(image?.getAttribute('src')).toBe('/article-detail/header-close.svg');
+  expect(image?.getAttribute('alt')).toBe('');
+  expect(image?.getAttribute('width')).toBe('24');
+  expect(image?.getAttribute('height')).toBe('24');
+
+  const svgText = await readFile(
+    'public/article-detail/header-close.svg',
+    'utf8',
+  );
+  const svg = new DOMParser().parseFromString(svgText, 'image/svg+xml');
+  expect(svg.querySelector('parsererror')).toBeNull();
+  expect(svg.documentElement.getAttribute('viewBox')).toBe('0 0 24 24');
+  expect(svg.documentElement.getAttribute('width')).toBe('24');
+  expect(svg.documentElement.getAttribute('height')).toBe('24');
+  expect(
+    [...svg.querySelectorAll('path')].map((path) => path.getAttribute('d')),
+  ).toEqual(['M6 6L18 18', 'M18 6L6 18']);
 });

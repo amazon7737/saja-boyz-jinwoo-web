@@ -1,9 +1,9 @@
 'use client';
 
 import Image from 'next/image';
-import Link from 'next/link';
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 
+import { ListLink } from '@/components/layout/list-link/list-link';
 import { SiteStructuredData } from '@/components/layout/site-structured-data/site-structured-data';
 import { useArticleSheetRoute } from '@/features/article-detail/model/article-sheet-context';
 import { LoadingSpinner } from '@/components/feedback/loading-spinner';
@@ -17,7 +17,7 @@ import { MapUnavailableFilter } from '../map-unavailable-filter/map-unavailable-
 import { createArticleMarker } from './map-article-marker';
 import { MapArticleSheet } from './map-article-sheet';
 import {
-  naverMapScriptUrl,
+  subscribeNaverMaps,
   type MapInstance,
   type MarkerInstance,
   type NaverMaps,
@@ -99,10 +99,9 @@ export function MapHome({
   articles?: MapArticleResult | null;
 }) {
   const sheetRoute = useArticleSheetRoute();
-  const openArticleRef = useRef(sheetRoute?.openArticle);
   const registerMapArticles = sheetRoute?.registerMapArticles;
   const detailOpen = sheetRoute?.active ?? false;
-  const previousDetailOpen = useRef(false);
+  const setMapPreviewVisible = sheetRoute?.setMapPreviewVisible;
   const [selectionHeight, setSelectionHeight] = useState(0);
   const [selectedArticles, setSelectedArticles] = useState<LocatedArticle[]>(
     [],
@@ -123,6 +122,7 @@ export function MapHome({
     null,
   );
   const canvas = useRef<HTMLDivElement>(null);
+  const mapRegion = useRef<HTMLElement>(null);
   const controlClearance = useRef<HTMLDivElement>(null);
   const carouselOverlay = useRef<HTMLDivElement>(null);
   const noticeViewport = useRef<HTMLDivElement>(null);
@@ -133,7 +133,12 @@ export function MapHome({
   const clearSelection = useRef<((restoreFocus?: boolean) => void) | null>(
     null,
   );
-  const restoreSelectionFocus = useRef<HTMLButtonElement | null>(null);
+  const markCarouselSelection = useRef<((id: string) => void) | null>(null);
+  const restoreSelectionFocus = useRef<HTMLElement | null>(null);
+  const carouselSelection = useRef<{
+    id: string;
+    opener: HTMLAnchorElement;
+  } | null>(null);
   const automaticLocation = useRef<{
     started: boolean;
     request?: Promise<LocationResult>;
@@ -144,10 +149,14 @@ export function MapHome({
   const [ready, setReady] = useState(false);
   const [failed, setFailed] = useState(false);
   const [attempt, setAttempt] = useState(0);
+  const showMapPreview =
+    ready && selectedArticles.length > 0 && !!articles && !detailOpen;
 
-  useEffect(() => {
-    openArticleRef.current = sheetRoute?.openArticle;
-  }, [sheetRoute?.openArticle]);
+  useLayoutEffect(() => {
+    setMapPreviewVisible?.(showMapPreview);
+
+    return () => setMapPreviewVisible?.(false);
+  }, [setMapPreviewVisible, showMapPreview]);
 
   useEffect(() => {
     registerMapArticles?.(filteredArticles?.items ?? []);
@@ -156,26 +165,15 @@ export function MapHome({
   }, [filteredArticles, registerMapArticles]);
 
   useEffect(() => {
-    if (
-      previousDetailOpen.current &&
-      !detailOpen &&
-      selectedArticles.length === 1
-    ) {
-      clearSelection.current?.(true);
-      setSelectedArticles([]);
-    }
-
-    previousDetailOpen.current = detailOpen;
-  }, [detailOpen, selectedArticles.length]);
-
-  useEffect(() => {
-    if (selectedArticles.length || !restoreSelectionFocus.current) return;
+    if (detailOpen || selectedArticles.length || !restoreSelectionFocus.current)
+      return;
     const target = restoreSelectionFocus.current;
 
     restoreSelectionFocus.current = null;
     // 시트의 포커스 가드와 배경 inert가 해제된 commit 뒤에 복귀한다.
     if (target.isConnected) target.focus({ preventScroll: true });
-  }, [selectedArticles]);
+    else mapRegion.current?.focus({ preventScroll: true });
+  }, [detailOpen, selectedArticles]);
 
   useLayoutEffect(() => {
     if (!locating && !locationError && restoreLocateFocus.current) {
@@ -215,6 +213,8 @@ export function MapHome({
     const viewport = restoreMapViewport(clientId);
     let disposed = false;
     let loadFailed = false;
+    let viewportUnavailable = false;
+    let hasUsableViewport = false;
     let map: MapInstance | undefined;
     let marker: MarkerInstance | undefined;
     let selectedMarker: HTMLButtonElement | undefined;
@@ -223,6 +223,8 @@ export function MapHome({
       marker: MarkerInstance;
       listener: unknown;
       setSelected(selected: boolean): void;
+      content: HTMLButtonElement;
+      ids: string[];
     }[] = [];
     let removeArticleListener: ((listener: unknown) => void) | undefined;
     const clearArticles = () => {
@@ -368,18 +370,21 @@ export function MapHome({
         ?.maps;
 
       if (!disposed && !loadFailed && map && maps && canvas.current) {
-        map.setSize(
-          new maps.Size(
-            canvas.current.clientWidth,
-            canvas.current.clientHeight,
-          ),
-        );
+        const { clientWidth, clientHeight } = canvas.current;
+
+        if (!clientWidth || !clientHeight) {
+          viewportUnavailable = true;
+
+          return;
+        }
+
+        viewportUnavailable = false;
+        hasUsableViewport = true;
+        map.setSize(new maps.Size(clientWidth, clientHeight));
         positionControls();
         refreshDisplay?.();
       }
     };
-    const sdkWindow = window as Window & { navermap_authFailure?: () => void };
-    const previousAuthFailure = sdkWindow.navermap_authFailure;
     const initialize = () => {
       const maps = (window as Window & { naver?: { maps: NaverMaps } }).naver
         ?.maps;
@@ -455,10 +460,21 @@ export function MapHome({
       clearSelection.current = (restoreFocus = false) => {
         for (const entry of articleMarkers) entry.setSelected(false);
         restoreSelectionFocus.current = restoreFocus
-          ? (selectedMarker ?? null)
+          ? (carouselSelection.current?.opener ?? selectedMarker ?? null)
           : null;
+        carouselSelection.current = null;
         selectedMarker = undefined;
         selectedPoint = undefined;
+      };
+
+      markCarouselSelection.current = (id) => {
+        const entry = articleMarkers.find((candidate) =>
+          candidate.ids.includes(id),
+        );
+
+        if (!entry) return;
+        entry.setSelected(true);
+        selectedMarker = entry.content;
       };
 
       let currentItems: LocatedArticle[] = [];
@@ -467,6 +483,15 @@ export function MapHome({
       updateArticles.current = (items) => {
         if (disposed || loadFailed || !map) return;
         currentItems = items;
+
+        if (canvas.current?.clientWidth && canvas.current.clientHeight) {
+          hasUsableViewport = true;
+        } else if (hasUsableViewport) {
+          viewportUnavailable = true;
+        }
+
+        if (viewportUnavailable) return;
+
         const groups = groupMapArticles(items);
 
         const projection = map.getProjection?.();
@@ -529,15 +554,24 @@ export function MapHome({
             : undefined;
         const restoreMarkerFocus = document.activeElement === selectedMarker;
 
+        const selectedCarouselArticle = carouselSelection.current
+          ? items.find(
+              (item) => item.article_id === carouselSelection.current?.id,
+            )
+          : undefined;
+
         if (retainedSelection) {
           setSelectedArticles(retainedSelection.items);
+        } else if (selectedCarouselArticle) {
+          setSelectedArticles([selectedCarouselArticle]);
         } else {
-          clearSelection.current?.();
+          clearSelection.current?.(Boolean(carouselSelection.current));
           setSelectedArticles([]);
         }
 
         displayGroups = nextGroups;
         clearArticles();
+        selectedMarker = undefined;
 
         for (const [
           point,
@@ -579,8 +613,6 @@ export function MapHome({
             selectedMarker = visual.content;
             selectedPoint = point;
             setSelectedArticles(group);
-            if (group.length === 1)
-              openArticleRef.current?.(group[0].article_id);
           };
           const listener = maps.Event.addListener(
             articleMarker,
@@ -599,9 +631,18 @@ export function MapHome({
             marker: articleMarker,
             listener,
             setSelected: visual.setSelected,
+            content: visual.content,
+            ids: group.map((candidate) => candidate.article_id),
           });
 
-          if (retainedSelection && point === selectedPoint) {
+          if (
+            (retainedSelection && point === selectedPoint) ||
+            (selectedCarouselArticle &&
+              group.some(
+                (candidate) =>
+                  candidate.article_id === selectedCarouselArticle.article_id,
+              ))
+          ) {
             visual.setSelected(true);
             selectedMarker = visual.content;
             if (restoreMarkerFocus)
@@ -634,52 +675,17 @@ export function MapHome({
 
       window.addEventListener('resize', resize);
 
-      clearTimeout(timeout);
       setReady(true);
     };
-
-    const url = naverMapScriptUrl(clientId);
-
-    for (const element of document.querySelectorAll('script[src]')) {
-      const scriptUrl = new URL((element as HTMLScriptElement).src);
-
-      if (
-        scriptUrl.origin === url.origin &&
-        scriptUrl.pathname === url.pathname &&
-        scriptUrl.searchParams.get('ncpKeyId') !== clientId
-      ) {
-        element.remove();
-      }
-    }
-
-    let script = [...document.querySelectorAll('script')].find(
-      (element) => element.src === url.href,
-    );
-    const existing = Boolean(script);
-
-    if (!script) {
-      script = document.createElement('script');
-      script.src = url.href;
-      script.async = true;
-      const loadingScript = script;
-
-      script.addEventListener(
-        'load',
-        () => {
-          loadingScript.dataset.naverMapLoaded = 'true';
-        },
-        { once: true },
-      );
-    }
 
     const fail = () => {
       if (disposed || loadFailed) return;
       loadFailed = true;
       automaticLocation.current.request = undefined;
-      clearTimeout(timeout);
       locate.current = null;
       updateArticles.current = null;
       clearSelection.current = null;
+      markCarouselSelection.current = null;
       pending = false;
       setLocating(false);
       setLocationError('');
@@ -691,43 +697,27 @@ export function MapHome({
       marker = undefined;
       map?.destroy();
       map = undefined;
-      script.remove();
       setReady(false);
       setFailed(true);
     };
 
-    sdkWindow.navermap_authFailure = fail;
-    const timeout = setTimeout(fail, 10_000);
-
-    script.addEventListener('load', initialize);
-    script.addEventListener('error', fail);
-    if (!existing) document.head.append(script);
-    // StrictMode can reuse a pending script while an older SDK global remains.
-    // Only a completed load on this script allows immediate SDK reuse.
-    if (script.dataset.naverMapLoaded === 'true') queueMicrotask(initialize);
+    const unsubscribe = subscribeNaverMaps(clientId, {
+      ready: initialize,
+      error: fail,
+    });
 
     return () => {
       disposed = true;
       locate.current = null;
       updateArticles.current = null;
       clearSelection.current = null;
+      markCarouselSelection.current = null;
       observer?.disconnect();
       window.removeEventListener('resize', resize);
       clearControls();
       clearArticles();
       marker?.setMap(null);
-      clearTimeout(timeout);
-
-      if (sdkWindow.navermap_authFailure === fail) {
-        if (previousAuthFailure === undefined) {
-          delete sdkWindow.navermap_authFailure;
-        } else {
-          sdkWindow.navermap_authFailure = previousAuthFailure;
-        }
-      }
-
-      script.removeEventListener('load', initialize);
-      script.removeEventListener('error', fail);
+      unsubscribe();
       if (map) captureMapViewport(clientId, map);
       map?.destroy();
     };
@@ -758,16 +748,22 @@ export function MapHome({
   return (
     <>
       <SiteStructuredData />
-      <section aria-label="주변 지도" className="relative">
+      <section
+        ref={mapRegion}
+        aria-label="주변 지도"
+        tabIndex={-1}
+        className="relative"
+      >
         <div
           role="group"
           aria-label="기사 필터"
-          className="absolute top-[calc(68px_+_env(safe-area-inset-top))] right-4 left-4 z-20 flex h-[30px] items-start gap-1.5"
+          hidden={showMapPreview}
+          inert={showMapPreview || undefined}
+          className={`absolute top-[calc(68px_+_env(safe-area-inset-top))] right-4 left-4 z-20 h-[30px] items-start gap-1.5 ${showMapPreview ? 'hidden' : 'flex'}`}
         >
           <MapAllFilters value={period} onChange={applyPeriod} />
           <MapPeriodFilter value={period} onChange={applyPeriod} />
           <MapUnavailableFilter kind="category" />
-          <MapUnavailableFilter kind="status" />
         </div>
         <div ref={canvas} className="h-dvh overflow-hidden" />
         <div
@@ -777,7 +773,7 @@ export function MapHome({
           style={{
             height: detailOpen
               ? sheetRoute!.height + 8
-              : selectedArticles.length > (sheetRoute ? 1 : 0)
+              : selectedArticles.length > 0
                 ? selectionHeight + 8
                 : undefined,
           }}
@@ -811,7 +807,15 @@ export function MapHome({
               )}
             </button>
             {ready && articles && articles.items.length > 0 && (
-              <MapArticleCarousel articles={filteredArticles!} />
+              <MapArticleCarousel
+                articles={filteredArticles!}
+                onSelect={(item, opener) => {
+                  clearSelection.current?.();
+                  carouselSelection.current = { id: item.article_id, opener };
+                  markCarouselSelection.current?.(item.article_id);
+                  setSelectedArticles([item]);
+                }}
+              />
             )}
           </div>
         </div>
@@ -872,7 +876,7 @@ export function MapHome({
                         기사 위치 다시 불러오기
                       </button>
                     ) : (
-                      <Link href="/incidents">전체 기사 목록 보기</Link>
+                      <ListLink>전체 기사 목록 보기</ListLink>
                     )
                   }
                 >
@@ -929,20 +933,18 @@ export function MapHome({
             </div>
           )}
         </div>
-        {ready &&
-          selectedArticles.length > (sheetRoute ? 1 : 0) &&
-          articles && (
-            <MapArticleSheet
-              active={!detailOpen}
-              items={selectedArticles}
-              apiOrigin={articles.apiOrigin}
-              onHeightChange={setSelectionHeight}
-              onClose={() => {
-                clearSelection.current?.(true);
-                setSelectedArticles([]);
-              }}
-            />
-          )}
+        {ready && selectedArticles.length > 0 && articles && (
+          <MapArticleSheet
+            active={!detailOpen}
+            items={selectedArticles}
+            apiOrigin={articles.apiOrigin}
+            onHeightChange={setSelectionHeight}
+            onClose={() => {
+              clearSelection.current?.(true);
+              setSelectedArticles([]);
+            }}
+          />
+        )}
       </section>
     </>
   );

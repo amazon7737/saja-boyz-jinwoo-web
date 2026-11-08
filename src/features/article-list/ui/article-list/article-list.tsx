@@ -8,9 +8,11 @@ import type { ArticleCollectionItem } from '../../model/article.types';
 export function ArticleList({
   items,
   apiOrigin,
+  now = null,
 }: {
   items: readonly ArticleCollectionItem[];
   apiOrigin: string;
+  now?: number | null;
 }) {
   const seen = new Set<string>();
   const articles = items.filter(({ article_id }) => {
@@ -36,7 +38,12 @@ export function ArticleList({
         </Notice>
       )}
       {articles.map((item) => (
-        <ArticleCard key={item.article_id} item={item} apiOrigin={apiOrigin} />
+        <ArticleCard
+          key={item.article_id}
+          item={item}
+          apiOrigin={apiOrigin}
+          now={now}
+        />
       ))}
     </div>
   );

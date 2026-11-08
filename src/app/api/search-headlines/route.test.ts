@@ -29,6 +29,10 @@ test('searchHeadlinesProxyUsesTodayRankingAndCleansNaverTitleMarkup', async () =
   expect(response.status).toBe(200);
   expect(await response.json()).toEqual({
     titles: ['서울 수사 & 속보', '부산 소식'],
+    items: [
+      { article_id: 'a'.repeat(64), title: '서울 수사 & 속보', views_today: 3 },
+      { article_id: 'b'.repeat(64), title: '부산 소식', views_today: 1 },
+    ],
   });
   expect(String(request.mock.calls[0][0])).toBe(
     'https://news.example.test/news/popular/today',
@@ -67,6 +71,60 @@ test.each([
   },
 );
 
+test.each([
+  ['기사 ID 누락', { title: '기사', views_today: 1 }],
+  ['숫자 기사 ID', { article_id: 123, title: '기사', views_today: 1 }],
+  [
+    '잘못된 기사 ID 형식',
+    { article_id: 'invalid', title: '기사', views_today: 1 },
+  ],
+  [
+    '음수 조회수',
+    { article_id: 'a'.repeat(64), title: '기사', views_today: -1 },
+  ],
+  ['0 조회수', { article_id: 'a'.repeat(64), title: '기사', views_today: 0 }],
+  [
+    '소수 조회수',
+    { article_id: 'a'.repeat(64), title: '기사', views_today: 1.5 },
+  ],
+  [
+    '안전 범위 초과 조회수',
+    {
+      article_id: 'a'.repeat(64),
+      title: '기사',
+      views_today: Number.MAX_SAFE_INTEGER + 1,
+    },
+  ],
+  [
+    '문자열 조회수',
+    { article_id: 'a'.repeat(64), title: '기사', views_today: '1' },
+  ],
+  [
+    'null 조회수',
+    { article_id: 'a'.repeat(64), title: '기사', views_today: null },
+  ],
+])('searchHeadlinesRejectsInvalidItems: %s', async (_scenario, invalidItem) => {
+  vi.stubEnv('NEWS_API_BASE_URL', 'https://news.example.test');
+  vi.stubGlobal(
+    'fetch',
+    vi.fn().mockResolvedValue(
+      Response.json({
+        date: '2026-11-01',
+        timezone: 'Asia/Seoul',
+        items: [
+          { article_id: 'b'.repeat(64), title: '정상 기사', views_today: 2 },
+          invalidItem,
+        ],
+      }),
+    ),
+  );
+
+  const response = await GET();
+  expect(response.status).toBe(503);
+  expect(await response.json()).toEqual({ titles: [] });
+  expect(response.headers.get('Cache-Control')).toBe('no-store');
+});
+
 test('searchHeadlinesWithoutServerConfigurationDoesNotFetch', async () => {
   vi.stubEnv('NEWS_API_BASE_URL', '');
   const request = vi.fn();
@@ -74,4 +132,35 @@ test('searchHeadlinesWithoutServerConfigurationDoesNotFetch', async () => {
   const response = await GET();
   expect(response.status).toBe(503);
   expect(request).not.toHaveBeenCalled();
+});
+
+test('searchHeadlinesDeduplicatesIdsWhilePreservingTheFirstRankForTitlesAndCards', async () => {
+  vi.stubEnv('NEWS_API_BASE_URL', 'https://news.example.test');
+  vi.stubGlobal(
+    'fetch',
+    vi.fn().mockResolvedValue(
+      Response.json({
+        date: '2026-11-01',
+        timezone: 'Asia/Seoul',
+        items: [
+          {
+            article_id: 'a'.repeat(64),
+            title: '<b>첫 번째</b>',
+            views_today: 8,
+          },
+          { article_id: 'a'.repeat(64), title: '중복된 제목', views_today: 7 },
+          { article_id: 'b'.repeat(64), title: '두 번째', views_today: 2 },
+        ],
+      }),
+    ),
+  );
+  const response = await GET();
+  expect(response.status).toBe(200);
+  expect(await response.json()).toEqual({
+    titles: ['첫 번째', '두 번째'],
+    items: [
+      { article_id: 'a'.repeat(64), title: '첫 번째', views_today: 8 },
+      { article_id: 'b'.repeat(64), title: '두 번째', views_today: 2 },
+    ],
+  });
 });
