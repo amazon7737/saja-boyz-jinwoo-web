@@ -254,6 +254,42 @@ export function SheetFixture({ item, id, apiOrigin }: { item: FixtureArticle | n
 }
 `,
   );
+  const mapSheetFixture = join(directory, 'src/app/map-sheet-test-fixture');
+  await mkdir(mapSheetFixture, { recursive: true });
+  await writeFile(
+    join(mapSheetFixture, 'page.tsx'),
+    `import { MapSheetFixture } from './map-sheet-fixture';
+import type { LocatedArticle } from '@/features/map/model/map-article.types';
+export const dynamic = 'force-dynamic';
+export default async function FixturePage() {
+  const id = 'a'.repeat(64);
+  const base = process.env.NEWS_API_BASE_URL!;
+  const response = await fetch(new URL('/news/' + id, base), { cache: 'no-store' });
+  const item = (await response.json()) as LocatedArticle;
+  return <MapSheetFixture item={{ ...item, collection_id: 'fixture', location_status: 'resolved', location_reason: null,
+    location: { latitude: 37.5, longitude: 127, label: '서울특별시 중구', precision: 'region', evidence: { field: 'title', text: '서울' } } }} apiOrigin={base} />;
+}
+`,
+  );
+  await writeFile(
+    join(mapSheetFixture, 'map-sheet-fixture.tsx'),
+    `"use client";
+import { useEffect, useState } from 'react';
+import { ArticleSheetContext, type ArticleSheetRoute } from '@/features/article-detail/model/article-sheet-context';
+import { MapArticleSheet } from '@/features/map/ui/map-home/map-article-sheet';
+import type { LocatedArticle } from '@/features/map/model/map-article.types';
+const route: ArticleSheetRoute = { active: false, sourcePath: '/', height: 0, mapArticles: [],
+  openArticle() {}, close() {}, setHeight() {}, registerMapArticles() {}, retry() {} };
+export function MapSheetFixture({ item, apiOrigin }: { item: LocatedArticle; apiOrigin: string }) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  return <ArticleSheetContext.Provider value={route}>
+    <div data-article-background="">지도 배경 fixture</div>
+    {mounted && <MapArticleSheet items={[item]} apiOrigin={apiOrigin} onClose={() => {}} />}
+  </ArticleSheetContext.Provider>;
+}
+`,
+  );
   const env = {
     ...process.env,
     NEWS_API_BASE_URL: 'http://127.0.0.1:' + apiPort,
@@ -4255,3 +4291,161 @@ test('fixedNavigationDoesNotCoverContentLinks', async () => {
     }
   }
 }, 60000);
+
+test('relatedArticleBackReturnsToPreviousDetailBeforeTheList', async () => {
+  const second = {
+    ...article,
+    article_id: 'b'.repeat(64),
+    article: { ...article.article, title: '같은 지역의 두 번째 기사' },
+  };
+  const location = {
+    latitude: 37.5,
+    longitude: 127.1,
+    label: '서울 검증 지역',
+    precision: 'region',
+    evidence: { field: 'description', text: '내부 이동 검증용 기사' },
+  };
+  const located = (item: typeof article) => ({
+    ...item,
+    collection_id: 'detail-navigation-fixture',
+    location_status: 'resolved',
+    location_reason: null,
+    location,
+  });
+  listArticles = [article, second];
+  mapArticlesFixture = { total: 2, items: [located(article), located(second)] };
+  try {
+    const page = await openList();
+    await page
+      .getByRole('link', { name: article.article.title, exact: true })
+      .click();
+    await page
+      .getByRole('heading', { level: 1, name: article.article.title })
+      .waitFor();
+    await page
+      .getByRole('region', { name: '같은 지역 기사' })
+      .getByRole('link', { name: /같은 지역의 두 번째 기사/ })
+      .click();
+    await page
+      .getByRole('heading', { level: 1, name: second.article.title })
+      .waitFor();
+    expect(
+      await page.locator('[data-article-control="back"]').getAttribute('href'),
+    ).toBe('/incidents/' + id);
+    await page.locator('[data-article-control="back"]').click();
+    await expect
+      .poll(() => new URL(page.url()).pathname)
+      .toBe('/incidents/' + id);
+    await page
+      .getByRole('heading', { level: 1, name: article.article.title })
+      .waitFor();
+    await page.goForward();
+    await page
+      .getByRole('heading', { level: 1, name: second.article.title })
+      .waitFor();
+    await expect
+      .poll(() =>
+        page.locator('[data-article-control="back"]').getAttribute('href'),
+      )
+      .toBe('/incidents/' + id);
+    await page.goBack();
+    await page
+      .getByRole('heading', { level: 1, name: article.article.title })
+      .waitFor();
+    await page.locator('[data-article-control="back"]').click();
+    await expect.poll(() => new URL(page.url()).pathname).toBe('/incidents');
+  } finally {
+    listArticles = [article];
+    mapArticlesFixture = { total: 0, items: [] };
+  }
+}, 120000);
+
+test('relatedArticleBackReturnsToDirectlyOpenedDetail', async () => {
+  const second = {
+    ...article,
+    article_id: 'b'.repeat(64),
+    article: { ...article.article, title: '같은 지역의 두 번째 기사' },
+  };
+  const location = {
+    latitude: 37.5,
+    longitude: 127.1,
+    label: '서울 검증 지역',
+    precision: 'region',
+    evidence: { field: 'description', text: '내부 이동 검증용 기사' },
+  };
+  const located = (item: typeof article) => ({
+    ...item,
+    collection_id: 'detail-navigation-fixture',
+    location_status: 'resolved',
+    location_reason: null,
+    location,
+  });
+  listArticles = [article, second];
+  mapArticlesFixture = { total: 2, items: [located(article), located(second)] };
+  try {
+    const page = await openList();
+    await page.goto(origin + '/incidents/' + id);
+    await page
+      .getByRole('heading', { level: 1, name: article.article.title })
+      .waitFor();
+    await page
+      .getByRole('region', { name: '같은 지역 기사' })
+      .getByRole('link', { name: /같은 지역의 두 번째 기사/ })
+      .click();
+    await page
+      .getByRole('heading', { level: 1, name: second.article.title })
+      .waitFor();
+    await page.locator('[data-article-control="back"]').click();
+    await expect
+      .poll(() => new URL(page.url()).pathname)
+      .toBe('/incidents/' + id);
+    await page
+      .getByRole('heading', { level: 1, name: article.article.title })
+      .waitFor();
+  } finally {
+    listArticles = [article];
+    mapArticlesFixture = { total: 0, items: [] };
+  }
+}, 120000);
+
+test('mapPreviewKeepsDetailButtonVisibleWhenContentOverflows', async () => {
+  const savedDescription = article.article.description;
+  article.article.description = '지도 미리보기 본문이 길어지는 경우. '.repeat(
+    40,
+  );
+  try {
+    const page = await openList(393);
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.goto(origin + '/map-sheet-test-fixture');
+    const sheet = page.getByRole('dialog');
+    const button = sheet.getByRole('link', { name: '자세히 보기' });
+    await button.waitFor();
+    const geometry = await sheet.evaluate((panel) => {
+      const reading = panel.querySelector<HTMLElement>(
+        ':scope > [tabindex="0"]',
+      )!;
+      const link = [...panel.querySelectorAll('a')].find(
+        (a) => a.textContent?.trim() === '자세히 보기',
+      )!;
+      const area = reading.getBoundingClientRect();
+      const target = link.getBoundingClientRect();
+      return {
+        overflow: reading.scrollHeight - reading.clientHeight,
+        top: target.top - area.top,
+        bottom: area.bottom - target.bottom,
+      };
+    });
+    expect(geometry.overflow, '접힌 미리보기 내용이 스크롤됨').toBeGreaterThan(
+      0,
+    );
+    expect(geometry.top, '자세히 보기 버튼 위쪽이 보임').toBeGreaterThanOrEqual(
+      0,
+    );
+    expect(
+      geometry.bottom,
+      '자세히 보기 버튼 아래쪽이 보임',
+    ).toBeGreaterThanOrEqual(0);
+  } finally {
+    article.article.description = savedDescription;
+  }
+}, 30000);
