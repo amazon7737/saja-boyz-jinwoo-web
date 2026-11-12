@@ -234,7 +234,7 @@ export function MapArticleSheet({
               <Link
                 scroll={false}
                 href={'/incidents/' + item.article_id}
-                className="ui-control inline-flex min-h-12 items-center justify-center rounded-xl border border-solid border-brand bg-surface px-4 py-3 text-sm font-bold text-brand"
+                className="ui-control sticky bottom-0 inline-flex min-h-12 items-center justify-center rounded-xl border border-solid border-brand bg-surface px-4 py-3 text-sm font-bold text-brand"
                 onClick={(event) => {
                   if (
                     event.defaultPrevented ||
