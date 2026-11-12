@@ -8,8 +8,8 @@ import {
   publicationText,
 } from '@/features/article-list/model/article-presentation';
 
-import { useArticleSheetRoute } from '../../model/article-sheet-context';
 import { useDetailLocation } from '../../model/detail-location-context';
+import { recordRelatedArticleNavigation } from '../../model/related-article-history';
 
 export function DetailLocation({ id }: { id: string }) {
   const state = useDetailLocation(id);
@@ -70,7 +70,6 @@ export function DetailLocation({ id }: { id: string }) {
 }
 
 export function RelatedArticles({ id }: { id: string }) {
-  const route = useArticleSheetRoute();
   const related = useDetailLocation(id).data?.related ?? [];
 
   if (!related.length) return null;
@@ -88,8 +87,20 @@ export function RelatedArticles({ id }: { id: string }) {
             <li key={item.articleId}>
               <Link
                 href={'/incidents/' + item.articleId}
-                replace={route?.active}
                 scroll={false}
+                onClick={(event) => {
+                  if (
+                    !event.defaultPrevented &&
+                    event.button === 0 &&
+                    !event.metaKey &&
+                    !event.ctrlKey &&
+                    !event.shiftKey &&
+                    !event.altKey
+                  )
+                    recordRelatedArticleNavigation(
+                      '/incidents/' + item.articleId,
+                    );
+                }}
                 className="ui-link flex flex-col gap-1.5 rounded-lg border border-solid border-[#e3e8f0] bg-[#f7fafc] p-2.5"
               >
                 <span className="self-end text-[11px]/[13px] text-muted">
