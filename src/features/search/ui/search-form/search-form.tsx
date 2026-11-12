@@ -17,7 +17,6 @@ import { LoadingSpinner } from '@/components/feedback/loading-spinner';
 import { useRollingSearchPrompt } from '../../model/use-rolling-search-prompt';
 import { SearchLoading } from '../search-loading/search-loading';
 import { SearchSuggestions } from '../search-suggestions/search-suggestions';
-import styles from './search-form.module.css';
 
 export function SearchForm({
   keyword,
@@ -72,7 +71,7 @@ export function SearchForm({
               else router.push(href);
             });
           }}
-          className={`${styles.field} flex h-11 min-w-0 flex-1 items-center rounded-card border-[1.5px] border-solid border-brand bg-surface pl-0 pr-0 shadow-[0_4px_8px_rgb(0_0_0/5%)]`}
+          className={`flex h-11 min-w-0 flex-1 items-center rounded-card border-[1.5px] border-solid border-brand bg-surface pl-0 pr-0 shadow-[0_4px_8px_rgb(0_0_0/5%)] has-[input:focus-visible]:outline-3 has-[input:focus-visible]:outline-offset-4 has-[input:focus-visible]:outline-brand`}
         >
           <button
             type="submit"
@@ -86,7 +85,7 @@ export function SearchForm({
                 <LoadingSpinner />
               </span>
             ) : (
-              <Icon name="search" className={styles.icon} />
+              <Icon name="search" className="size-6!" />
             )}
           </button>
           <SearchInput
@@ -171,7 +170,7 @@ function SearchInput({
         readOnly={pending}
         aria-label="기사 키워드 검색"
         placeholder={prompt}
-        className={`${styles.input} h-full min-h-0 min-w-0 flex-1 border-0 bg-transparent p-0 text-[14px]/[17px] font-semibold text-text placeholder:font-normal`}
+        className={`h-full min-h-0 min-w-0 flex-1 border-0 bg-transparent p-0 text-[14px]/[17px] font-semibold text-text placeholder:font-normal focus-visible:outline-none [&::-webkit-search-cancel-button]:appearance-none`}
       />
       {keyword ? (
         <Link

@@ -9,8 +9,14 @@ permissions:
   contents: read
 jobs:
   check:
-    runs-on: ubuntu-latest
+    runs-on: poem-public
     steps:
+      - name: gh CLI 준비 (self-hosted 이미지에는 없음)
+        run: |
+          command -v gh >/dev/null && exit 0
+          v=2.103.3 a=$(dpkg --print-architecture)
+          curl -fsSL "https://github.com/cli/cli/releases/download/v$v/gh_${v}_linux_$a.tar.gz" | tar -xz -C "$RUNNER_TEMP"
+          echo "$RUNNER_TEMP/gh_${v}_linux_$a/bin" >> "$GITHUB_PATH"
       - uses: actions/checkout@v4
       - name: lock vs upstream
         env:
