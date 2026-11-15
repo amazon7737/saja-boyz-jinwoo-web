@@ -70,7 +70,7 @@ export function DetailShare({ id, title }: { id: string; title: string }) {
             aria-label="공유 링크"
             value={manualUrl}
             readOnly
-            className="w-full rounded-lg border border-solid border-border bg-background p-3 text-sm text-text"
+            className="w-full rounded-lg border border-solid border-border bg-background p-3 text-sm text-text outline-offset-0"
           />
         </div>
       )}
