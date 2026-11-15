@@ -11,7 +11,11 @@ import { AppShell } from './app-shell';
 let pathname = '/';
 const childAction = vi.fn();
 
-vi.mock('next/navigation', () => ({ usePathname: () => pathname }));
+vi.mock('next/navigation', () => ({
+  usePathname: () => pathname,
+  useSearchParams: () => new URLSearchParams(window.location.search),
+  useRouter: () => ({ push: vi.fn(), replace: vi.fn() }),
+}));
 
 afterEach(() => {
   pathname = '/';
@@ -123,7 +127,7 @@ test('foundationBrandHasALocalAccessibleSvgAndSearchLink', async () => {
   }
 });
 
-test('foundationUnconnectedArticleFiltersCannotPretendToFilter', async () => {
+test('foundationUnavailableCategoryCannotPretendToFilter', async () => {
   for (const route of ['/incidents']) {
     await withShell(route, (host) => {
       const filters = host.querySelector('[aria-label="기사 필터"]');
@@ -133,8 +137,10 @@ test('foundationUnconnectedArticleFiltersCannotPretendToFilter', async () => {
           filters.querySelectorAll<HTMLButtonElement>('button'),
         ).find((candidate) => candidate.textContent?.trim().startsWith(label));
         assert(button);
-        expect(button.disabled).toBe(true);
-        expect(button.getAttribute('title')).toContain('준비 중');
+        if (label === '카테고리') {
+          expect(button.disabled).toBe(true);
+          expect(button.getAttribute('title')).toContain('준비 중');
+        }
       }
       expect(
         Array.from(filters.querySelectorAll('button')).map((item) =>
