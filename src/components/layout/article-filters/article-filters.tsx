@@ -17,7 +17,10 @@ const periodValues = {
 export function ArticleFilters({ isHome }: { isHome: boolean }) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const period = parseArticlePeriod(searchParams?.get('period'));
+  const periods = searchParams?.getAll('period');
+  const period = parseArticlePeriod(
+    periods?.length === 1 ? periods[0] : undefined,
+  );
   const chipClassName = `flex shrink-0 items-center gap-1 rounded-[20px] border border-solid border-[rgba(200,210,220,0.6)] bg-floating px-3 py-0 text-[13px]/[normal] font-semibold text-text opacity-100 backdrop-blur-[8px] ${isHome ? 'h-8' : 'h-7'}`;
 
   return (
