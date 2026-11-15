@@ -384,7 +384,7 @@ export default function ReportPage() {
             </label>
             <div className="relative">
               <select
-                className="box-border h-11 w-full min-w-0 appearance-none rounded-xl border-[1.5px] border-solid border-border bg-background py-[11px] pr-11 pl-3.5 text-[14px]/[17px] text-text invalid:text-slate-400 focus:border-[#ea1a2d] focus:ring-4 focus:ring-[#ea1a2d]/15 focus:ring-offset-2 aria-[invalid=true]:border-[#ea1a2d] aria-[invalid=true]:bg-[#fff5f5]"
+                className="box-border h-11 w-full min-w-0 appearance-none rounded-xl border-[1.5px] border-solid border-border bg-background py-[11px] pr-11 pl-3.5 text-[14px]/[17px] text-text invalid:text-slate-400 focus:border-[#ea1a2d] focus:shadow-[inset_0_0_0_1px_#ea1a2d] focus-visible:outline-offset-0 aria-[invalid=true]:border-[#ea1a2d] aria-[invalid=true]:bg-[#fff5f5]"
                 id="report-category"
                 name="category"
                 disabled={formLocked}
@@ -418,7 +418,7 @@ export default function ReportPage() {
               발생 날짜 및 시간 (한국시간)
             </label>
             <input
-              className="box-border h-11 w-full min-w-0 rounded-xl border-[1.5px] border-solid border-border bg-background px-3.5 py-[11px] text-[14px]/[17px] text-muted focus:border-[#ea1a2d] focus:ring-4 focus:ring-[#ea1a2d]/15 focus:ring-offset-2 aria-[invalid=true]:border-[#ea1a2d] aria-[invalid=true]:bg-[#fff5f5]"
+              className="box-border h-11 w-full min-w-0 rounded-xl border-[1.5px] border-solid border-border bg-background px-3.5 py-[11px] text-[14px]/[17px] text-muted focus:border-[#ea1a2d] focus:shadow-[inset_0_0_0_1px_#ea1a2d] focus-visible:outline-offset-0 aria-[invalid=true]:border-[#ea1a2d] aria-[invalid=true]:bg-[#fff5f5]"
               id="report-occurred-at"
               name="occurredAt"
               disabled={formLocked}
@@ -436,7 +436,7 @@ export default function ReportPage() {
               제보 제목
             </label>
             <input
-              className="box-border h-11 w-full min-w-0 appearance-none rounded-xl border-[1.5px] border-solid border-border bg-background px-3.5 py-[11px] text-[14px]/[17px] text-text placeholder:text-slate-400 focus:border-[#ea1a2d] focus:ring-4 focus:ring-[#ea1a2d]/15 focus:ring-offset-2 aria-[invalid=true]:border-[#ea1a2d] aria-[invalid=true]:bg-[#fff5f5]"
+              className="box-border h-11 w-full min-w-0 appearance-none rounded-xl border-[1.5px] border-solid border-border bg-background px-3.5 py-[11px] text-[14px]/[17px] text-text placeholder:text-slate-400 focus:border-[#ea1a2d] focus:shadow-[inset_0_0_0_1px_#ea1a2d] focus-visible:outline-offset-0 aria-[invalid=true]:border-[#ea1a2d] aria-[invalid=true]:bg-[#fff5f5]"
               id="report-title"
               name="title"
               disabled={formLocked}
@@ -459,7 +459,7 @@ export default function ReportPage() {
                 className="pointer-events-none absolute top-1/2 left-3.5 -translate-y-1/2 text-brand"
               />
               <input
-                className="box-border h-11 w-full min-w-0 appearance-none rounded-xl border-[1.5px] border-solid border-border bg-background py-[11px] pr-3.5 pl-[34px] text-[14px]/[17px] text-text placeholder:text-slate-400 focus:border-[#ea1a2d] focus:ring-4 focus:ring-[#ea1a2d]/15 focus:ring-offset-2 aria-[invalid=true]:border-[#ea1a2d] aria-[invalid=true]:bg-[#fff5f5]"
+                className="box-border h-11 w-full min-w-0 appearance-none rounded-xl border-[1.5px] border-solid border-border bg-background py-[11px] pr-3.5 pl-[34px] text-[14px]/[17px] text-text placeholder:text-slate-400 focus:border-[#ea1a2d] focus:shadow-[inset_0_0_0_1px_#ea1a2d] focus-visible:outline-offset-0 aria-[invalid=true]:border-[#ea1a2d] aria-[invalid=true]:bg-[#fff5f5]"
                 id="report-location"
                 name="location"
                 disabled={formLocked}
@@ -478,7 +478,7 @@ export default function ReportPage() {
               상세내용
             </label>
             <textarea
-              className="box-border h-[100px] w-full min-w-0 resize-none appearance-none rounded-xl border-[1.5px] border-solid border-border bg-background p-3.5 text-[14px]/[17px] text-text placeholder:text-slate-400 focus:border-[#ea1a2d] focus:ring-4 focus:ring-[#ea1a2d]/15 focus:ring-offset-2 aria-[invalid=true]:border-[#ea1a2d] aria-[invalid=true]:bg-[#fff5f5]"
+              className="box-border h-[100px] w-full min-w-0 resize-none appearance-none rounded-xl border-[1.5px] border-solid border-border bg-background p-3.5 text-[14px]/[17px] text-text placeholder:text-slate-400 focus:border-[#ea1a2d] focus:shadow-[inset_0_0_0_1px_#ea1a2d] focus-visible:outline-offset-0 aria-[invalid=true]:border-[#ea1a2d] aria-[invalid=true]:bg-[#fff5f5]"
               id="report-description"
               name="description"
               disabled={formLocked}
@@ -558,7 +558,7 @@ export default function ReportPage() {
                 className={
                   attachments.length >= 3
                     ? 'sr-only'
-                    : `relative flex flex-col items-center justify-center gap-[9px] rounded-xl border-[1.5px] border-dashed border-slate-400 bg-background text-[13px]/[normal] font-bold text-slate-400 focus-within:outline-[3px] focus-within:outline-solid focus-within:outline-brand focus-within:outline-offset-4 focus-within:border-[#ea1a2d] focus-within:ring-4 focus-within:ring-[#ea1a2d]/15 focus-within:ring-offset-2 data-[invalid=true]:border-[#ea1a2d] data-[invalid=true]:bg-[#fff5f5] ${attachments.length ? 'mt-2.5 h-[76px] w-10 shrink-0' : 'h-[110px] p-5'}`
+                    : `relative flex flex-col items-center justify-center gap-[9px] rounded-xl border-[1.5px] border-dashed border-slate-400 bg-background text-[13px]/[normal] font-bold text-slate-400 focus-within:outline-[3px] focus-within:outline-solid focus-within:outline-brand focus-within:outline-offset-0 focus-within:border-[#ea1a2d] data-[invalid=true]:border-[#ea1a2d] data-[invalid=true]:bg-[#fff5f5] ${attachments.length ? 'mt-2.5 h-[76px] w-10 shrink-0' : 'h-[110px] p-5'}`
                 }
               >
                 <span
