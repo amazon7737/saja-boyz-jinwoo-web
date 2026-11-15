@@ -2,9 +2,9 @@
 branch: codex/adaptive-skeletons
 owner: easter721
 started: 2026-11-12
-status: active
+status: done
 goal: fix(ui): 로딩과 입력·목록 사용성 개선
-next: 입력 포커스와 기간 필터, 검색·목록 전환을 반영하고 검증
+next: PR 68의 원격 검사와 리뷰, 서버 기간 필터 배포 순서를 확인
 base: dev
 ---
 
