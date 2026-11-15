@@ -731,7 +731,7 @@ test('searchKeyboardFocusKeepsTheFormOutlineAndClearControl', async () => {
         inputOutline: 'none',
         formOutline: 'solid',
         width: '3px',
-        offset: '4px',
+        offset: '0px',
         color: 'rgb(232, 25, 44)',
       });
       await page.keyboard.type('fire');

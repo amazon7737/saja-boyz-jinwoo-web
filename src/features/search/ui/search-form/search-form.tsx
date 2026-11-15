@@ -71,7 +71,7 @@ export function SearchForm({
               else router.push(href);
             });
           }}
-          className="flex h-11 min-w-0 flex-1 items-center rounded-card border-[1.5px] border-solid border-brand bg-surface pl-0 pr-0 shadow-[0_4px_8px_rgb(0_0_0/5%)] has-[input:focus-visible]:outline-[3px] has-[input:focus-visible]:outline-solid has-[input:focus-visible]:outline-brand has-[input:focus-visible]:outline-offset-4"
+          className="flex h-11 min-w-0 flex-1 items-center rounded-card border-[1.5px] border-solid border-brand bg-surface pl-0 pr-0 shadow-[0_4px_8px_rgb(0_0_0/5%)] has-[input:focus-visible]:outline-[3px] has-[input:focus-visible]:outline-solid has-[input:focus-visible]:outline-brand has-[input:focus-visible]:outline-offset-0"
         >
           <button
             type="submit"
