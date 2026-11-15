@@ -21,7 +21,15 @@ export function SearchHeader({ isHome }: { isHome: boolean }) {
         aria-label="기사 키워드 검색"
         className="flex min-w-0 flex-1 items-center gap-2 text-[13px]/[normal] text-muted"
       >
-        <span className="min-w-0 flex-1 truncate">{prompt}</span>
+        <span className="min-w-0 flex-1 overflow-hidden">
+          <span
+            key={prompt}
+            data-search-prompt-roll
+            className="ui-sheet-enter block truncate"
+          >
+            {prompt}
+          </span>
+        </span>
         <span
           aria-hidden="true"
           className="flex size-8 shrink-0 items-center justify-center rounded-full bg-[#f1f5f9] text-[14px]/[normal] text-black"
