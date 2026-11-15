@@ -4135,11 +4135,26 @@ test('loadingSkeletonsFillTheVisibleAreaAcrossViewportSizes', async () => {
   ]) {
     const context = await browser!.newContext({ viewport });
     contexts.push(context);
+    let release = () => {};
+    const gate = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    let waiting = false;
     await context.route('**/*', async (route) => {
       const headers = route.request().headers();
       if (headers['next-router-prefetch'] || headers.purpose === 'prefetch')
         await route.abort();
-      else await route.continue();
+      else {
+        const url = new URL(route.request().url());
+        if (
+          url.pathname === '/search' &&
+          url.searchParams.get('q') === '검색 대기'
+        ) {
+          waiting = true;
+          await gate;
+        }
+        await route.continue();
+      }
     });
     const page = await context.newPage();
     const suffix = `${viewport.width}x${viewport.height}`;
@@ -4165,25 +4180,25 @@ test('loadingSkeletonsFillTheVisibleAreaAcrossViewportSizes', async () => {
         const cards = mapLoading.locator('[data-map-carousel-skeleton]');
         await expect
           .poll(async () =>
-            cards
-              .locator('[data-map-skeleton-card]')
-              .first()
-              .evaluate((element) => element.getBoundingClientRect().height),
+            cards.evaluate((element) => {
+              const first = element.firstElementChild;
+              const last = element.lastElementChild;
+              if (
+                !element.isConnected ||
+                !first ||
+                !last ||
+                first !== element.querySelector('[data-map-skeleton-card]')
+              )
+                return null;
+              const frame = element.getBoundingClientRect();
+              return {
+                height: first.getBoundingClientRect().height,
+                fills: last.getBoundingClientRect().right >= frame.right,
+              };
+            }),
           )
-          .toBe(viewport.height <= 550 ? 62 : 152);
-        const mapBounds = await cards.evaluate((element) => {
-          const frame = element.getBoundingClientRect();
-          const last = element.lastElementChild!.getBoundingClientRect();
-          const first = element.firstElementChild!.getBoundingClientRect();
-          return {
-            right: frame.right,
-            lastRight: last.right,
-            height: first.height,
-          };
-        });
+          .toEqual({ height: viewport.height <= 550 ? 62 : 152, fills: true });
         await capture('map');
-        expect(mapBounds.lastRight).toBeGreaterThanOrEqual(mapBounds.right);
-        expect(mapBounds.height).toBe(viewport.height <= 550 ? 62 : 152);
       } finally {
         holdMap = false;
         for (const response of waitingMap.splice(0))
@@ -4235,20 +4250,6 @@ test('loadingSkeletonsFillTheVisibleAreaAcrossViewportSizes', async () => {
       await page.goto(origin + '/search');
       const input = page.getByRole('searchbox', { name: '기사 키워드 검색' });
       await input.fill('검색 대기');
-      let release = () => {};
-      const gate = new Promise<void>((resolve) => {
-        release = resolve;
-      });
-      let waiting = false;
-      await page.route('**/search?**', async (route) => {
-        if (
-          new URL(route.request().url()).searchParams.get('q') !== '검색 대기'
-        )
-          return route.continue();
-        waiting = true;
-        await gate;
-        await route.continue();
-      });
       try {
         await input.press('Enter');
         await expect.poll(() => waiting, { timeout: 5000 }).toBe(true);
@@ -4270,7 +4271,6 @@ test('loadingSkeletonsFillTheVisibleAreaAcrossViewportSizes', async () => {
       await page
         .getByRole('heading', { name: '기사 검색 결과', exact: true })
         .waitFor();
-      await page.unroute('**/search?**');
       expect(await page.locator('main [data-skeleton-cards]').count()).toBe(0);
       expect(
         await page.evaluate(
@@ -4278,6 +4278,7 @@ test('loadingSkeletonsFillTheVisibleAreaAcrossViewportSizes', async () => {
         ),
       ).toBe(true);
     } finally {
+      release();
       holdMap = false;
       holdList = false;
       for (const response of [
