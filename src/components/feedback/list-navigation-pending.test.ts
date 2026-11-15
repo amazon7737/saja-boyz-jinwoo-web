@@ -6,6 +6,12 @@ import { expect, test, vi } from 'vitest';
 
 import { ListNavigationPending } from './list-navigation-pending';
 
+vi.mock('next/navigation', () => ({
+  usePathname: () => '/',
+  useSearchParams: () => new URLSearchParams(),
+  useRouter: () => ({ push: vi.fn(), replace: vi.fn() }),
+}));
+
 vi.mock('next/link', async () => {
   const React = await import('react');
   const pending = React.createContext(true);

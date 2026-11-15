@@ -8,6 +8,12 @@ import {
 import { createRoot } from 'react-dom/client';
 import { expect, test, vi } from 'vitest';
 
+vi.mock('next/navigation', () => ({
+  usePathname: () => '/',
+  useSearchParams: () => new URLSearchParams(),
+  useRouter: () => ({ push: vi.fn(), replace: vi.fn() }),
+}));
+
 vi.mock('next/compat/router', () => ({
   useRouter: () => ({ events: { on: vi.fn(), off: vi.fn() } }),
 }));
