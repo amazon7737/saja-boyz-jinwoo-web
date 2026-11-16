@@ -137,6 +137,8 @@ test('searchPromptAndShareFallbackPreserveInputUsability', async () => {
     shareInput.focus();
     expect(shareInput.matches(':focus-visible')).toBe(true);
     let offset = '';
+    let width = '';
+    let border = '';
     for (const layer of ['base', 'components', 'utilities']) {
       css.root.walkRules((rule) => {
         if (rule.parent?.type !== 'atrule' || rule.parent.params !== layer)
@@ -146,12 +148,20 @@ test('searchPromptAndShareFallbackPreserveInputUsability', async () => {
         } catch {
           return;
         }
+        rule.walkDecls('outline-width', (decl) => {
+          width = decl.value;
+        });
+        rule.walkDecls('border-color', (decl) => {
+          border = decl.value;
+        });
         rule.walkDecls('outline-offset', (decl) => {
           offset = decl.value;
         });
       });
     }
     expect(offset).toBe('0px');
+    expect(width).toBe('1px');
+    expect(border).toBe('transparent');
   } finally {
     await act(async () => root.unmount());
     host.remove();

@@ -58,8 +58,9 @@ test('reportInputFocusStaysOnFieldBoundary', async () => {
       const focus = focusDeclarations(output.root, field!);
       expect(focus.get('outline'), name).toContain('solid');
       expect(focus.get('outline-style'), name).not.toBe('none');
+      expect(focus.get('outline-width'), name).toBe('1px');
       expect(focus.get('outline-offset'), name).toBe('0px');
-      expect(focus.get('border-color'), name).toBe('#ea1a2d');
+      expect(focus.get('border-color'), name).toBe('transparent');
       expect(focus.get('--tw-ring-offset-width') ?? '0px', name).toBe('0px');
       expect(focus.get('--tw-ring-shadow') ?? '', name).not.toMatch(
         /(?:[4-9]|[1-9]\d+)px/,
@@ -75,9 +76,9 @@ test('reportInputFocusStaysOnFieldBoundary', async () => {
       attachment.parentElement!,
     );
     expect(uploadFocus.get('outline-style')).toBe('solid');
-    expect(uploadFocus.get('outline-width')).toBe('3px');
+    expect(uploadFocus.get('outline-width')).toBe('1px');
     expect(uploadFocus.get('outline-offset')).toBe('0px');
-    expect(uploadFocus.get('border-color')).toBe('#ea1a2d');
+    expect(uploadFocus.get('border-color')).toBe('transparent');
     expect(uploadFocus.get('--tw-ring-offset-width') ?? '0px').toBe('0px');
     expect(uploadFocus.get('--tw-ring-shadow') ?? '').not.toMatch(
       /(?:[4-9]|[1-9]\d+)px/,

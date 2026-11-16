@@ -707,6 +707,11 @@ test('searchKeyboardFocusKeepsTheFormOutlineAndClearControl', async () => {
       const input = page.getByRole('searchbox', { name: '기사 키워드 검색' });
       const submit = page.getByRole('button', { name: '검색', exact: true });
       await input.waitFor();
+      const unfocusedBorder = await input.evaluate(
+        (element: HTMLInputElement) =>
+          getComputedStyle(element.form!).borderTopColor,
+      );
+      expect(unfocusedBorder).not.toBe('rgb(232, 25, 44)');
       await page.getByRole('link', { name: '지도로 돌아가기' }).focus();
       await page.keyboard.press('Tab');
       expect(
@@ -723,6 +728,7 @@ test('searchKeyboardFocusKeepsTheFormOutlineAndClearControl', async () => {
           width: form.outlineWidth,
           offset: form.outlineOffset,
           color: form.outlineColor,
+          border: form.borderTopColor,
         };
       });
       expect(focused).toEqual({
@@ -730,9 +736,10 @@ test('searchKeyboardFocusKeepsTheFormOutlineAndClearControl', async () => {
         visible: true,
         inputOutline: 'none',
         formOutline: 'solid',
-        width: '3px',
+        width: '1px',
         offset: '0px',
         color: 'rgb(232, 25, 44)',
+        border: 'rgba(0, 0, 0, 0)',
       });
       await page.keyboard.type('fire');
       await page.keyboard.press('Tab');
@@ -2754,6 +2761,18 @@ test('reportAttachmentTilesAreHorizontalAndKeepAccessibleFileControls', async ()
 }, 120000);
 
 test('reportFieldFocusAndErrorsRemainAccessible', async () => {
+  const luminance = (color: string) => {
+    const channels = color
+      .match(/\d+/g)!
+      .slice(0, 3)
+      .map((value) => {
+        const channel = Number(value) / 255;
+        return channel <= 0.04045
+          ? channel / 12.92
+          : ((channel + 0.055) / 1.055) ** 2.4;
+      });
+    return channels[0] * 0.2126 + channels[1] * 0.7152 + channels[2] * 0.0722;
+  };
   const context = await browser!.newContext({
     viewport: { width: 320, height: 568 },
   });
@@ -2786,7 +2805,7 @@ test('reportFieldFocusAndErrorsRemainAccessible', async () => {
     await fields[0].evaluate((node) => {
       const style = getComputedStyle(node);
       return (
-        style.outlineStyle !== 'none' && parseFloat(style.outlineWidth) >= 2
+        style.outlineStyle !== 'none' && parseFloat(style.outlineWidth) === 1
       );
     }),
   ).toBe(true);
@@ -2796,19 +2815,25 @@ test('reportFieldFocusAndErrorsRemainAccessible', async () => {
     expect(await field.getAttribute('aria-invalid')).toBeNull();
     const focus = await field.evaluate((node) => {
       const style = getComputedStyle(node);
-      return { border: style.borderTopColor, shadow: style.boxShadow };
+      return {
+        border: style.borderTopColor,
+        outline: style.outlineColor,
+        shadow: style.boxShadow,
+      };
     });
-    expect(focus.border).toBe('rgb(234, 26, 45)');
-    expect(focus.shadow).not.toBe('none');
+    expect(focus.border).toBe('rgba(0, 0, 0, 0)');
+    expect(focus.outline).toBe('rgb(232, 25, 44)');
+    expect(focus.shadow).toBe('none');
   }
   await attachment.focus();
   expect(
-    await upload.evaluate((node) => getComputedStyle(node).borderTopColor),
-  ).toBe('rgb(234, 26, 45)');
+    await upload.evaluate((node) => getComputedStyle(node).outlineWidth),
+  ).toBe('1px');
 
   await page.getByRole('button', { name: '제보 접수', exact: true }).click();
   for (const field of fields) {
     expect(await field.getAttribute('aria-invalid')).toBe('true');
+    await field.blur();
     const error = await field.evaluate((node) => {
       const id = node.getAttribute('aria-describedby');
       const style = getComputedStyle(node);
@@ -2821,6 +2846,24 @@ test('reportFieldFocusAndErrorsRemainAccessible', async () => {
     expect(error.message).toContain('필수 항목이에요');
     expect(error.border).toBe('rgb(234, 26, 45)');
     expect(error.background).toBe('rgb(255, 245, 245)');
+    await page.keyboard.press('Tab');
+    await field.focus();
+    const focusedError = await field.evaluate((node) => {
+      const style = getComputedStyle(node);
+      return {
+        border: style.borderTopColor,
+        outline: style.outlineColor,
+        width: style.outlineWidth,
+        background: style.backgroundColor,
+      };
+    });
+    expect(focusedError.border).toBe('rgba(0, 0, 0, 0)');
+    const values = [luminance(focusedError.outline), luminance(error.border)];
+    const contrast =
+      (Math.max(...values) + 0.05) / (Math.min(...values) + 0.05);
+    expect(contrast).toBeGreaterThanOrEqual(3);
+    expect(focusedError.width).toBe('1px');
+    expect(focusedError.background).toBe(error.background);
   }
   expect(posts).toBe(0);
 
