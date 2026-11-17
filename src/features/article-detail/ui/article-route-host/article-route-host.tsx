@@ -40,7 +40,9 @@ export function ArticleRouteHost({
     '/' +
     backgroundSegments.filter((segment) => !segment.startsWith('(')).join('/');
   const sourcePath =
-    sourceBase === '/search' && active ? sourceBase + sourceQuery : sourceBase;
+    (sourceBase === '/search' || sourceBase === '/incidents') && active
+      ? sourceBase + sourceQuery
+      : sourceBase;
   const inline = active;
   const listScroll = useRef(0);
   const previousInline = useRef(false);
@@ -55,7 +57,11 @@ export function ArticleRouteHost({
   const [mapPreviewVisible, setMapPreviewVisible] = useState(false);
   const openArticle = useCallback(
     (id: string) => {
-      setSourceQuery(pathname === '/search' ? window.location.search : '');
+      setSourceQuery(
+        pathname === '/search' || pathname === '/incidents'
+          ? window.location.search
+          : '',
+      );
       opener.current =
         document.activeElement instanceof HTMLElement
           ? document.activeElement
@@ -104,7 +110,11 @@ export function ArticleRouteHost({
         link &&
         /^\/incidents\/[a-f0-9]{64}$/.test(link.getAttribute('href') ?? '')
       ) {
-        setSourceQuery(pathname === '/search' ? window.location.search : '');
+        setSourceQuery(
+          pathname === '/search' || pathname === '/incidents'
+            ? window.location.search
+            : '',
+        );
         opener.current = link;
         if (pathname !== '/') listScroll.current = window.scrollY;
       }

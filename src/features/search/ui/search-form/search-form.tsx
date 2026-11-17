@@ -17,7 +17,6 @@ import { LoadingSpinner } from '@/components/feedback/loading-spinner';
 import { useRollingSearchPrompt } from '../../model/use-rolling-search-prompt';
 import { SearchLoading } from '../search-loading/search-loading';
 import { SearchSuggestions } from '../search-suggestions/search-suggestions';
-import styles from './search-form.module.css';
 
 export function SearchForm({
   keyword,
@@ -72,7 +71,7 @@ export function SearchForm({
               else router.push(href);
             });
           }}
-          className={`${styles.field} flex h-11 min-w-0 flex-1 items-center rounded-card border-[1.5px] border-solid border-brand bg-surface pl-0 pr-0 shadow-[0_4px_8px_rgb(0_0_0/5%)]`}
+          className="flex h-11 min-w-0 flex-1 items-center rounded-card border-[1.5px] border-solid border-border bg-surface pl-0 pr-0 shadow-[0_4px_8px_rgb(0_0_0/5%)] has-[input:focus-visible]:border-transparent has-[input:focus-visible]:outline-[1px] has-[input:focus-visible]:outline-solid has-[input:focus-visible]:outline-brand has-[input:focus-visible]:outline-offset-0"
         >
           <button
             type="submit"
@@ -86,7 +85,7 @@ export function SearchForm({
                 <LoadingSpinner />
               </span>
             ) : (
-              <Icon name="search" className={styles.icon} />
+              <Icon name="search" className="size-[24px]!" />
             )}
           </button>
           <SearchInput
@@ -94,6 +93,7 @@ export function SearchForm({
             keyword={keyword}
             prompt={prompt}
             pending={pending}
+            composing={composing}
             composingRef={composingRef}
             setQuery={setQuery}
             setComposing={setComposing}
@@ -124,6 +124,7 @@ function SearchInput({
   keyword,
   prompt,
   pending,
+  composing,
   composingRef,
   setQuery,
   setComposing,
@@ -131,6 +132,7 @@ function SearchInput({
   keyword: string;
   prompt: string;
   pending: boolean;
+  composing: boolean;
   composingRef: RefObject<boolean>;
   setQuery: (value: string) => void;
   setComposing: (value: boolean) => void;
@@ -146,33 +148,45 @@ function SearchInput({
 
   return (
     <>
-      <input
-        ref={input}
-        type="search"
-        name="q"
-        defaultValue={keyword}
-        onChange={(event) => {
-          setHasValue(Boolean(event.currentTarget.value));
-          setQuery(event.currentTarget.value);
-        }}
-        onCompositionStart={() => {
-          composingRef.current = true;
-          setComposing(true);
-        }}
-        onCompositionEnd={(event) => {
-          composingRef.current = false;
-          setComposing(false);
-          setQuery(event.currentTarget.value);
-        }}
-        onBlur={() => {
-          composingRef.current = false;
-          setComposing(false);
-        }}
-        readOnly={pending}
-        aria-label="기사 키워드 검색"
-        placeholder={prompt}
-        className={`${styles.input} h-full min-h-0 min-w-0 flex-1 border-0 bg-transparent p-0 text-[14px]/[17px] font-semibold text-text placeholder:font-normal`}
-      />
+      <div className="relative flex h-full min-w-0 flex-1 items-center overflow-hidden">
+        <input
+          ref={input}
+          type="search"
+          name="q"
+          defaultValue={keyword}
+          onChange={(event) => {
+            setHasValue(Boolean(event.currentTarget.value));
+            setQuery(event.currentTarget.value);
+          }}
+          onCompositionStart={() => {
+            composingRef.current = true;
+            setComposing(true);
+          }}
+          onCompositionEnd={(event) => {
+            composingRef.current = false;
+            setComposing(false);
+            setQuery(event.currentTarget.value);
+          }}
+          onBlur={() => {
+            composingRef.current = false;
+            setComposing(false);
+          }}
+          readOnly={pending}
+          aria-label="기사 키워드 검색"
+          placeholder={prompt}
+          className="peer h-full min-h-0 min-w-0 flex-1 border-0 bg-transparent p-0 text-[14px]/[17px] font-semibold text-text placeholder:text-transparent focus-visible:outline-none [&::-webkit-search-cancel-button]:appearance-none [&::-webkit-search-cancel-button]:[-webkit-appearance:none]"
+        />
+        {!hasValue && !composing && (
+          <span
+            key={prompt}
+            data-search-input-prompt
+            aria-hidden="true"
+            className="ui-sheet-enter pointer-events-none absolute inset-x-0 top-1/2 hidden -translate-y-1/2 truncate text-[14px]/[17px] font-normal text-muted peer-placeholder-shown:block"
+          >
+            {prompt}
+          </span>
+        )}
+      </div>
       {keyword ? (
         <Link
           href="/search"

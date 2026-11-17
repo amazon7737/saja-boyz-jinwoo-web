@@ -148,6 +148,7 @@ export function PopularArticles() {
         <ArticleSkeleton
           label="인기 기사를 불러오는 중이에요"
           variant="search"
+          count={ranking.status === 'ready' ? ranking.items.length : 3}
         />
       )}
       {empty && (

@@ -5,7 +5,11 @@ import { act, createElement, type ComponentType, type ReactNode } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 
 let pathname = '/incidents';
-vi.mock('next/navigation', () => ({ usePathname: () => pathname }));
+vi.mock('next/navigation', () => ({
+  usePathname: () => pathname,
+  useSearchParams: () => new URLSearchParams(window.location.search),
+  useRouter: () => ({ push: vi.fn(), replace: vi.fn() }),
+}));
 const modules = import.meta.glob([
   './feature-error-boundary.tsx',
   '../../../app/error.tsx',

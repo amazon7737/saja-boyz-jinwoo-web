@@ -13,6 +13,7 @@ const back = vi.fn();
 const replace = vi.fn();
 vi.mock('next/navigation', () => ({
   usePathname: () => pathname,
+  useSearchParams: () => new URLSearchParams(window.location.search),
   useSelectedLayoutSegments: (slot?: string) =>
     slot === 'background' ? backgroundSegments : childSegments,
   useRouter: () => ({ push, back, replace, refresh: vi.fn() }),

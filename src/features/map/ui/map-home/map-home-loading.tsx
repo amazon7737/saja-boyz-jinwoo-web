@@ -1,5 +1,31 @@
 import { LoadingSpinner } from '@/components/feedback/loading-spinner';
 
+export function MapCarouselSkeleton({
+  className = '',
+}: {
+  className?: string;
+}) {
+  return (
+    <div
+      aria-hidden="true"
+      data-map-carousel-skeleton=""
+      className={`ui-skeleton-pulse flex gap-2.5 overflow-hidden ${className}`}
+    >
+      {[0, 1, 2, 3].map((card) => (
+        <div
+          key={card}
+          data-map-skeleton-card=""
+          className="flex h-[152px] w-[200px] shrink-0 flex-col gap-2 rounded-card bg-surface/90 p-3 [@media(max-height:550px)]:h-[62px]"
+        >
+          <span className="h-3 w-1/2 rounded bg-border" />
+          <span className="h-4 rounded bg-border" />
+          <span className="mt-auto h-20 rounded-lg bg-border [@media(max-height:550px)]:hidden" />
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export function MapHomeLoading() {
   return (
     <section
@@ -27,21 +53,7 @@ export function MapHomeLoading() {
         >
           <LoadingSpinner />
         </span>
-        <div
-          aria-hidden="true"
-          className="ui-skeleton-pulse absolute right-0 bottom-[calc(86px_+_env(safe-area-inset-bottom))] left-4 flex gap-2.5 overflow-hidden"
-        >
-          {[0, 1].map((card) => (
-            <div
-              key={card}
-              className="flex h-[152px] w-[200px] shrink-0 flex-col gap-2 rounded-card bg-surface/90 p-3"
-            >
-              <span className="h-3 w-1/2 rounded bg-border" />
-              <span className="h-4 rounded bg-border" />
-              <span className="mt-auto h-20 rounded-lg bg-border" />
-            </div>
-          ))}
-        </div>
+        <MapCarouselSkeleton className="absolute right-0 bottom-[calc(86px_+_env(safe-area-inset-bottom))] left-4" />
       </div>
     </section>
   );

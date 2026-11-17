@@ -63,6 +63,36 @@ async function mount() {
   return host;
 }
 
+test('popularLoadingMatchesTheMaximumAndThenTheActualRankingCount', async () => {
+  let finishRanking!: (response: Response) => void;
+  let finishCards!: (response: Response) => void;
+  vi.stubGlobal(
+    'fetch',
+    vi.fn((url: RequestInfo | URL) =>
+      String(url) === '/api/search-headlines'
+        ? new Promise<Response>((resolve) => {
+            finishRanking = resolve;
+          })
+        : new Promise<Response>((resolve) => {
+            finishCards = resolve;
+          }),
+    ),
+  );
+  const host = await mount();
+  expect(host.querySelector('[data-skeleton-cards]')?.children).toHaveLength(3);
+
+  await act(async () =>
+    finishRanking(Response.json({ titles: ['첫 번째'], items: [ranking[0]] })),
+  );
+  expect(host.querySelector('[data-skeleton-cards]')?.children).toHaveLength(1);
+
+  await act(async () =>
+    finishCards(Response.json({ items: [card(first, '첫 번째')] })),
+  );
+  expect(host.querySelector('[data-skeleton-cards]')).toBeNull();
+  expect(host.querySelectorAll('article')).toHaveLength(1);
+});
+
 test('popularArticlesSharesRankingAndKeepsRankOrderAndSafeImages', async () => {
   const fetcher = vi.fn(async (input: RequestInfo | URL) => {
     if (String(input) === '/api/search-headlines')

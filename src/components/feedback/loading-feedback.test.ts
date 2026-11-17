@@ -7,6 +7,7 @@ import { expect, test, vi } from 'vitest';
 import { SearchLoading } from '@/features/search/ui/search-loading/search-loading';
 import IncidentsLoading from '@/components/feedback/list-loading';
 import ArticleDetailLoading from '@/app/(browse)/(.)incidents/[id]/loading';
+import { ArticleSkeleton } from '@/components/feedback/article-skeleton';
 import { KeywordLinkStatus } from '@/features/search/ui/keyword-link-status/keyword-link-status';
 import { MapHome } from '@/features/map/ui/map-home/map-home';
 
@@ -14,6 +15,35 @@ vi.mock('next/link', async (importOriginal) => ({
   ...(await importOriginal<typeof import('next/link')>()),
   useLinkStatus: () => ({ pending: true }),
 }));
+
+test('initialListLoadingProvidesMoreCardsThanPagination', () => {
+  const host = document.createElement('div');
+  host.innerHTML = renderToStaticMarkup(createElement(IncidentsLoading));
+  const initialCards = host.querySelector('.ui-skeleton-pulse > div');
+  expect(initialCards?.children.length).toBeGreaterThan(2);
+
+  host.innerHTML = renderToStaticMarkup(
+    createElement(ArticleSkeleton, { label: '추가 기사' }),
+  );
+  const additionalCards = host.querySelector('.ui-skeleton-pulse > div');
+  expect(additionalCards?.children.length).toBe(2);
+});
+
+test('searchSubmissionFillsTheScreenWhilePaginationStaysCompact', () => {
+  const host = document.createElement('div');
+  host.innerHTML = renderToStaticMarkup(SearchLoading({ initial: false }));
+  const initialCards = host.querySelector('[data-skeleton-cards]');
+  expect(initialCards?.children.length).toBeGreaterThan(2);
+
+  host.innerHTML = renderToStaticMarkup(
+    createElement(ArticleSkeleton, {
+      label: '추가 검색 결과',
+      variant: 'search',
+    }),
+  );
+  const additionalCards = host.querySelector('[data-skeleton-cards]');
+  expect(additionalCards?.children.length).toBe(2);
+});
 
 test('loadingFeedbackUsesDecorativeSkeletonsAndCompactAccessibleSpinners', () => {
   for (const [Component, label] of [

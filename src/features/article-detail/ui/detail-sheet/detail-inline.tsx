@@ -41,6 +41,8 @@ export function DetailInline({
     previousRelatedArticle,
     noPreviousRelatedArticle,
   );
+  const returnsToList =
+    !route?.active || route.sourcePath.split('?')[0] === '/incidents';
 
   useEffect(() => {
     if (!pagesRouter) return;
@@ -127,10 +129,7 @@ export function DetailInline({
           }
           scroll={false}
           aria-label={
-            (route?.active && route.sourcePath !== '/incidents') ||
-            previousArticle
-              ? '이전 화면으로'
-              : '목록으로'
+            !returnsToList || previousArticle ? '이전 화면으로' : '목록으로'
           }
           className="ui-control inline-flex min-h-11 items-center gap-2 rounded-lg px-2 text-sm font-bold text-text"
           onClick={(event) => {
@@ -172,10 +171,9 @@ export function DetailInline({
             ←
           </span>{' '}
           사건 상세
-          {!previousArticle &&
-            (!route?.active || route.sourcePath === '/incidents') && (
-              <ListNavigationPending pendingOverride={legacyPending} />
-            )}
+          {!previousArticle && returnsToList && (
+            <ListNavigationPending pendingOverride={legacyPending} />
+          )}
         </Link>
         <Link
           data-article-control="close"
