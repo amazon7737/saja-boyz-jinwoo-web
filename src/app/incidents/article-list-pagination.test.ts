@@ -353,3 +353,22 @@ test('articleInfiniteScrollFallbackLoadsNearViewportAndCleansUp', async () => {
   });
   expect(request).toHaveBeenCalledTimes(calls);
 });
+
+test('articleListRecentSortKeepsEveryPageInPublicationOrder', async () => {
+  request.mockResolvedValueOnce(Response.json({ total: 21, items: batch() }));
+  const page = await IncidentsPage({
+    searchParams: Promise.resolve({ sort: 'recent' }),
+  });
+  await act(async () => root.render(page));
+  expect(container.textContent).toContain('최신순');
+
+  request.mockResolvedValueOnce(
+    Response.json({ total: 21, items: [article(20)] }),
+  );
+  await intersect();
+  expect(offsets()).toEqual(['0', '20']);
+  for (const [input] of request.mock.calls) {
+    const url = new URL(input instanceof Request ? input.url : String(input));
+    expect(url.searchParams.has('sort')).toBe(false);
+  }
+});
