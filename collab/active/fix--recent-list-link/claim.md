@@ -2,7 +2,7 @@
 branch: fix/recent-list-link
 owner: amazon
 started: 2026-11-18
-status: active
+status: done
 goal: fix(list): 최근 보도 기사 전체보기를 최신순 목록으로 연결
 next:
 base: dev
