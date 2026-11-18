@@ -16,6 +16,7 @@ import { MapPeriodFilter } from '../map-period-filter/map-period-filter';
 import { MapUnavailableFilter } from '../map-unavailable-filter/map-unavailable-filter';
 import { createArticleMarker } from './map-article-marker';
 import { MapArticleSheet } from './map-article-sheet';
+import { MapCarouselSkeleton } from './map-home-loading';
 import {
   subscribeNaverMaps,
   type MapInstance,
@@ -806,6 +807,9 @@ export function MapHome({
                 />
               )}
             </button>
+            {!ready && !failed && articles && articles.items.length > 0 && (
+              <MapCarouselSkeleton className="ml-4" />
+            )}
             {ready && articles && articles.items.length > 0 && (
               <MapArticleCarousel
                 articles={filteredArticles!}

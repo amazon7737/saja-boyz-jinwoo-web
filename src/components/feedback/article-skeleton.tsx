@@ -4,11 +4,22 @@ export function ArticleSkeleton({
   label,
   variant = 'list',
   initial = false,
+  fillViewport = initial,
+  count = 2,
 }: {
   label: string;
   variant?: SkeletonVariant;
   initial?: boolean;
+  fillViewport?: boolean;
+  count?: number;
 }) {
+  const viewportLimit =
+    variant === 'list'
+      ? 'max-h-[max(0px,calc(100dvh-200px))]'
+      : initial
+        ? 'max-h-[max(0px,calc(100dvh-110px))]'
+        : 'max-h-[max(0px,calc(100dvh-90px))]';
+
   return (
     <div
       role="status"
@@ -46,9 +57,10 @@ export function ArticleSkeleton({
               </div>
             )}
             <div
-              className={`flex flex-col ${variant === 'search' ? 'gap-2' : 'gap-3'}`}
+              data-skeleton-cards=""
+              className={`flex flex-col ${variant === 'search' ? 'gap-2' : 'gap-3'} ${fillViewport ? `overflow-hidden ${viewportLimit}` : ''}`}
             >
-              {[0, 1].map((card) => (
+              {Array.from({ length: fillViewport ? 32 : count }, (_, card) => (
                 <div
                   key={card}
                   className={`flex gap-3 border border-solid border-border bg-surface ${variant === 'search' ? 'rounded-xl p-3.5' : 'min-h-[120px] rounded-card p-3'}`}

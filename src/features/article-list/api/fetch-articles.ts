@@ -1,4 +1,5 @@
 import type { ArticleCollectionItem } from '../model/article.types';
+import type { ArticlePeriod } from '../model/article-period';
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === 'object' && !Array.isArray(value);
@@ -27,6 +28,7 @@ export async function fetchArticleList(
   offset = 0,
   sort: 'recent' | 'popular' = 'recent',
   signal?: AbortSignal,
+  period?: ArticlePeriod,
 ) {
   if (!Number.isSafeInteger(offset) || offset < 0) return null;
 
@@ -50,6 +52,7 @@ export async function fetchArticleList(
     url.searchParams.set('offset', String(offset));
     url.searchParams.set('limit', '20');
     if (sort === 'popular') url.searchParams.set('sort', 'popular');
+    if (period) url.searchParams.set('period', period);
     const normalizedKeyword = keyword?.trim();
 
     if (normalizedKeyword) url.searchParams.set('keyword', normalizedKeyword);
@@ -63,6 +66,7 @@ export async function fetchArticleList(
     });
 
     if (!response.ok) return null;
+    if (period && response.headers.get('X-News-Period') !== period) return null;
 
     const payload: unknown = await response.json();
 

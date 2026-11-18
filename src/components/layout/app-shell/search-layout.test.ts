@@ -5,7 +5,11 @@ import { act, createElement } from 'react';
 import { createRoot } from 'react-dom/client';
 import { AppShell } from './app-shell';
 let pathname = '/search';
-vi.mock('next/navigation', () => ({ usePathname: () => pathname }));
+vi.mock('next/navigation', () => ({
+  usePathname: () => pathname,
+  useSearchParams: () => new URLSearchParams(window.location.search),
+  useRouter: () => ({ push: vi.fn(), replace: vi.fn() }),
+}));
 afterEach(() => {
   pathname = '/search';
   vi.unstubAllGlobals();

@@ -9,7 +9,11 @@ import { FeatureError } from '../model/feature-error';
 import RouteError from '../../../app/error';
 
 let pathname = '/incidents';
-vi.mock('next/navigation', () => ({ usePathname: () => pathname }));
+vi.mock('next/navigation', () => ({
+  usePathname: () => pathname,
+  useSearchParams: () => new URLSearchParams(window.location.search),
+  useRouter: () => ({ push: vi.fn(), replace: vi.fn() }),
+}));
 let container: HTMLDivElement;
 let root: Root;
 beforeEach(() => {

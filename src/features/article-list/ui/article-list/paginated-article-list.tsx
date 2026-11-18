@@ -6,6 +6,7 @@ import { Notice } from '@/components/feedback/notice';
 import { ArticleSkeleton } from '@/components/feedback/article-skeleton';
 
 import { loadArticlePage } from '../../api/load-article-page';
+import type { ArticlePeriod } from '../../model/article-period';
 import { ArticleList } from './article-list';
 import { useArticleTail } from './use-article-tail';
 
@@ -13,8 +14,10 @@ type ArticlePage = NonNullable<Awaited<ReturnType<typeof loadArticlePage>>>;
 
 export function PaginatedArticleList({
   initialPage,
+  period,
 }: {
   initialPage: ArticlePage;
+  period?: ArticlePeriod;
 }) {
   const [page, setPage] = useState(initialPage);
   const [now, setNow] = useState<number | null>(null);
@@ -59,7 +62,7 @@ export function PaginatedArticleList({
       setRetrying(manual);
 
       try {
-        const nextPage = await loadArticlePage(offset);
+        const nextPage = await loadArticlePage(offset, period);
 
         if (!mounted.current) return;
 
@@ -86,14 +89,20 @@ export function PaginatedArticleList({
         }
       }
     },
-    [hasMore, offset],
+    [hasMore, offset, period],
   );
 
   const tail = useArticleTail(hasMore && !pending && !failed, loadMore);
 
   return (
     <>
-      <ArticleList items={page.items} apiOrigin={page.apiOrigin} now={now} />
+      {period && page.items.length === 0 ? (
+        <Notice title="선택한 기간의 기사가 없어요">
+          기간을 변경해 다른 소식도 살펴보세요.
+        </Notice>
+      ) : (
+        <ArticleList items={page.items} apiOrigin={page.apiOrigin} now={now} />
+      )}
       {pending && <ArticleSkeleton label="추가 기사를 불러오는 중이에요" />}
       {hasMore && <div ref={tail} aria-hidden="true" className="h-px" />}
       {hasMore && (failed || retrying) && (

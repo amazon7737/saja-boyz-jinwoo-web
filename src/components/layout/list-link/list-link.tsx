@@ -5,10 +5,13 @@ import { ListNavigationPending } from '@/components/feedback/list-navigation-pen
 
 export function ListLink({
   children,
+  href = '/incidents',
   ...props
-}: Omit<ComponentProps<typeof Link>, 'href'>) {
+}: Omit<ComponentProps<typeof Link>, 'href'> & {
+  href?: ComponentProps<typeof Link>['href'];
+}) {
   return (
-    <Link {...props} href="/incidents">
+    <Link {...props} href={href}>
       {children}
       <ListNavigationPending />
     </Link>
