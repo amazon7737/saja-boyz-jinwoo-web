@@ -7,6 +7,7 @@ import { ArticleSkeleton } from '@/components/feedback/article-skeleton';
 
 import { loadArticlePage } from '../../api/load-article-page';
 import type { ArticlePeriod } from '../../model/article-period';
+import type { ArticleSort } from '../../model/article-sort';
 import { ArticleList } from './article-list';
 import { useArticleTail } from './use-article-tail';
 
@@ -15,9 +16,11 @@ type ArticlePage = NonNullable<Awaited<ReturnType<typeof loadArticlePage>>>;
 export function PaginatedArticleList({
   initialPage,
   period,
+  sort,
 }: {
   initialPage: ArticlePage;
   period?: ArticlePeriod;
+  sort?: ArticleSort;
 }) {
   const [page, setPage] = useState(initialPage);
   const [now, setNow] = useState<number | null>(null);
@@ -62,7 +65,7 @@ export function PaginatedArticleList({
       setRetrying(manual);
 
       try {
-        const nextPage = await loadArticlePage(offset, period);
+        const nextPage = await loadArticlePage(offset, period, sort);
 
         if (!mounted.current) return;
 
@@ -89,7 +92,7 @@ export function PaginatedArticleList({
         }
       }
     },
-    [hasMore, offset, period],
+    [hasMore, offset, period, sort],
   );
 
   const tail = useArticleTail(hasMore && !pending && !failed, loadMore);

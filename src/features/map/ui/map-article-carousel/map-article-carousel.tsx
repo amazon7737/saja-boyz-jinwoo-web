@@ -25,7 +25,10 @@ export function MapArticleCarousel({
         <h2 className="m-0 flex items-center gap-1.5 text-[14px]/[17px] font-extrabold text-text">
           🔥 최근 보도 기사
         </h2>
-        <ListLink className="text-[11px]/[normal] font-bold text-brand">
+        <ListLink
+          href="/incidents?sort=recent"
+          className="text-[11px]/[normal] font-bold text-brand"
+        >
           <IconText
             icon="arrow-right"
             size="compact"

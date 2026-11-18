@@ -1,5 +1,6 @@
 import type { ArticleCollectionItem } from '../model/article.types';
 import type { ArticlePeriod } from '../model/article-period';
+import type { ArticleSort } from '../model/article-sort';
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === 'object' && !Array.isArray(value);
@@ -26,7 +27,7 @@ function isArticleCollectionItem(
 export async function fetchArticleList(
   keyword?: string,
   offset = 0,
-  sort: 'recent' | 'popular' = 'recent',
+  sort: ArticleSort = 'recent',
   signal?: AbortSignal,
   period?: ArticlePeriod,
 ) {

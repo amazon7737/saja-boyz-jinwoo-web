@@ -293,9 +293,9 @@ test('mapCarouselUsesRealArticlesAndSafeImages', async () => {
   );
   expect(cards.textContent).toContain('서울 화재 & 소식');
   expect(cards.querySelector('b')).toBeNull();
-  expect(cards.querySelector('a[href="/incidents"]')?.textContent).toContain(
-    '전체보기',
-  );
+  expect(
+    cards.querySelector('a[href="/incidents?sort=recent"]')?.textContent,
+  ).toContain('전체보기');
   expect(cards.querySelector('h2')?.textContent).toBe('🔥 최근 보도 기사');
   expect(cards.textContent).toContain('발행 시각 미확인');
   expect(cards.textContent).not.toMatch(/진행 중|공론화 성공|종결|인기 순위/);
