@@ -3,6 +3,7 @@ import { Notice } from '@/components/feedback/notice';
 import { PaginatedArticleList } from '@/features/article-list/ui/article-list/paginated-article-list';
 import { fetchArticleList } from '@/features/article-list/api/fetch-articles';
 import { parseArticlePeriod } from '@/features/article-list/model/article-period';
+import { parseArticleSort } from '@/features/article-list/model/article-sort';
 
 // Read runtime configuration on every request, including configuration errors.
 export const dynamic = 'force-dynamic';
@@ -10,27 +11,33 @@ export const dynamic = 'force-dynamic';
 export default async function IncidentsPage({
   searchParams,
 }: {
-  searchParams?: Promise<{ period?: string | string[] }>;
+  searchParams?: Promise<{
+    period?: string | string[];
+    sort?: string | string[];
+  }>;
 } = {}) {
-  const period = parseArticlePeriod((await searchParams)?.period);
-  const result = await fetchArticleList(
-    undefined,
-    0,
-    'popular',
-    undefined,
-    period,
-  );
-  const listHref = period ? `/incidents?period=${period}` : '/incidents';
+  const params = await searchParams;
+  const period = parseArticlePeriod(params?.period);
+  const sort = parseArticleSort(params?.sort);
+  const result = await fetchArticleList(undefined, 0, sort, undefined, period);
+  const query = new URLSearchParams({
+    ...(sort === 'recent' && { sort }),
+    ...(period && { period }),
+  }).toString();
+  const listHref = query ? `/incidents?${query}` : '/incidents';
 
   return (
     <section aria-label="사건 목록">
       <h1 className="sr-only">사건 목록</h1>
-      <p className="sr-only">최근 30일 인기순</p>
+      <p className="sr-only">
+        {sort === 'recent' ? '최신순' : '최근 30일 인기순'}
+      </p>
       {result ? (
         <PaginatedArticleList
-          key={period ?? 'all'}
+          key={`${sort}-${period ?? 'all'}`}
           initialPage={result}
           period={period}
+          sort={sort}
         />
       ) : (
         <Notice
