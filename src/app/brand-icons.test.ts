@@ -9,7 +9,40 @@ const sharp = createRequire(
   realpathSync(join(process.cwd(), 'node_modules/next/package.json')),
 )('sharp');
 
-test('brandIconsKeepOneCompleteLogoAtEverySize', async () => {
+test('brandIconShowsMapPinAndSignals', async () => {
+  const { data }: { data: Buffer } = await sharp(
+    readFileSync('src/app/icon.png'),
+  )
+    .flatten({ background: '#fff' })
+    .removeAlpha()
+    .raw()
+    .toBuffer({ resolveWithObject: true });
+
+  function redIn(x1: number, y1: number, x2: number, y2: number) {
+    for (let y = y1; y <= y2; y += 1) {
+      for (let x = x1; x <= x2; x += 1) {
+        const index = (y * 96 + x) * 3;
+        if (
+          data[index] > 190 &&
+          data[index + 1] < 140 &&
+          data[index + 2] < 155
+        ) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  expect(redIn(8, 34, 23, 52), '왼쪽 전파 신호').toBe(true);
+  expect(redIn(72, 34, 88, 52), '오른쪽 전파 신호').toBe(true);
+  expect(redIn(42, 66, 52, 75), '지도 핀 하단').toBe(true);
+  expect(redIn(45, 41, 48, 44), '지도 핀 안쪽 흰 원').toBe(false);
+});
+
+test('brandIconsKeepTheSameSymbolAtEverySize', async () => {
+  const symbol = readFileSync('src/app/icon.svg');
+
   async function inspect(input: Buffer, size: number, label: string) {
     const {
       data,
@@ -23,41 +56,21 @@ test('brandIconsKeepOneCompleteLogoAtEverySize', async () => {
       .toBuffer({ resolveWithObject: true });
     expect.soft(info.width, label + ' 정사각 너비').toBe(size);
     expect.soft(info.height, label + ' 정사각 높이').toBe(size);
+    const reference: Buffer = await sharp(symbol, { density: 288 })
+      .resize(size, size)
+      .flatten({ background: '#fff' })
+      .removeAlpha()
+      .raw()
+      .toBuffer();
+    const meanDifference =
+      data.reduce(
+        (sum, value, index) => sum + Math.abs(value - reference[index]),
+        0,
+      ) / data.length;
+    expect.soft(meanDifference, label + ' SVG 심벌과 일치').toBeLessThan(3);
+
     const pixel = (x: number, y: number): number[] =>
       Array.from(data.subarray((y * size + x) * 3, (y * size + x) * 3 + 3));
-    const darkRows = Array.from({ length: size }, (_, y) => y).filter((y) =>
-      Array.from({ length: size }, (_, x) => x).some((x) =>
-        pixel(x, y).every((value) => value < 180),
-      ),
-    );
-    const bands = darkRows.filter(
-      (y, index) => index === 0 || y !== darkRows[index - 1] + 1,
-    );
-    expect
-      .soft(bands.length, label + ' 끊기거나 반복되지 않는 한 개의 윤곽')
-      .toBe(1);
-    expect
-      .soft(
-        darkRows.some(
-          (y) => y >= Math.floor(size * 0.15) && y <= Math.ceil(size * 0.25),
-        ),
-        label + ' 상단 반원 존재',
-      )
-      .toBe(true);
-    expect
-      .soft(
-        darkRows.some(
-          (y) => y >= Math.floor(size * 0.75) && y <= Math.ceil(size * 0.9),
-        ),
-        label + ' 하단 반원 존재',
-      )
-      .toBe(true);
-    expect
-      .soft(
-        darkRows.every((y) => y < Math.ceil(size * 0.92)),
-        label + ' 하단 잘림 없는 여백',
-      )
-      .toBe(true);
     for (const [x, y] of [
       [1, 1],
       [size - 2, 1],

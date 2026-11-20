@@ -3878,6 +3878,12 @@ test('articleDocumentAndRscWorkWithExplicitLoopbackHostname', async () => {
     );
     expect(html).toContain(article.article.title);
     expect(html).toContain('https://hyunghyung.vercel.app/incidents/' + id);
+    expect(html).toMatch(
+      /<meta(?=[^>]*property="og:image")(?=[^>]*content="https:\/\/hyunghyung\.vercel\.app\/og\/site-v2\.png")[^>]*>/,
+    );
+    expect(html).toMatch(
+      /<meta(?=[^>]*name="twitter:image")(?=[^>]*content="https:\/\/hyunghyung\.vercel\.app\/og\/site-v2\.png")[^>]*>/,
+    );
     const successHead = await fetch(base + '/incidents/' + id, {
       method: 'HEAD',
     });
