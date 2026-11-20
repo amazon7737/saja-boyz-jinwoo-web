@@ -2,9 +2,9 @@
 branch: codex/brand-map-performance
 owner: easter721
 started: 2026-11-20
-status: active
+status: done
 goal: feat(ui): 최신 브랜드와 화면 전환 성능 개선
-next: 최신 피그마 브랜드와 지도 전환 동작을 확인하고 필요한 수정을 구현
+next: dev 대상 PR의 원격 검사와 리뷰를 확인
 base: dev
 ---
 
