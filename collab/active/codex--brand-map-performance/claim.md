@@ -2,9 +2,9 @@
 branch: codex/brand-map-performance
 owner: easter721
 started: 2026-11-20
-status: active
+status: done
 goal: feat(ui): 브랜드와 검색 노출 및 지도 성능 개선
-next: 기사 아카이브·사이트맵·홈의 검색 노출을 점검하고 보완
+next: PR 73의 원격 검사와 리뷰, 배포 후 검색·공유 응답을 확인
 base: dev
 ---
 
