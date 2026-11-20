@@ -841,18 +841,25 @@ export function MapHome({
                 />
               )}
             </button>
-            {!ready && !failed && articles && articles.items.length > 0 && (
+            {!ready && !failed && articles === undefined && (
               <MapCarouselSkeleton className="ml-4" />
             )}
-            {ready && articles && articles.items.length > 0 && (
+            {articles && articles.items.length > 0 && (
               <MapArticleCarousel
                 articles={filteredArticles!}
-                onSelect={(item, opener) => {
-                  clearSelection.current?.();
-                  carouselSelection.current = { id: item.article_id, opener };
-                  markCarouselSelection.current?.(item.article_id);
-                  setSelectedArticles([item]);
-                }}
+                onSelect={
+                  ready
+                    ? (item, opener) => {
+                        clearSelection.current?.();
+                        carouselSelection.current = {
+                          id: item.article_id,
+                          opener,
+                        };
+                        markCarouselSelection.current?.(item.article_id);
+                        setSelectedArticles([item]);
+                      }
+                    : undefined
+                }
               />
             )}
           </div>

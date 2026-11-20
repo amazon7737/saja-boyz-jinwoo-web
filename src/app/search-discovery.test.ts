@@ -146,12 +146,29 @@ test('articleMetadataMatchesSummaryAndEscapesStructuredCitation', async () => {
   expect(info.openGraph).toMatchObject({
     title: '교통 안내 & 점검',
     url: origin + '/incidents/' + id,
-    images: [{ url: '/og/site-v2.png', width: 1200, height: 630 }],
+    images: [
+      {
+        url: expect.stringMatching(
+          new RegExp(`/og/incidents/${id}\\.png\\?v=[a-f0-9]{16}$`),
+        ),
+        width: 1200,
+        height: 630,
+      },
+      { url: '/og/site-v2.png', width: 1200, height: 630 },
+    ],
   });
   expect(info.twitter).toMatchObject({
     card: 'summary_large_image',
     title: '교통 안내 & 점검',
-    images: [{ url: '/og/site-v2.png', width: 1200, height: 630 }],
+    images: [
+      {
+        url: expect.stringMatching(
+          new RegExp(`/og/incidents/${id}\\.png\\?v=[a-f0-9]{16}$`),
+        ),
+        width: 1200,
+        height: 630,
+      },
+    ],
   });
   expect(JSON.stringify(info.openGraph)).not.toContain(apiOrigin + '/images/');
   expect(JSON.stringify(info)).not.toContain('publisher:');
@@ -240,7 +257,10 @@ test('crawlEndpointsListCanonicalRecentArticlesWithBoundedRequests', async () =>
   const robots = await load('./robots.ts');
   assert(typeof robots.default === 'function');
   const policy = await (robots.default as () => Record<string, unknown>)();
-  expect(policy.sitemap).toBe(origin + '/sitemap.xml');
+  expect(policy.sitemap).toEqual([
+    origin + '/sitemap.xml',
+    origin + '/article-sitemap.xml',
+  ]);
   const rules = Array.isArray(policy.rules) ? policy.rules : [policy.rules];
   const all = rules.find(
     (rule) => rule.userAgent === '*' || rule.userAgent?.includes('*'),
@@ -350,7 +370,7 @@ test('serverArchiveLinksOlderRawPagesWithoutReplacingInfiniteScroll', async () =
   expect(failed.querySelector('a[href="/archive?page=2"]')).not.toBeNull();
 });
 
-test('serviceAnswersRemainPublicWithoutExtraBrowseLayers', async () => {
+test('serviceAnswersAndBrowseLinksRemainPublicWithoutExtraLayers', async () => {
   const routeModule = await load('./about/page.tsx');
   const container = view(await (routeModule.default as Route)(props()));
   expect(container.querySelector('h1')?.textContent).toContain('흉흉');
@@ -372,8 +392,8 @@ test('serviceAnswersRemainPublicWithoutExtraBrowseLayers', async () => {
   const list = await load('./(browse)/@background/incidents/page.tsx');
   request.mockResolvedValueOnce(Response.json({ total: 0, items: [] }));
   const listView = view(await (list.default as Route)(props()));
-  expect(listView.querySelector('a[href="/archive"]')).toBeNull();
-  expect(listView.querySelector('a[href="/about"]')).toBeNull();
+  expect(listView.querySelector('a[href="/archive"]')).not.toBeNull();
+  expect(listView.querySelector('a[href="/about"]')).not.toBeNull();
   const home = await load('./(browse)/@background/(map)/page.tsx');
   vi.stubEnv('NEXT_PUBLIC_NAVER_MAP_CLIENT_ID', '');
   const homeView = view(await (home.default as Route)(props()));
