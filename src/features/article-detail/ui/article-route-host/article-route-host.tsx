@@ -12,16 +12,30 @@ import {
   useMemo,
   useRef,
   useState,
+  lazy,
+  Suspense,
   type ReactNode,
   type MouseEvent,
 } from 'react';
 
 import { AppShell } from '@/components/layout/app-shell/app-shell';
 import type { LocatedArticle } from '@/features/map/model/map-article.types';
+import {
+  MapCacheContext,
+  type CachedMap,
+} from '@/features/map/ui/map-home/map-cache-context';
+import { MapHomeLoading } from '@/features/map/ui/map-home/map-home-loading';
 
 import { ArticleSheetContext } from '../../model/article-sheet-context';
 
 export { useArticleSheetRoute } from '../../model/article-sheet-context';
+
+const NO_MAP_ARTICLES: LocatedArticle[] = [];
+const CachedMapHome = lazy(() =>
+  import('@/features/map/ui/map-home/map-home').then(({ MapHome }) => ({
+    default: MapHome,
+  })),
+);
 
 export function ArticleRouteHost({
   children,
@@ -55,6 +69,12 @@ export function ArticleRouteHost({
   }, []);
   const [mapArticles, registerMapArticles] = useState<LocatedArticle[]>([]);
   const [mapPreviewVisible, setMapPreviewVisible] = useState(false);
+  const [cachedMap, cacheMap] = useState<CachedMap | null>(null);
+  const mapCache = useMemo(
+    () => ({ cacheMap, cached: cachedMap !== null }),
+    [cachedMap],
+  );
+  const mapContext = pathname === '/' || (active && sourceBase === '/');
   const openArticle = useCallback(
     (id: string) => {
       setSourceQuery(
@@ -128,7 +148,7 @@ export function ArticleRouteHost({
       sourcePath,
       detailFocus,
       height,
-      mapArticles,
+      mapArticles: mapContext ? mapArticles : NO_MAP_ARTICLES,
       openArticle,
       close,
       setHeight,
@@ -141,6 +161,7 @@ export function ArticleRouteHost({
       sourcePath,
       height,
       mapArticles,
+      mapContext,
       openArticle,
       close,
       retry,
@@ -150,21 +171,41 @@ export function ArticleRouteHost({
 
   return (
     <ArticleSheetContext value={value}>
-      <AppShell
-        backgroundPath={pathname}
-        onClickCapture={captureOpener}
-        hideMapControls={mapPreviewVisible}
-      >
-        <div
-          hidden={inline}
-          inert={inline || undefined}
-          style={inline ? { display: 'none' } : undefined}
+      <MapCacheContext value={mapCache}>
+        <AppShell
+          backgroundPath={pathname}
+          onClickCapture={captureOpener}
+          hideMapControls={mapContext && mapPreviewVisible}
         >
-          {background}
-        </div>
-        {inline && children}
-      </AppShell>
-      {!inline && children}
+          {cachedMap && (
+            <div
+              hidden={!mapContext || inline}
+              inert={!mapContext || inline || undefined}
+            >
+              <Suspense fallback={<MapHomeLoading />}>
+                <CachedMapHome
+                  clientId={cachedMap.clientId}
+                  articles={cachedMap.articles}
+                  active={mapContext}
+                />
+              </Suspense>
+            </div>
+          )}
+          <div
+            hidden={inline || (pathname === '/' && !!cachedMap)}
+            inert={inline || (pathname === '/' && !!cachedMap) || undefined}
+            style={
+              inline || (pathname === '/' && !!cachedMap)
+                ? { display: 'none' }
+                : undefined
+            }
+          >
+            {background}
+          </div>
+          {inline && children}
+        </AppShell>
+        {!inline && children}
+      </MapCacheContext>
     </ArticleSheetContext>
   );
 }

@@ -11,11 +11,9 @@ import {
 
 import { articleTitle } from '@/features/article-list/model/article-presentation';
 import { groupMapArticles } from '@/features/map/model/map-region-groups';
+import type { LocatedArticle } from '@/features/map/model/map-article.types';
 
-import {
-  useArticleSheetRoute,
-  type ArticleSheetRoute,
-} from './article-sheet-context';
+import { useArticleSheetRoute } from './article-sheet-context';
 
 type Location = {
   latitude: number;
@@ -94,11 +92,11 @@ function isLocationData(value: unknown, id: string): value is LocationData {
 }
 
 function fromMap(
-  route: ArticleSheetRoute | null,
+  articles: LocatedArticle[] | undefined,
   id: string,
 ): LocationData | null {
-  const group = [...groupMapArticles(route?.mapArticles ?? []).values()].find(
-    (items) => items.some((item) => item.article_id === id),
+  const group = [...groupMapArticles(articles ?? []).values()].find((items) =>
+    items.some((item) => item.article_id === id),
   );
   const item = group?.find((candidate) => candidate.article_id === id);
 
@@ -127,7 +125,8 @@ export function DetailLocationProvider({
   children: ReactNode;
 }) {
   const route = useArticleSheetRoute();
-  const local = useMemo(() => fromMap(route, id), [route, id]);
+  const articles = route?.mapArticles;
+  const local = useMemo(() => fromMap(articles, id), [articles, id]);
   const [attempt, setAttempt] = useState(0);
   const [result, setResult] = useState<Result | null>(null);
 
@@ -185,7 +184,8 @@ export function DetailLocationProvider({
 export function useDetailLocation(id: string): DetailLocationState {
   const route = useArticleSheetRoute();
   const provided = useContext(Context);
-  const local = fromMap(route, id);
+  const articles = route?.mapArticles;
+  const local = useMemo(() => fromMap(articles, id), [articles, id]);
 
   if (local) return { id, status: 'ready', data: local, retry: () => {} };
   if (provided?.id === id) return provided;
