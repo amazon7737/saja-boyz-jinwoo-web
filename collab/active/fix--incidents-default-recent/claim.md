@@ -2,7 +2,7 @@
 branch: fix/incidents-default-recent
 owner: amazon
 started: 2026-11-22
-status: active          # active | paused(한동안 안 함, 남이 이어받아도 됨) | done(PR 올림)
+status: done            # active | paused(한동안 안 함, 남이 이어받아도 됨) | done(PR 올림)
 goal: fix(list): 사건 목록 기본 정렬을 인기순에서 최신순으로 변경
 next:
 base: dev
