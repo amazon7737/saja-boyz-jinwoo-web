@@ -5,6 +5,6 @@ import { siteOrigin } from './site-metadata';
 export default function robots(): MetadataRoute.Robots {
   return {
     rules: { userAgent: '*', allow: '/' },
-    sitemap: `${siteOrigin}/sitemap.xml`,
+    sitemap: [`${siteOrigin}/sitemap.xml`, `${siteOrigin}/article-sitemap.xml`],
   };
 }

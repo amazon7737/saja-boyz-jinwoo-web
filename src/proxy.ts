@@ -1,11 +1,15 @@
 import { NextResponse, type NextRequest } from 'next/server';
 
-export function proxy(request: NextRequest) {
+import { fetchArticleList } from '@/features/article-list/api/fetch-articles';
+
+export async function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
   if (
     pathname.startsWith('/article-document/') ||
-    /^\/_next\/data\/[^/]+\/article-document(?:\/|\.json$)/.test(pathname)
+    /^\/_next\/data\/[^/]+\/article-document(?:\/|\.json$)/.test(pathname) ||
+    pathname === '/archive-document' ||
+    /^\/_next\/data\/[^/]+\/archive-document(?:\/|\.json$)/.test(pathname)
   )
     return new Response(null, { status: 404 });
   if (
@@ -13,6 +17,37 @@ export function proxy(request: NextRequest) {
     !['GET', 'HEAD'].includes(request.method)
   )
     return NextResponse.next();
+
+  if (pathname === '/archive') {
+    const input = request.nextUrl.searchParams.get('page') ?? '1';
+    const page = Number(input);
+    const offset = (page - 1) * 20;
+
+    if (
+      !/^[1-9]\d*$/.test(input) ||
+      !Number.isSafeInteger(page) ||
+      !Number.isSafeInteger(offset)
+    )
+      return NextResponse.next();
+
+    const result = await fetchArticleList(
+      undefined,
+      offset,
+      'recent',
+      undefined,
+      undefined,
+      1,
+    );
+
+    if (result) return NextResponse.next();
+
+    const unavailable = new URL(request.url);
+
+    unavailable.pathname = '/archive-document';
+
+    return NextResponse.rewrite(unavailable);
+  }
+
   const match = pathname.match(/^\/incidents\/([^/]+)$/);
 
   if (!match) return NextResponse.next();
@@ -26,5 +61,11 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/incidents/:id', '/article-document/:id', '/_next/data/:path*'],
+  matcher: [
+    '/incidents/:id',
+    '/article-document/:id',
+    '/archive',
+    '/archive-document',
+    '/_next/data/:path*',
+  ],
 };

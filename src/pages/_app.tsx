@@ -7,6 +7,7 @@ import { SearchPromptProvider } from '@/features/search/model/use-rolling-search
 
 export default function MyApp({ Component, pageProps, router }: AppProps) {
   const isNotFound = pageProps.result?.status === 'not-found';
+  const hasSearchHeader = isNotFound || router.pathname === '/archive-document';
 
   const content = (
     <AppShell
@@ -21,7 +22,7 @@ export default function MyApp({ Component, pageProps, router }: AppProps) {
   return (
     <>
       <Analytics />
-      {isNotFound ? (
+      {hasSearchHeader ? (
         <SearchPromptProvider>{content}</SearchPromptProvider>
       ) : (
         content

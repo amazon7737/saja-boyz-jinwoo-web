@@ -11,13 +11,18 @@ import {
   siteTitle,
 } from '@/app/site-metadata';
 import { LoadingSpinner } from '@/components/feedback/loading-spinner';
+import { articleOgDetails } from '@/features/article-detail/model/article-og';
 import {
   articleDescription,
   articleTitle,
 } from '@/features/article-list/model/article-presentation';
 
 type Result = Awaited<ReturnType<typeof loadDetail>>;
-type Props = { id: string; result: Result };
+type Props = {
+  id: string;
+  result: Result;
+  ogImage: NonNullable<ReturnType<typeof articleOgDetails>>['image'] | null;
+};
 
 export const getServerSideProps: GetServerSideProps<Props> = async ({
   params,
@@ -59,10 +64,15 @@ export const getServerSideProps: GetServerSideProps<Props> = async ({
     );
   }
 
-  return { props: { id, result } };
+  const ogImage =
+    result.status === 'success'
+      ? (articleOgDetails(result.item, result.apiOrigin)?.image ?? null)
+      : null;
+
+  return { props: { id, result, ogImage } };
 };
 
-export default function ArticleDocument({ id, result }: Props) {
+export default function ArticleDocument({ id, result, ogImage }: Props) {
   const title =
     result.status === 'success'
       ? articleTitle(result.item.article.title)
@@ -74,7 +84,7 @@ export default function ArticleDocument({ id, result }: Props) {
       ? articleDescription(result.item.article.description)
       : '연결을 확인한 뒤 다시 눌러주세요.';
   const url = `${siteOrigin}/incidents/${id}`;
-  const image = `${siteOrigin}${siteImage.url}`;
+  const image = `${siteOrigin}${ogImage?.url ?? siteImage.url}`;
 
   return (
     <>
@@ -106,7 +116,10 @@ export default function ArticleDocument({ id, result }: Props) {
         <meta property="og:image" content={image} />
         <meta property="og:image:width" content={String(siteImage.width)} />
         <meta property="og:image:height" content={String(siteImage.height)} />
-        <meta property="og:image:alt" content={siteImage.alt} />
+        <meta property="og:image:alt" content={ogImage?.alt ?? siteImage.alt} />
+        {ogImage && (
+          <meta property="og:image" content={`${siteOrigin}${siteImage.url}`} />
+        )}
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={title} />
         <meta name="twitter:description" content={description} />

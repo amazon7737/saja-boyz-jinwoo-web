@@ -30,8 +30,16 @@ export async function fetchArticleList(
   sort: ArticleSort = 'recent',
   signal?: AbortSignal,
   period?: ArticlePeriod,
+  limit = 20,
 ) {
-  if (!Number.isSafeInteger(offset) || offset < 0) return null;
+  if (
+    !Number.isSafeInteger(offset) ||
+    offset < 0 ||
+    !Number.isSafeInteger(limit) ||
+    limit < 1 ||
+    limit > 100
+  )
+    return null;
 
   try {
     const baseUrl = process.env.NEWS_API_BASE_URL;
@@ -51,7 +59,7 @@ export async function fetchArticleList(
     const url = new URL('/news', base);
 
     url.searchParams.set('offset', String(offset));
-    url.searchParams.set('limit', '20');
+    url.searchParams.set('limit', String(limit));
     if (sort === 'popular') url.searchParams.set('sort', 'popular');
     if (period) url.searchParams.set('period', period);
     const normalizedKeyword = keyword?.trim();

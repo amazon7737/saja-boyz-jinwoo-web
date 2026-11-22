@@ -1,5 +1,5 @@
 import { fetchMapArticles } from '@/features/map/api/fetch-map-articles';
-import { MapHome } from '@/features/map/ui/map-home/map-home';
+import { MapCacheBridge } from '@/features/map/ui/map-home/map-cache-bridge';
 import { MapSetupNotice } from '@/features/map/ui/map-home/map-setup-notice';
 
 export default async function HomePage() {
@@ -8,7 +8,7 @@ export default async function HomePage() {
   }
 
   return (
-    <MapHome
+    <MapCacheBridge
       clientId={process.env.NEXT_PUBLIC_NAVER_MAP_CLIENT_ID.trim()}
       articles={await fetchMapArticles()}
     />

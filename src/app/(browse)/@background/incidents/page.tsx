@@ -1,3 +1,5 @@
+import Link from 'next/link';
+
 import { ListLink } from '@/components/layout/list-link/list-link';
 import { Notice } from '@/components/feedback/notice';
 import { PaginatedArticleList } from '@/features/article-list/ui/article-list/paginated-article-list';
@@ -32,6 +34,23 @@ export default async function IncidentsPage({
       <p className="sr-only">
         {sort === 'recent' ? '최신순' : '최근 30일 인기순'}
       </p>
+      <nav
+        aria-label="더 살펴보기"
+        className="flex min-h-9 items-center justify-end gap-4 text-[12px]/4 font-semibold text-muted"
+      >
+        <Link
+          href="/archive"
+          className="ui-link relative inline-flex min-h-9 items-center rounded-sm underline underline-offset-[3px] after:absolute after:-inset-y-1 after:inset-x-0 after:content-['']"
+        >
+          기사 아카이브
+        </Link>
+        <Link
+          href="/about"
+          className="ui-link relative inline-flex min-h-9 items-center rounded-sm underline underline-offset-[3px] after:absolute after:-inset-y-1 after:inset-x-0 after:content-['']"
+        >
+          서비스 안내
+        </Link>
+      </nav>
       {result ? (
         <PaginatedArticleList
           key={`${sort}-${period ?? 'all'}`}

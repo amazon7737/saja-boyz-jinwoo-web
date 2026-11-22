@@ -151,6 +151,7 @@ async function mount(
     route: ArticleSheetRoute | null = sheetRoute,
     overlay?: ReactNode,
     nextResult: MapArticleResult | null = result,
+    active = true,
   ) => {
     await act(async () =>
       root!.render(
@@ -161,6 +162,7 @@ async function mount(
               createElement(MapHome, {
                 clientId: 'test',
                 articles: nextResult,
+                active,
               }),
               overlay,
             )
@@ -170,6 +172,7 @@ async function mount(
               createElement(MapHome, {
                 clientId: 'test',
                 articles: nextResult,
+                active,
               }),
               overlay,
             ),
@@ -1480,4 +1483,57 @@ test('filtering changes the group count without retaining a stale selected marke
   expect(remaining[0].textContent).toBe('1');
   expect(remaining[0].getAttribute('aria-pressed')).toBe('false');
   expect(document.querySelector('[aria-label="선택한 기사"]')).toBeNull();
+});
+
+test('refreshes the chosen period when returning to a retained map', async () => {
+  const now = Date.UTC(2026, 10, 20, 0, 0, 0);
+  const clock = vi.spyOn(Date, 'now').mockReturnValue(now);
+  const article = {
+    ...data.items[0],
+    article: {
+      ...data.items[0].article,
+      pubDate: new Date(now - 23 * 60 * 60 * 1000).toISOString(),
+    },
+  };
+  const articles = { ...data, items: [article] };
+  try {
+    const fixture = await mount(articles);
+    const period = container.querySelector<HTMLButtonElement>(
+      'button[aria-label="기간"]',
+    )!;
+    await act(async () => period.click());
+    const option = [
+      ...container.querySelectorAll<HTMLButtonElement>('button'),
+    ].find((button) => button.textContent?.trim() === '최근 24시간')!;
+    await act(async () => option.click());
+    expect(
+      container.querySelectorAll('button[aria-label^="지역 대표 위치:"]'),
+    ).toHaveLength(1);
+
+    await fixture.draw(null, undefined, articles, false);
+    clock.mockReturnValue(now + 2 * 60 * 60 * 1000);
+    await fixture.draw(null, undefined, articles, true);
+    expect(
+      container.querySelectorAll('button[aria-label^="지역 대표 위치:"]'),
+    ).toHaveLength(0);
+    expect(
+      container
+        .querySelector<HTMLButtonElement>('button[aria-label^="기간:"]')
+        ?.getAttribute('aria-label'),
+    ).toBe('기간: 최근 24시간');
+  } finally {
+    clock.mockRestore();
+  }
+});
+
+test('hides the selected map sheet while browsing and restores it on return', async () => {
+  const fixture = await mount();
+  await act(async () => fixture.selected[0]());
+  expect(document.querySelector('[aria-label="선택한 기사"]')).not.toBeNull();
+
+  await fixture.draw(null, undefined, data, false);
+  expect(document.querySelector('[aria-label="선택한 기사"]')).toBeNull();
+
+  await fixture.draw(null, undefined, data, true);
+  expect(document.querySelector('[aria-label="선택한 기사"]')).not.toBeNull();
 });
