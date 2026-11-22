@@ -14,7 +14,7 @@ export function MapArticleCarousel({
   onSelect,
 }: {
   articles: MapArticleResult;
-  onSelect(item: LocatedArticle, opener: HTMLAnchorElement): void;
+  onSelect?(item: LocatedArticle, opener: HTMLAnchorElement): void;
 }) {
   return (
     <section

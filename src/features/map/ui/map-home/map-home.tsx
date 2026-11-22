@@ -4,7 +4,6 @@ import Image from 'next/image';
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 
 import { ListLink } from '@/components/layout/list-link/list-link';
-import { SiteStructuredData } from '@/components/layout/site-structured-data/site-structured-data';
 import { useArticleSheetRoute } from '@/features/article-detail/model/article-sheet-context';
 import { LoadingSpinner } from '@/components/feedback/loading-spinner';
 import { Notice } from '@/components/feedback/notice';
@@ -95,9 +94,13 @@ function requestLocation(): Promise<LocationResult> {
 export function MapHome({
   clientId,
   articles,
+  active = true,
+  initializeSdk = true,
 }: {
   clientId: string;
   articles?: MapArticleResult | null;
+  active?: boolean;
+  initializeSdk?: boolean;
 }) {
   const sheetRoute = useArticleSheetRoute();
   const registerMapArticles = sheetRoute?.registerMapArticles;
@@ -109,6 +112,7 @@ export function MapHome({
   );
   const [period, setPeriod] = useState<MapPeriod>('all');
   const [periodNow, setPeriodNow] = useState(() => Date.now());
+  const previouslyActive = useRef(active);
   const filteredArticles = useMemo(
     () =>
       articles
@@ -145,25 +149,37 @@ export function MapHome({
     request?: Promise<LocationResult>;
   }>({ started: false });
   const locate = useRef<(() => void) | null>(null);
+  const saveViewport = useRef<(() => void) | null>(null);
   const [locating, setLocating] = useState(false);
   const [locationError, setLocationError] = useState('');
   const [ready, setReady] = useState(false);
   const [failed, setFailed] = useState(false);
   const [attempt, setAttempt] = useState(0);
   const showMapPreview =
-    ready && selectedArticles.length > 0 && !!articles && !detailOpen;
+    active && ready && selectedArticles.length > 0 && !!articles && !detailOpen;
 
   useLayoutEffect(() => {
+    if (!initializeSdk) return;
     setMapPreviewVisible?.(showMapPreview);
 
     return () => setMapPreviewVisible?.(false);
-  }, [setMapPreviewVisible, showMapPreview]);
+  }, [initializeSdk, setMapPreviewVisible, showMapPreview]);
+
+  useLayoutEffect(() => {
+    if (!active) saveViewport.current?.();
+  }, [active]);
 
   useEffect(() => {
+    if (active && !previouslyActive.current) setPeriodNow(Date.now());
+    previouslyActive.current = active;
+  }, [active]);
+
+  useEffect(() => {
+    if (!initializeSdk) return;
     registerMapArticles?.(filteredArticles?.items ?? []);
 
     return () => registerMapArticles?.([]);
-  }, [filteredArticles, registerMapArticles]);
+  }, [filteredArticles, initializeSdk, registerMapArticles]);
 
   useEffect(() => {
     if (detailOpen || selectedArticles.length || !restoreSelectionFocus.current)
@@ -184,6 +200,8 @@ export function MapHome({
   }, [locating, locationError]);
 
   useLayoutEffect(() => {
+    if (!initializeSdk) return;
+
     const positionNotices = () => {
       if (!noticeViewport.current) return;
       const bottom = Math.max(
@@ -208,14 +226,17 @@ export function MapHome({
       observer?.disconnect();
       window.removeEventListener('resize', positionNotices);
     };
-  }, [ready, articles, filteredArticles, selectedArticles]);
+  }, [initializeSdk, ready, articles, filteredArticles, selectedArticles]);
 
   useEffect(() => {
+    if (!initializeSdk) return;
     const viewport = restoreMapViewport(clientId);
     let disposed = false;
     let loadFailed = false;
     let viewportUnavailable = false;
     let hasUsableViewport = false;
+    let lastWidth = 0;
+    let lastHeight = 0;
     let map: MapInstance | undefined;
     let marker: MarkerInstance | undefined;
     let selectedMarker: HTMLButtonElement | undefined;
@@ -379,10 +400,18 @@ export function MapHome({
           return;
         }
 
+        const sizeChanged =
+          viewportUnavailable ||
+          clientWidth !== lastWidth ||
+          clientHeight !== lastHeight;
+
         viewportUnavailable = false;
         hasUsableViewport = true;
-        map.setSize(new maps.Size(clientWidth, clientHeight));
         positionControls();
+        if (!sizeChanged) return;
+        lastWidth = clientWidth;
+        lastHeight = clientHeight;
+        map.setSize(new maps.Size(clientWidth, clientHeight));
         refreshDisplay?.();
       }
     };
@@ -398,6 +427,10 @@ export function MapHome({
         ),
         zoom: viewport.zoom,
       });
+
+      saveViewport.current = () => {
+        if (map) captureMapViewport(clientId, map);
+      };
 
       showLocation(false);
 
@@ -684,6 +717,7 @@ export function MapHome({
       loadFailed = true;
       automaticLocation.current.request = undefined;
       locate.current = null;
+      saveViewport.current = null;
       updateArticles.current = null;
       clearSelection.current = null;
       markCarouselSelection.current = null;
@@ -710,6 +744,7 @@ export function MapHome({
     return () => {
       disposed = true;
       locate.current = null;
+      saveViewport.current = null;
       updateArticles.current = null;
       clearSelection.current = null;
       markCarouselSelection.current = null;
@@ -722,7 +757,7 @@ export function MapHome({
       if (map) captureMapViewport(clientId, map);
       map?.destroy();
     };
-  }, [clientId, attempt]);
+  }, [clientId, attempt, initializeSdk]);
 
   useEffect(() => {
     if (ready) updateArticles.current?.(filteredArticles?.items ?? []);
@@ -748,7 +783,6 @@ export function MapHome({
 
   return (
     <>
-      <SiteStructuredData />
       <section
         ref={mapRegion}
         aria-label="주변 지도"
@@ -807,18 +841,25 @@ export function MapHome({
                 />
               )}
             </button>
-            {!ready && !failed && articles && articles.items.length > 0 && (
+            {!ready && !failed && articles === undefined && (
               <MapCarouselSkeleton className="ml-4" />
             )}
-            {ready && articles && articles.items.length > 0 && (
+            {articles && articles.items.length > 0 && (
               <MapArticleCarousel
                 articles={filteredArticles!}
-                onSelect={(item, opener) => {
-                  clearSelection.current?.();
-                  carouselSelection.current = { id: item.article_id, opener };
-                  markCarouselSelection.current?.(item.article_id);
-                  setSelectedArticles([item]);
-                }}
+                onSelect={
+                  ready
+                    ? (item, opener) => {
+                        clearSelection.current?.();
+                        carouselSelection.current = {
+                          id: item.article_id,
+                          opener,
+                        };
+                        markCarouselSelection.current?.(item.article_id);
+                        setSelectedArticles([item]);
+                      }
+                    : undefined
+                }
               />
             )}
           </div>
@@ -937,7 +978,7 @@ export function MapHome({
             </div>
           )}
         </div>
-        {ready && selectedArticles.length > 0 && articles && (
+        {active && ready && selectedArticles.length > 0 && articles && (
           <MapArticleSheet
             active={!detailOpen}
             items={selectedArticles}

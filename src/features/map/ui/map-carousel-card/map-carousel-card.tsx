@@ -16,7 +16,7 @@ export function MapCarouselCard({
 }: {
   item: LocatedArticle;
   apiOrigin: string;
-  onSelect(item: LocatedArticle, opener: HTMLAnchorElement): void;
+  onSelect?(item: LocatedArticle, opener: HTMLAnchorElement): void;
 }) {
   const publishedAt = publicationDate(item.article.pubDate);
   const imageUrl =
@@ -44,6 +44,7 @@ export function MapCarouselCard({
             href={`/incidents/${item.article_id}`}
             onClick={(event) => {
               if (
+                !onSelect ||
                 event.defaultPrevented ||
                 event.button !== 0 ||
                 event.metaKey ||

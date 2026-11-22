@@ -4,7 +4,7 @@ import { act, createElement, type ComponentType } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, expect, test, vi } from 'vitest';
 
-let MapHome: ComponentType<{ clientId: string }>;
+let MapHome: ComponentType<{ clientId: string; active?: boolean }>;
 let root: Root | undefined;
 let container: HTMLDivElement;
 let current = { latitude: 37.5665, longitude: 126.978, zoom: 12 };
@@ -127,6 +127,28 @@ test('mapRepeatedVisitsKeepLatestViewport', async () => {
     longitude: 126.978,
     zoom: 12,
   });
+});
+
+test('map stores the latest viewport when it becomes inactive without unmounting', async () => {
+  const { restoreMapViewport } = await import('../../model/map-viewport');
+  const clientId = 'viewport-test-id';
+  await visit(clientId);
+  current = { latitude: 35.1796, longitude: 129.0756, zoom: 15 };
+  await act(async () =>
+    root!.render(createElement(MapHome, { clientId, active: false })),
+  );
+  expect(destroy).not.toHaveBeenCalled();
+  expect(restoreMapViewport(clientId)).toEqual(current);
+
+  await act(async () =>
+    root!.render(createElement(MapHome, { clientId, active: true })),
+  );
+  current = { latitude: 33.4996, longitude: 126.5312, zoom: 10 };
+  await act(async () =>
+    root!.render(createElement(MapHome, { clientId, active: false })),
+  );
+  expect(destroy).not.toHaveBeenCalled();
+  expect(restoreMapViewport(clientId)).toEqual(current);
 });
 
 test('mapUnreadableViewportKeepsLastValidPosition', async () => {

@@ -6,6 +6,7 @@ import {
   mkdir,
   mkdtemp,
   readFile,
+  rename,
   rm,
   symlink,
   writeFile,
@@ -91,6 +92,8 @@ function presentArticle(item: typeof article) {
 const waitingMap: ServerResponse[] = [];
 const waitingDetails: ServerResponse[] = [];
 let unavailable = false;
+let failArchiveList = false;
+let failArchiveFullList = false;
 let listArticles = [article];
 const newsOffsets: number[] = [];
 const detailRequests: number[] = [];
@@ -110,6 +113,13 @@ const api = createServer((request, response) => {
     return;
   }
   if (url.pathname === '/news') {
+    if (
+      failArchiveList ||
+      (failArchiveFullList && url.searchParams.get('limit') !== '1')
+    ) {
+      response.writeHead(503).end('{"error":"QA_PRIVATE_ARCHIVE"}');
+      return;
+    }
     if (holdList) {
       waitingLists.push(response);
       return;
@@ -3037,6 +3047,116 @@ test('detailCloseIconKeepsAccessibleHitTargetAndReturnsToMap', async () => {
   }
 }, 120000);
 
+test('articleShareUsesArticleSpecificPngAndKeepsBrandFallback', async () => {
+  const response = await fetch(origin + '/incidents/' + id);
+  const html = await response.text();
+  const imagePath = `https://hyunghyung.vercel.app/og/incidents/${id}.png?v=`;
+  const tags = html.match(/<meta\b[^>]*>/g) ?? [];
+  expect(response.status).toBe(200);
+  expect(
+    tags.some(
+      (tag) => tag.includes('property="og:image"') && tag.includes(imagePath),
+    ),
+  ).toBe(true);
+  expect(
+    tags.some(
+      (tag) => tag.includes('name="twitter:image"') && tag.includes(imagePath),
+    ),
+  ).toBe(true);
+  expect(html).toContain('https://hyunghyung.vercel.app/og/site-v2.png');
+}, 30000);
+
+test('articleShareImageRendersPngAndHandlesChangesAndErrors', async () => {
+  const originalTitle = article.article.title;
+  const originalLink = article.article.originallink;
+  const imageUrl = (html: string) => {
+    const match = html.match(
+      /https:\/\/hyunghyung\.vercel\.app\/og\/incidents\/[a-f0-9]{64}\.png\?v=[a-f0-9]{16}/,
+    );
+    expect(match).not.toBeNull();
+    const url = new URL(match![0]);
+    return url.pathname + url.search;
+  };
+  try {
+    article.article.title = '<b>서울 안전 안내</b> &amp; 확인';
+    article.article.originallink =
+      'https://publisher.example.invalid/article?token=PRIVATE_SOURCE_QUERY';
+    const html = await (await fetch(origin + '/incidents/' + id)).text();
+    const first = imageUrl(html);
+    expect(first).not.toContain('PRIVATE_SOURCE_QUERY');
+    expect(first).not.toContain('publisher');
+    expect(first).not.toContain('서울');
+    const response = await fetch(origin + first);
+    expect(response.status).toBe(200);
+    expect(response.headers.get('content-type')).toContain('image/png');
+    expect(response.headers.get('cache-control')).toContain('s-maxage=900');
+    const png = Buffer.from(await response.arrayBuffer());
+    expect(png.subarray(0, 8).toString('hex')).toBe('89504e470d0a1a0a');
+    expect(png.readUInt32BE(16)).toBe(1200);
+    expect(png.readUInt32BE(20)).toBe(630);
+
+    const context = await browser!.newContext();
+    contexts.push(context);
+    const imagePage = await context.newPage();
+    await imagePage.goto(origin + first);
+    const size = await imagePage
+      .locator('img')
+      .evaluate((image: HTMLImageElement) => [
+        image.naturalWidth,
+        image.naturalHeight,
+      ]);
+    expect(size).toEqual([1200, 630]);
+
+    const fontPath = join(directory!, 'public/fonts/Pretendard-Bold.otf');
+    const backupPath = fontPath + '.test-backup';
+    await rename(fontPath, backupPath);
+    try {
+      const fallback = await fetch(origin + first, { redirect: 'manual' });
+      expect(fallback.status).toBe(307);
+      expect(fallback.headers.get('location')).toBe('/og/site-v2.png');
+      expect(fallback.headers.get('cache-control')).toContain('no-store');
+      await imagePage.goto(origin + first);
+      expect(new URL(imagePage.url()).pathname).toBe('/og/site-v2.png');
+      expect(
+        await imagePage
+          .locator('img')
+          .evaluate((image: HTMLImageElement) => image.naturalWidth),
+      ).toBe(1200);
+    } finally {
+      await rename(backupPath, fontPath);
+    }
+
+    article.article.title = '아주 긴 기사 제목 '.repeat(80) + '끝';
+    const nextHtml = await (await fetch(origin + '/incidents/' + id)).text();
+    const updated = imageUrl(nextHtml);
+    expect(updated).not.toBe(first);
+    const stale = await fetch(origin + first, { redirect: 'manual' });
+    expect(stale.status).toBe(307);
+    expect(stale.headers.get('location')).toBe(updated);
+    expect(stale.headers.get('cache-control')).toContain('no-store');
+    expect((await fetch(origin + updated)).status).toBe(200);
+
+    failDetail = true;
+    const unavailableImage = await fetch(origin + updated);
+    expect(unavailableImage.status).toBe(503);
+    expect(unavailableImage.headers.get('retry-after')).toBe('60');
+    expect(unavailableImage.headers.get('cache-control')).toContain('no-store');
+    failDetail = false;
+    const invalid = await fetch(origin + '/og/incidents/not-an-id.png?v=123');
+    expect(invalid.status).toBe(404);
+    expect(invalid.headers.get('cache-control')).toContain('no-store');
+    const missing = await fetch(
+      origin + '/og/incidents/' + missingId + '.png?v=123',
+    );
+    expect(missing.status).toBe(404);
+    expect(missing.headers.get('cache-control')).toContain('no-store');
+  } finally {
+    article.article.title = originalTitle;
+    article.article.originallink = originalLink;
+    failDetail = false;
+  }
+}, 30000);
+
 test('articleDocumentReadsOnceAndOmitsUnexpectedUpstreamFields', async () => {
   const before = detailRequests.length;
   failAfterDetailRequest = before + 1;
@@ -3053,6 +3173,147 @@ test('articleDocumentReadsOnceAndOmitsUnexpectedUpstreamFields', async () => {
   } finally {
     failAfterDetailRequest = Number.POSITIVE_INFINITY;
     largePrivateDetail = false;
+  }
+}, 30000);
+
+test('archiveDocumentPreservesPaginationAndRejectsInvalidPages', async () => {
+  const original = listArticles;
+  listArticles = Array.from({ length: 21 }, (_, index) => ({
+    ...article,
+    article_id: (index + 1).toString(16).padStart(64, '0'),
+    secret: 'QA_PRIVATE_ARCHIVE_FIELD',
+    article: { ...article.article, private: 'QA_PRIVATE_ARCHIVE_ARTICLE' },
+  }));
+  try {
+    const second = await fetch(origin + '/archive?page=2');
+    const html = await second.text();
+    expect(second.status).toBe(200);
+    expect(html).toContain('https://hyunghyung.vercel.app/archive?page=2');
+    expect(html).not.toContain('noindex');
+    expect(html).not.toContain('QA_PRIVATE_ARCHIVE_FIELD');
+    expect(html).not.toContain('QA_PRIVATE_ARCHIVE_ARTICLE');
+
+    const beyond = await fetch(origin + '/archive?page=3');
+    expect(beyond.status).toBe(200);
+    expect(await beyond.text()).toContain('noindex');
+    expect((await fetch(origin + '/archive?page=0')).status).toBe(404);
+    expect(
+      (await fetch(origin + '/archive?page=x', { method: 'HEAD' })).status,
+    ).toBe(404);
+    expect((await fetch(origin + '/archive-document')).status).toBe(404);
+    expect(
+      (await fetch(origin + '/_next/data/fake/archive-document.json')).status,
+    ).toBe(404);
+
+    const context = await browser!.newContext();
+    contexts.push(context);
+    const page = await context.newPage();
+    const headlineRequest = page.waitForRequest(
+      (request) => new URL(request.url()).pathname === '/api/search-headlines',
+    );
+    await page.goto(origin + '/archive');
+    await headlineRequest;
+    await Promise.all([
+      page.waitForURL(
+        (url) =>
+          url.pathname === '/archive' && url.searchParams.get('page') === '2',
+      ),
+      page.getByRole('link', { name: '다음 페이지' }).click(),
+    ]);
+    expect(await page.getByText('2페이지', { exact: true }).count()).toBe(1);
+    await Promise.all([
+      page.waitForURL((url) => url.pathname === '/incidents'),
+      page.getByRole('link', { name: '최신 기사 목록' }).click(),
+    ]);
+
+    const detailPage = await context.newPage();
+    let detailHeadlineRequests = 0;
+    detailPage.on('request', (request) => {
+      if (new URL(request.url()).pathname === '/api/search-headlines')
+        detailHeadlineRequests++;
+    });
+    await detailPage.goto(origin + '/incidents/' + id);
+    await detailPage.waitForTimeout(500);
+    expect(detailHeadlineRequests).toBe(0);
+
+    listArticles = [];
+    const empty = await fetch(origin + '/archive');
+    expect(empty.status).toBe(200);
+    expect(await empty.text()).toContain('noindex');
+  } finally {
+    listArticles = original;
+  }
+}, 30000);
+
+test('archiveKeepsRetryVisibleIfTheFullFetchFailsAfterPreflight', async () => {
+  failArchiveFullList = true;
+  try {
+    const response = await fetch(origin + '/archive');
+    const html = await response.text();
+
+    expect(response.status).toBe(200);
+    expect(html).not.toContain('noindex');
+    expect(html).toContain('기사를 불러오지 못했어요');
+    expect(html).toContain('다시 시도');
+  } finally {
+    failArchiveFullList = false;
+  }
+}, 30000);
+
+test('archiveUpstreamFailureReturns503WithRetryAndNoNoindex', async () => {
+  failArchiveList = true;
+  try {
+    for (const method of ['GET', 'HEAD'] as const) {
+      const response = await fetch(origin + '/archive?page=2', { method });
+      expect(response.status).toBe(503);
+      expect(response.headers.get('retry-after')).toBe('60');
+      expect(response.headers.get('cache-control')).toContain('no-store');
+      const html = await response.text();
+      if (method === 'GET') {
+        expect(html).not.toContain('noindex');
+        expect(html).not.toContain('QA_PRIVATE_ARCHIVE');
+        expect(html).not.toContain('127.0.0.1');
+      } else {
+        expect(html).toBe('');
+      }
+    }
+    const context = await browser!.newContext({ javaScriptEnabled: false });
+    contexts.push(context);
+    const page = await context.newPage();
+    expect((await page.goto(origin + '/archive?page=2'))?.status()).toBe(503);
+    expect(await page.getByRole('alert').count()).toBe(1);
+    expect(
+      await page.getByRole('link', { name: '다시 시도' }).getAttribute('href'),
+    ).toBe('/archive?page=2');
+    failArchiveList = false;
+    const [recovered] = await Promise.all([
+      page.waitForNavigation(),
+      page.getByRole('link', { name: '다시 시도' }).click(),
+    ]);
+    expect(recovered?.status()).toBe(200);
+    expect(
+      await page.getByRole('heading', { name: '기사 아카이브' }).count(),
+    ).toBe(1);
+
+    failArchiveList = true;
+    const interactive = await browser!.newContext();
+    contexts.push(interactive);
+    const interactivePage = await interactive.newPage();
+    expect(
+      (await interactivePage.goto(origin + '/archive?page=2'))?.status(),
+    ).toBe(503);
+    const archiveRegion = interactivePage.getByRole('region', {
+      name: '기사 아카이브',
+    });
+    await archiveRegion.getByRole('alert').waitFor();
+    failArchiveList = false;
+    await interactivePage.getByRole('link', { name: '다시 시도' }).click();
+    await interactivePage
+      .getByText('아직 수집된 기사가 없어요')
+      .waitFor({ timeout: 10000 });
+    expect(await archiveRegion.getByRole('alert').count()).toBe(0);
+  } finally {
+    failArchiveList = false;
   }
 }, 30000);
 
@@ -3878,6 +4139,19 @@ test('articleDocumentAndRscWorkWithExplicitLoopbackHostname', async () => {
     );
     expect(html).toContain(article.article.title);
     expect(html).toContain('https://hyunghyung.vercel.app/incidents/' + id);
+    expect(html).toMatch(
+      /<meta(?=[^>]*property="og:image")(?=[^>]*content="https:\/\/hyunghyung\.vercel\.app\/og\/site-v2\.png")[^>]*>/,
+    );
+    const tags = html.match(/<meta\b[^>]*>/g) ?? [];
+    expect(
+      tags.some(
+        (tag) =>
+          tag.includes('name="twitter:image"') &&
+          tag.includes(
+            `https://hyunghyung.vercel.app/og/incidents/${id}.png?v=`,
+          ),
+      ),
+    ).toBe(true);
     const successHead = await fetch(base + '/incidents/' + id, {
       method: 'HEAD',
     });

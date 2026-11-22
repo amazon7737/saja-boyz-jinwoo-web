@@ -141,7 +141,11 @@ test('articleCardsIdentityAndPublication', async () => {
   expect(html).not.toMatch(
     /data-category|data-status|📍|진행 중|발생 시각|전체 사건/,
   );
-  expect(html).not.toMatch(/<header\b|<nav\b/);
+  expect(html).not.toMatch(/<header\b/);
+  const navigation = html.match(/<nav\b[^>]*>/g) ?? [];
+  expect(navigation).toHaveLength(1);
+  expect(navigation[0]).toContain('aria-label="더 살펴보기"');
+  expect(navigation[0]).not.toMatch(/\bfixed\b/);
 });
 
 test('articleTextAndSourceSafety', async () => {

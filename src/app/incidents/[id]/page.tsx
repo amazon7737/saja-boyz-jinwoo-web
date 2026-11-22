@@ -1,7 +1,8 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
-import { pageMetadata } from '@/app/site-metadata';
+import { pageMetadata, siteImage } from '@/app/site-metadata';
+import { articleOgDetails } from '@/features/article-detail/model/article-og';
 import {
   articleDescription,
   articleTitle,
@@ -41,9 +42,17 @@ export async function generateMetadata({
 
   const title = articleTitle(result.item.article.title);
   const description = articleDescription(result.item.article.description);
+  const metadata = pageMetadata(title, description, `/incidents/${id}`);
+  const image = articleOgDetails(result.item, result.apiOrigin)?.image;
 
   return {
-    ...pageMetadata(title, description, `/incidents/${id}`),
+    ...metadata,
+    ...(image
+      ? {
+          openGraph: { ...metadata.openGraph, images: [image, siteImage] },
+          twitter: { ...metadata.twitter, images: [image] },
+        }
+      : {}),
     robots: { index: true, follow: true },
   };
 }

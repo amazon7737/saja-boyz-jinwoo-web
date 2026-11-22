@@ -64,6 +64,7 @@ async function mount(
   const destroy = vi.fn();
   const setCenter = vi.fn();
   const setZoom = vi.fn();
+  const setSize = vi.fn();
   let zoom = 10;
   let panX = 0;
   let panY = 0;
@@ -84,7 +85,7 @@ async function mount(
       created();
     }
     destroy = destroy;
-    setSize() {}
+    setSize = setSize;
     setCenter = setCenter;
     setZoom = setZoom;
     fitBounds() {}
@@ -201,6 +202,7 @@ async function mount(
     destroy,
     setCenter,
     setZoom,
+    setSize,
     async pan(x: number, y: number) {
       panX = x;
       panY = y;
@@ -701,4 +703,18 @@ test('hiddenMapResizeKeepsSelectedArticlePreviewAndViewport', async () => {
   expect(fixture.destroy).not.toHaveBeenCalled();
   expect(fixture.setCenter).not.toHaveBeenCalled();
   expect(fixture.setZoom).not.toHaveBeenCalled();
+});
+
+test('skips repeated map size updates but refreshes after a hidden viewport returns', async () => {
+  const fixture = await mount([nearby(1)], false, { width: 393, height: 852 });
+  await fixture.resize(393, 852);
+  expect(fixture.setSize).toHaveBeenCalledTimes(1);
+  await fixture.resize(393, 852);
+  expect(fixture.setSize).toHaveBeenCalledTimes(1);
+  await fixture.resize(420, 852);
+  expect(fixture.setSize).toHaveBeenCalledTimes(2);
+  await fixture.resize(0, 0);
+  expect(fixture.setSize).toHaveBeenCalledTimes(2);
+  await fixture.resize(420, 852);
+  expect(fixture.setSize).toHaveBeenCalledTimes(3);
 });
