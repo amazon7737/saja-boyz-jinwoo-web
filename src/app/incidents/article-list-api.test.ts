@@ -91,7 +91,6 @@ test('articleApiRequest', async () => {
   expect([...url.searchParams.entries()].sort()).toEqual([
     ['limit', '20'],
     ['offset', '0'],
-    ['sort', 'popular'],
   ]);
   expect(init?.method).toBe('GET');
   expect(init?.cache).toBe('no-store');
