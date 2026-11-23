@@ -23,7 +23,7 @@ export default async function IncidentsPage({
   const sort = parseArticleSort(params?.sort);
   const result = await fetchArticleList(undefined, 0, sort, undefined, period);
   const query = new URLSearchParams({
-    ...(sort === 'recent' && { sort }),
+    ...(sort === 'popular' && { sort }),
     ...(period && { period }),
   }).toString();
   const listHref = query ? `/incidents?${query}` : '/incidents';

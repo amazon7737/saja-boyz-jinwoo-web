@@ -211,13 +211,8 @@ test('articleListMoreAppendsWithRawOffsetsAndFirstSeenIdentity', async () => {
     const url = new URL(input instanceof Request ? input.url : String(input));
     expect(url.origin).toBe(apiOrigin);
     expect(url.pathname).toBe('/news');
-    expect([...url.searchParams.keys()].sort()).toEqual([
-      'limit',
-      'offset',
-      'sort',
-    ]);
+    expect([...url.searchParams.keys()].sort()).toEqual(['limit', 'offset']);
     expect(url.searchParams.get('limit')).toBe('20');
-    expect(url.searchParams.get('sort')).toBe('popular');
     expect(init?.method).toBe('GET');
     expect(init?.cache).toBe('no-store');
     expect(init?.signal).toBeTruthy();
@@ -370,5 +365,24 @@ test('articleListRecentSortKeepsEveryPageInPublicationOrder', async () => {
   for (const [input] of request.mock.calls) {
     const url = new URL(input instanceof Request ? input.url : String(input));
     expect(url.searchParams.has('sort')).toBe(false);
+  }
+});
+
+test('articleListPopularSortKeepsPopularOrderOnEveryPage', async () => {
+  request.mockResolvedValueOnce(Response.json({ total: 21, items: batch() }));
+  const page = await IncidentsPage({
+    searchParams: Promise.resolve({ sort: 'popular' }),
+  });
+  await act(async () => root.render(page));
+  expect(container.textContent).toContain('최근 30일 인기순');
+
+  request.mockResolvedValueOnce(
+    Response.json({ total: 21, items: [article(20)] }),
+  );
+  await intersect();
+  expect(offsets()).toEqual(['0', '20']);
+  for (const [input] of request.mock.calls) {
+    const url = new URL(input instanceof Request ? input.url : String(input));
+    expect(url.searchParams.get('sort')).toBe('popular');
   }
 });
