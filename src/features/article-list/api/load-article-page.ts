@@ -7,7 +7,7 @@ import type { ArticleSort } from '../model/article-sort';
 export async function loadArticlePage(
   offset: number,
   period?: ArticlePeriod,
-  sort: ArticleSort = 'popular',
+  sort: ArticleSort = 'recent',
 ) {
   return fetchArticleList(undefined, offset, sort, undefined, period);
 }
