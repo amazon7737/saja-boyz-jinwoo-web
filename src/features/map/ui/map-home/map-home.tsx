@@ -9,10 +9,14 @@ import { LoadingSpinner } from '@/components/feedback/loading-spinner';
 import { Notice } from '@/components/feedback/notice';
 import { articleText } from '@/features/article-list/model/article-presentation';
 
+import {
+  filterMapCategory,
+  type MapCategory,
+} from '../../model/map-category-filter';
 import { filterMapPeriod, type MapPeriod } from '../../model/map-period-filter';
+import { MapCategoryFilter } from '../map-category-filter/map-category-filter';
 import { MapAllFilters } from '../map-all-filters/map-all-filters';
 import { MapPeriodFilter } from '../map-period-filter/map-period-filter';
-import { MapUnavailableFilter } from '../map-unavailable-filter/map-unavailable-filter';
 import { createArticleMarker } from './map-article-marker';
 import { MapArticleSheet } from './map-article-sheet';
 import { MapCarouselSkeleton } from './map-home-loading';
@@ -111,6 +115,7 @@ export function MapHome({
     [],
   );
   const [period, setPeriod] = useState<MapPeriod>('all');
+  const [category, setCategory] = useState<MapCategory>('all');
   const [periodNow, setPeriodNow] = useState(() => Date.now());
   const previouslyActive = useRef(active);
   const filteredArticles = useMemo(
@@ -118,10 +123,13 @@ export function MapHome({
       articles
         ? {
             ...articles,
-            items: filterMapPeriod(articles.items, period, periodNow),
+            items: filterMapCategory(
+              filterMapPeriod(articles.items, period, periodNow),
+              category,
+            ),
           }
         : articles,
-    [articles, period, periodNow],
+    [articles, period, category, periodNow],
   );
   const updateArticles = useRef<((items: LocatedArticle[]) => void) | null>(
     null,
@@ -774,11 +782,12 @@ export function MapHome({
     detailOpen,
   ]);
 
-  function applyPeriod(value: MapPeriod) {
+  function applyFilters(nextPeriod: MapPeriod, nextCategory: MapCategory) {
     clearSelection.current?.();
     setSelectedArticles([]);
     setPeriodNow(Date.now());
-    setPeriod(value);
+    setPeriod(nextPeriod);
+    setCategory(nextCategory);
   }
 
   return (
@@ -796,9 +805,19 @@ export function MapHome({
           inert={showMapPreview || undefined}
           className={`absolute top-[calc(68px_+_env(safe-area-inset-top))] right-4 left-4 z-20 h-[30px] items-start gap-1.5 ${showMapPreview ? 'hidden' : 'flex'}`}
         >
-          <MapAllFilters value={period} onChange={applyPeriod} />
-          <MapPeriodFilter value={period} onChange={applyPeriod} />
-          <MapUnavailableFilter kind="category" />
+          <MapAllFilters
+            period={period}
+            category={category}
+            onApply={applyFilters}
+          />
+          <MapPeriodFilter
+            value={period}
+            onChange={(value) => applyFilters(value, category)}
+          />
+          <MapCategoryFilter
+            value={category}
+            onChange={(value) => applyFilters(period, value)}
+          />
         </div>
         <div ref={canvas} className="h-dvh overflow-hidden" />
         <div

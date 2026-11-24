@@ -18,13 +18,14 @@ function item(
   index: number,
   daysAgo = 0,
   region = '서울특별시 중구',
+  category: LocatedArticle['category'] = null,
 ): LocatedArticle {
   return {
     article_id: index.toString(16).padStart(64, '0'),
     collection_id: 'fixture',
     image_status: 'disabled',
     image_url: null,
-    category: null,
+    category,
     article: {
       title: `기사 ${index}`,
       description: `${region}에서 보도한 기사`,
@@ -350,54 +351,47 @@ test('mapPeriodFiltersSynchronizeMarkersAndCardsWithoutResettingMap', async () =
   expect(fixture.setZoom).not.toHaveBeenCalled();
 });
 
-test('mapUnavailableFiltersExplainMissingMetadataAndCloseAccessibly', async () => {
-  await mount([item(1)]);
-  for (const [label, explanation, options] of [
-    ['카테고리', '분류 정보 미제공', ['사회', '안보', '정치', '국제']],
-  ] as const) {
-    const trigger = button(label);
-    trigger.focus();
-    await act(async () => trigger.click());
-    expect(trigger.getAttribute('aria-expanded')).toBe('true');
-    const popup = document.querySelector(`[aria-label="${label} 선택"]`);
-    assert(popup);
-    expect(popup.textContent).toContain(explanation);
-    for (const option of options)
-      expect(button(option, popup).disabled).toBe(true);
-    expect(button('전체', popup).getAttribute('aria-pressed')).toBe('true');
-    await act(async () =>
-      popup.dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }),
-      ),
-    );
-    expect(trigger.getAttribute('aria-expanded')).toBe('false');
-    expect(document.activeElement).toBe(trigger);
-  }
-  expect(carousel().querySelectorAll('a[href^="/incidents/"]')).toHaveLength(1);
-});
+test('mapCategoryDropdownNarrowsMarkersAndCarouselAndAllRestores', async () => {
+  const fixture = await mount([
+    item(1, 0, '서울특별시 중구', 'society'),
+    item(2, 0, '서울특별시 중구', 'politics'),
+    item(3, 0, '서울특별시 중구', null),
+  ]);
+  const trigger = button('카테고리');
+  const links = () => carousel().querySelectorAll('a[href^="/incidents/"]');
 
-test('categoryUnavailableExplanationIsScreenReaderOnlyInBothFilters', async () => {
-  await mount([item(1)]);
+  expect(links()).toHaveLength(3);
+  trigger.focus();
   await click('카테고리');
   const popup = document.querySelector('[aria-label="카테고리 선택"]');
   assert(popup);
-  const explanationId = popup.getAttribute('aria-describedby');
-  assert(explanationId);
-  const explanation = document.getElementById(explanationId);
-  expect(explanation?.textContent).toBe('분류 정보 미제공');
-  expect(explanation?.classList.contains('sr-only')).toBe(true);
-  await click('전체', popup);
-  await click('전체 필터');
-  const category = [...document.querySelectorAll('fieldset')].find(
-    (field) => field.querySelector('legend')?.textContent === '카테고리',
+  expect(button('전체', popup).getAttribute('aria-pressed')).toBe('true');
+  await click('사회', popup);
+  expect(links()).toHaveLength(1);
+  expect(links()[0].getAttribute('href')).toBe(
+    '/incidents/' + item(1).article_id,
   );
-  assert(category);
-  const fullExplanationId = category.getAttribute('aria-describedby');
-  assert(fullExplanationId);
-  const fullExplanation = document.getElementById(fullExplanationId);
-  expect(fullExplanation?.textContent).toBe('분류 정보 미제공');
-  expect(fullExplanation?.classList.contains('sr-only')).toBe(true);
-  expect(button('사회', category).disabled).toBe(true);
+  expect(
+    [...fixture.active].map((marker) => marker.content.textContent),
+  ).toEqual(['1']);
+  expect(button('카테고리: 사회').textContent).toContain('사회');
+  expect(document.activeElement).toBe(button('카테고리: 사회'));
+  await click('카테고리: 사회');
+  await click('전체', document.querySelector('[aria-label="카테고리 선택"]')!);
+  expect(links()).toHaveLength(3);
+  expect(button('카테고리').textContent).toContain('카테고리');
+});
+
+test('mapCategoryDropdownClosesOnEscape', async () => {
+  await mount([item(1)]);
+  const trigger = button('카테고리');
+
+  await click('카테고리');
+  await act(async () =>
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' })),
+  );
+  expect(trigger.getAttribute('aria-expanded')).toBe('false');
+  expect(document.activeElement).toBe(trigger);
 });
 
 test('mapAllFiltersApplyOrDiscardDraftAndReset', async () => {
@@ -408,6 +402,7 @@ test('mapAllFiltersApplyOrDiscardDraftAndReset', async () => {
   assert(panel);
   expect(panel.textContent).toContain('카테고리');
   expect(panel.textContent).not.toContain('상태');
+  expect(panel.textContent).not.toContain('분류 정보 미제공');
   await click('최근 24시간', panel);
   expect(carousel().querySelectorAll('a[href^="/incidents/"]')).toHaveLength(2);
   await click('필터 닫기', panel);
@@ -472,7 +467,7 @@ test('mapFiltersKeepPeriodAndCategoryWithoutStatus', async () => {
     'true',
   );
   for (const option of ['사회', '안보', '정치', '국제']) {
-    expect(button(option, categoryPopup).disabled).toBe(true);
+    expect(button(option, categoryPopup).disabled).toBe(false);
   }
   await click('전체', categoryPopup);
 
@@ -507,7 +502,7 @@ test('mapFiltersKeepPeriodAndCategoryWithoutStatus', async () => {
   );
   expect(button('전체', category).getAttribute('aria-pressed')).toBe('true');
   for (const option of ['사회', '안보', '정치', '국제']) {
-    expect(button(option, category).disabled).toBe(true);
+    expect(button(option, category).disabled).toBe(false);
   }
 
   await click('전체 기간', period);
@@ -534,7 +529,7 @@ test('mapCategoryOptionsFollowFigmaOrderInBothFilters', async () => {
   expect.soft(labels(popup), '지도 상단 카테고리 순서').toEqual(expected);
   expect(button('전체', popup).getAttribute('aria-pressed')).toBe('true');
   for (const label of expected.slice(1)) {
-    expect(button(label, popup).disabled).toBe(true);
+    expect(button(label, popup).disabled).toBe(false);
   }
   await click('전체', popup);
 
@@ -550,6 +545,37 @@ test('mapCategoryOptionsFollowFigmaOrderInBothFilters', async () => {
   expect.soft(labels(category), '전체 필터 카테고리 순서').toEqual(expected);
   expect(button('전체', category).getAttribute('aria-pressed')).toBe('true');
   for (const label of expected.slice(1)) {
-    expect(button(label, category).disabled).toBe(true);
+    expect(button(label, category).disabled).toBe(false);
   }
+});
+
+test('mapAllFiltersApplyCategoryTogetherWithPeriod', async () => {
+  const fixture = await mount([
+    item(1, 0.5, '서울특별시 중구', 'society'),
+    item(2, 8, '서울특별시 중구', 'society'),
+    item(3, 0.5, '서울특별시 중구', 'politics'),
+  ]);
+  const links = () => carousel().querySelectorAll('a[href^="/incidents/"]');
+
+  await click('전체 필터');
+  let panel = document.querySelector('[role="dialog"][aria-label="전체 필터"]');
+  assert(panel);
+  await click('사회', panel);
+  expect(links()).toHaveLength(3);
+  await click('최근 24시간', panel);
+  await click('필터 적용하기', panel);
+  expect(links()).toHaveLength(1);
+  expect(
+    [...fixture.active].map((marker) => marker.content.textContent),
+  ).toEqual(['1']);
+  expect(button('카테고리: 사회')).toBeDefined();
+  expect(button('기간: 최근 24시간')).toBeDefined();
+
+  await click('전체 필터');
+  panel = document.querySelector('[role="dialog"][aria-label="전체 필터"]');
+  assert(panel);
+  expect(button('사회', panel).getAttribute('aria-pressed')).toBe('true');
+  await click('초기화', panel);
+  await click('필터 적용하기', panel);
+  expect(links()).toHaveLength(3);
 });
