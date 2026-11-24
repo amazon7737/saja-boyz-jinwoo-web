@@ -19,6 +19,7 @@ const pendingArticle = {
   collection_id: 'detail-location',
   image_status: 'disabled',
   image_url: null,
+  category: null,
   article: {
     title: '먼저 표시되는 기사 본문',
     description: '검증된 기사 내용',

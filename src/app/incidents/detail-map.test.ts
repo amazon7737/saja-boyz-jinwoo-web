@@ -24,6 +24,7 @@ const article = {
   collection_id: 'map-detail-test',
   image_status: 'disabled',
   image_url: null,
+  category: null,
   article: {
     title: '검증된 위치 기사',
     description: '서울 검증 지역 기사',

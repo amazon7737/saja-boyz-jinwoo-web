@@ -19,6 +19,7 @@ function item(id: string, pubDate: string): ArticleCollectionItem {
     article_id: id.repeat(64),
     image_status: 'disabled',
     image_url: null,
+    category: null,
     article: {
       title: '빈칸없는긴제목'.repeat(40),
       description: '가상 기사 요약',

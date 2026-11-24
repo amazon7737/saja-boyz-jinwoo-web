@@ -18,6 +18,7 @@ function article(index: number): ArticleCollectionItem {
     article_id: index.toString(16).padStart(64, '0'),
     image_status: 'disabled',
     image_url: null,
+    category: null,
     article: {
       title: '기사 ' + index,
       description: '기사 요약 ' + index,
@@ -318,6 +319,7 @@ test('searchResultsShowOnlyTheSelectedArticlesSafeImages', async () => {
     ...article(1),
     image_status: 'ready',
     image_url: `/images/${article(1).article_id}.jpg`,
+    category: null,
     article: {
       ...article(1).article,
       title: 'AI 지역 보도',
@@ -328,11 +330,13 @@ test('searchResultsShowOnlyTheSelectedArticlesSafeImages', async () => {
     ...article(2),
     image_status: 'ready',
     image_url: 'https://untrusted.example.invalid/image.jpg',
+    category: null,
   };
   const unavailable = {
     ...article(3),
     image_status: 'disabled',
     image_url: `/images/${article(3).article_id}.jpg`,
+    category: null,
   };
   request.mockResolvedValueOnce(
     Response.json({ total: 3, items: [first, unsafe, unavailable] }),

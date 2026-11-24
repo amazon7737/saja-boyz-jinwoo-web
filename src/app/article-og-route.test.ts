@@ -20,6 +20,7 @@ test('fallbackWhenExternalGlyphRequestsDoNotRespond', async () => {
     article_id: id,
     image_status: 'disabled',
     image_url: null,
+    category: null,
     article: {
       title,
       description: '가상 기사',

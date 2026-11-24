@@ -24,6 +24,7 @@ function item(
     collection_id: 'fixture',
     image_status: 'disabled',
     image_url: null,
+    category: null,
     article: {
       title: `기사 ${index}`,
       description: `${region}에서 보도한 기사`,

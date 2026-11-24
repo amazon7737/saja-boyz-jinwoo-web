@@ -28,6 +28,7 @@ export async function GET(request: Request) {
           article_id: item.article_id,
           image_status: item.image_status,
           image_url: item.image_url,
+          category: item.category,
           article: {
             title: item.article.title,
             description: item.article.description,

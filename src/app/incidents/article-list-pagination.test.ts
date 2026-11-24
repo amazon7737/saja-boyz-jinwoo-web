@@ -16,6 +16,7 @@ function article(index: number): ArticleCollectionItem {
     article_id: index.toString(16).padStart(64, '0'),
     image_status: 'disabled',
     image_url: null,
+    category: null,
     article: {
       title: '기사 ' + index,
       description: '기사 요약 ' + index,

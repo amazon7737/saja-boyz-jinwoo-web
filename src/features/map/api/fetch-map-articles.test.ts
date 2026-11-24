@@ -55,7 +55,7 @@ test('reads beyond the first page and keeps only verified resolved articles', as
 
   expect(result).toEqual({
     total: 101,
-    items: [item(100, true)],
+    items: [{ ...item(100, true), category: null }],
     apiOrigin: 'https://news.example.com',
   });
   expect(fetcher).toHaveBeenCalledTimes(2);
@@ -175,4 +175,29 @@ test('callerCancellationAbortsTheSharedUpstreamRequest', async () => {
   expect(await pending).toBeNull();
   expect(receivedSignal?.aborted).toBe(true);
   expect(fetcher).toHaveBeenCalledOnce();
+});
+
+test('keeps a known category and maps missing, null or unknown categories to null', async () => {
+  vi.stubEnv('NEWS_API_BASE_URL', 'https://news.example.com');
+  const items = [
+    { ...item(1, true), category: 'politics' },
+    { ...item(2, true), category: null },
+    { ...item(3, true), category: 'sports' },
+    { ...item(4, true), category: 42 },
+    item(5, true),
+  ];
+  vi.stubGlobal(
+    'fetch',
+    vi.fn().mockResolvedValue(Response.json({ total: items.length, items })),
+  );
+
+  const result = await fetchMapArticles();
+
+  expect(result?.items.map((entry) => entry.category)).toEqual([
+    'politics',
+    null,
+    null,
+    null,
+    null,
+  ]);
 });
