@@ -429,7 +429,7 @@ test('mapFilteredEmptyAndApiFailureKeepRecoveryAndLocation', async () => {
   const fixture = await mount([item(1, 8)]);
   await click('기간');
   await click('최근 24시간');
-  expect(carousel().textContent).toContain('선택한 기간의 기사가 없습니다');
+  expect(carousel().textContent).toContain('선택한 조건의 기사가 없습니다');
   expect(fixture.active.size).toBe(0);
   expect(button('내 위치').disabled).toBe(false);
   await click('기간: 최근 24시간');

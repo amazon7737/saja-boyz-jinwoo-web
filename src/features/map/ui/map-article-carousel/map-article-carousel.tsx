@@ -41,8 +41,8 @@ export function MapArticleCarousel({
       </div>
       <div className="flex snap-x snap-proximity gap-2.5 overflow-x-auto overscroll-x-contain px-4 [scroll-padding-inline:16px]">
         {articles.items.length === 0 && (
-          <Notice title="기간을 조금 넓혀볼까요?">
-            선택한 기간의 기사가 없습니다. 기간을 변경해 주세요.
+          <Notice title="조건을 조금 넓혀볼까요?">
+            선택한 조건의 기사가 없습니다. 기간이나 카테고리를 변경해 주세요.
           </Notice>
         )}
         {recentMapArticles(articles.items)

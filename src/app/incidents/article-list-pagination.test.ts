@@ -387,3 +387,25 @@ test('articleListPopularSortKeepsPopularOrderOnEveryPage', async () => {
     expect(url.searchParams.get('sort')).toBe('popular');
   }
 });
+
+test('articleListCategoryIsSentOnEveryPage', async () => {
+  const filtered = { headers: { 'X-News-Category': 'politics' } };
+
+  request.mockResolvedValueOnce(
+    Response.json({ total: 21, items: batch() }, filtered),
+  );
+  const page = await IncidentsPage({
+    searchParams: Promise.resolve({ category: 'politics' }),
+  });
+  await act(async () => root.render(page));
+
+  request.mockResolvedValueOnce(
+    Response.json({ total: 21, items: [article(20)] }, filtered),
+  );
+  await intersect();
+  expect(offsets()).toEqual(['0', '20']);
+  for (const [input] of request.mock.calls) {
+    const url = new URL(input instanceof Request ? input.url : String(input));
+    expect(url.searchParams.get('category')).toBe('politics');
+  }
+});

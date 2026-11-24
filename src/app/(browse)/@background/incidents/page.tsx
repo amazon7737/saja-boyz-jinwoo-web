@@ -4,6 +4,7 @@ import { ListLink } from '@/components/layout/list-link/list-link';
 import { Notice } from '@/components/feedback/notice';
 import { PaginatedArticleList } from '@/features/article-list/ui/article-list/paginated-article-list';
 import { fetchArticleList } from '@/features/article-list/api/fetch-articles';
+import { parseArticleCategory } from '@/features/article-list/model/article-category';
 import { parseArticlePeriod } from '@/features/article-list/model/article-period';
 import { parseArticleSort } from '@/features/article-list/model/article-sort';
 
@@ -15,16 +16,27 @@ export default async function IncidentsPage({
 }: {
   searchParams?: Promise<{
     period?: string | string[];
+    category?: string | string[];
     sort?: string | string[];
   }>;
 } = {}) {
   const params = await searchParams;
   const period = parseArticlePeriod(params?.period);
+  const category = parseArticleCategory(params?.category);
   const sort = parseArticleSort(params?.sort);
-  const result = await fetchArticleList(undefined, 0, sort, undefined, period);
+  const result = await fetchArticleList(
+    undefined,
+    0,
+    sort,
+    undefined,
+    period,
+    undefined,
+    category,
+  );
   const query = new URLSearchParams({
     ...(sort === 'popular' && { sort }),
     ...(period && { period }),
+    ...(category && { category }),
   }).toString();
   const listHref = query ? `/incidents?${query}` : '/incidents';
 
@@ -53,9 +65,10 @@ export default async function IncidentsPage({
       </nav>
       {result ? (
         <PaginatedArticleList
-          key={`${sort}-${period ?? 'all'}`}
+          key={`${sort}-${period ?? 'all'}-${category ?? 'all'}`}
           initialPage={result}
           period={period}
+          category={category}
           sort={sort}
         />
       ) : (
