@@ -27,6 +27,7 @@ function card(id: string, title: string, image_url: string | null = null) {
       article_id: id,
       image_status: 'ready',
       image_url,
+      category: null,
       article: {
         title,
         description: '사건 설명',

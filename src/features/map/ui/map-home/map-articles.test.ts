@@ -26,6 +26,7 @@ const data: MapArticleResult = {
       collection_id: 'collection',
       image_status: 'disabled',
       image_url: null,
+      category: null,
       article: {
         title: '장림동 <b>공장</b> 화재',
         description: '부산 사하구 장림동에서 화재 발생',
@@ -336,6 +337,7 @@ test('shows the selected article in the Figma sheet with its real image and publ
         ...data.items[0],
         image_status: 'ready',
         image_url: `/images/${'a'.repeat(64)}.jpg`,
+        category: null,
       },
     ],
   });
@@ -844,6 +846,7 @@ test('singleMapMarkerShowsArticlePreviewBeforeOpeningDetail', async () => {
     ...data.items[0],
     image_status: 'ready',
     image_url: `/images/${data.items[0].article_id}.jpg`,
+    category: null,
   };
   const openArticle = vi.fn();
   const route: ArticleSheetRoute = {
@@ -949,6 +952,7 @@ test('mapPreviewShowsSelectedArticleDetailsAndSafeSourceBeforeNavigation', async
     ...data.items[0],
     image_status: 'ready',
     image_url: `/images/${data.items[0].article_id}.jpg`,
+    category: null,
     article: {
       ...data.items[0].article,
       title: '장림동 <b>공장</b> 화재',

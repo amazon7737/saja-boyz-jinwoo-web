@@ -12,6 +12,7 @@ test('searchHighlightIgnoresCaseAndPreservesOriginalLiteralText', () => {
     article_id: 'a'.repeat(64),
     image_status: 'disabled',
     image_url: null,
+    category: null,
     article: {
       title: 'AI ai Ai aI 안전',
       description: 'aI Ai ai AI 보도',
@@ -69,6 +70,7 @@ test('submitted multiword search keeps matching the full phrase', () => {
     article_id: 'a'.repeat(64),
     image_status: 'disabled',
     image_url: null,
+    category: null,
     article: {
       title: '서울 한복판 화재',
       description: '서울 화재 소식',

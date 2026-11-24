@@ -548,6 +548,7 @@ test('mapAndDetailShareSdkWhenDetailUnmountsAndHomeRetriesAuthentication', async
                   collection_id: 'detail-test',
                   image_status: 'disabled',
                   image_url: null,
+                  category: null,
                   location_status: 'resolved',
                   location_reason: null,
                   location: {

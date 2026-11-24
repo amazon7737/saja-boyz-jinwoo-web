@@ -5,45 +5,44 @@ import {
   MapFilterPanel,
   MapFilterOption,
 } from '../map-filter-dropdown/map-filter-dropdown';
+import {
+  mapCategories,
+  type MapCategory,
+} from '../../model/map-category-filter';
 
-const filters = {
-  category: {
-    label: '카테고리',
-    explanation: '분류 정보 미제공',
-    options: ['안보', '사회', '정치', '국제'],
-  },
-};
-
-export function MapUnavailableFilter({ kind }: { kind: keyof typeof filters }) {
-  const { label, explanation, options } = filters[kind];
+export function MapCategoryFilter({
+  value,
+  onChange,
+}: {
+  value: MapCategory;
+  onChange(value: MapCategory): void;
+}) {
   const [open, setOpen] = useState(false);
   const container = useRef<HTMLDivElement>(null);
   const trigger = useRef<HTMLButtonElement>(null);
   const panelId = useId();
-  const explanationId = useId();
-
-  function close() {
-    setOpen(false);
-    trigger.current?.focus({ preventScroll: true });
-  }
+  const selected = mapCategories.find((option) => option.value === value)!;
 
   useEffect(() => {
     if (!open) return;
 
-    function onKey(event: KeyboardEvent) {
+    const close = () => {
+      setOpen(false);
+      trigger.current?.focus({ preventScroll: true });
+    };
+    const onKey = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         event.preventDefault();
         close();
       }
-    }
-
-    function onPointer(event: PointerEvent) {
+    };
+    const onPointer = (event: PointerEvent) => {
       if (
         event.target instanceof Node &&
         !container.current?.contains(event.target)
       )
         close();
-    }
+    };
 
     document.addEventListener('keydown', onKey);
     document.addEventListener('pointerdown', onPointer);
@@ -55,38 +54,33 @@ export function MapUnavailableFilter({ kind }: { kind: keyof typeof filters }) {
   }, [open]);
 
   return (
-    <div ref={container} className="relative">
+    <div ref={container} className="relative flex items-center gap-1.5">
       <MapFilterTrigger
         controlRef={trigger}
-        label={label}
+        label={value === 'all' ? '카테고리' : `카테고리: ${selected.label}`}
         expanded={open}
         controls={panelId}
+        active={value !== 'all'}
         wide
         onClick={() => setOpen(!open)}
       >
-        {label}
+        {value === 'all' ? '카테고리' : selected.label}
       </MapFilterTrigger>
       {open && (
-        <MapFilterPanel
-          id={panelId}
-          label={`${label} 선택`}
-          descriptionId={explanationId}
-        >
-          {['전체', ...options].map((option, index) => (
+        <MapFilterPanel id={panelId} label="카테고리 선택">
+          {mapCategories.map((option) => (
             <MapFilterOption
-              key={option}
-              label={option}
-              disabled={index > 0}
-              selected={index === 0}
-              descriptionId={explanationId}
-              onClick={close}
+              key={option.value}
+              selected={value === option.value}
+              onClick={() => {
+                onChange(option.value);
+                setOpen(false);
+                trigger.current?.focus({ preventScroll: true });
+              }}
             >
-              {option}
+              {option.label}
             </MapFilterOption>
           ))}
-          <p id={explanationId} className="sr-only">
-            {explanation}
-          </p>
         </MapFilterPanel>
       )}
     </div>

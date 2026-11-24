@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { Notice } from '@/components/feedback/notice';
+import type { IncidentCategory } from '@/features/incidents/model/types';
 import { ArticleSkeleton } from '@/components/feedback/article-skeleton';
 
 import { loadArticlePage } from '../../api/load-article-page';
@@ -16,10 +17,12 @@ type ArticlePage = NonNullable<Awaited<ReturnType<typeof loadArticlePage>>>;
 export function PaginatedArticleList({
   initialPage,
   period,
+  category,
   sort,
 }: {
   initialPage: ArticlePage;
   period?: ArticlePeriod;
+  category?: IncidentCategory;
   sort?: ArticleSort;
 }) {
   const [page, setPage] = useState(initialPage);
@@ -65,7 +68,7 @@ export function PaginatedArticleList({
       setRetrying(manual);
 
       try {
-        const nextPage = await loadArticlePage(offset, period, sort);
+        const nextPage = await loadArticlePage(offset, period, sort, category);
 
         if (!mounted.current) return;
 
@@ -92,16 +95,24 @@ export function PaginatedArticleList({
         }
       }
     },
-    [hasMore, offset, period, sort],
+    [hasMore, offset, period, category, sort],
   );
 
   const tail = useArticleTail(hasMore && !pending && !failed, loadMore);
 
   return (
     <>
-      {period && page.items.length === 0 ? (
-        <Notice title="선택한 기간의 기사가 없어요">
-          기간을 변경해 다른 소식도 살펴보세요.
+      {(period || category) && page.items.length === 0 ? (
+        <Notice
+          title={
+            period
+              ? '선택한 기간의 기사가 없어요'
+              : '선택한 카테고리의 기사가 없어요'
+          }
+        >
+          {period
+            ? '기간을 변경해 다른 소식도 살펴보세요.'
+            : '카테고리를 변경해 다른 소식도 살펴보세요.'}
         </Notice>
       ) : (
         <ArticleList items={page.items} apiOrigin={page.apiOrigin} now={now} />

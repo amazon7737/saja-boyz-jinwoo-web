@@ -14,6 +14,7 @@ const items: MapArticleResult['items'] = [
     collection_id: 'collection',
     image_status: 'disabled',
     image_url: null,
+    category: null,
     article: {
       title: '장림동 공장 화재',
       description: '부산 사하구 장림동에서 화재 발생',

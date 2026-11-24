@@ -33,6 +33,7 @@ test('sheet resizing does not regroup unchanged map articles while changed artic
     collection_id: 'test',
     image_status: 'disabled' as const,
     image_url: null,
+    category: null,
     article: {
       title: '기사',
       description: '',

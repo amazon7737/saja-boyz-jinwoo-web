@@ -4,7 +4,9 @@ import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 import { IconText } from '@/components/ui/icon-text/icon-text';
+import { parseArticleCategory } from '@/features/article-list/model/article-category';
 import { parseArticlePeriod } from '@/features/article-list/model/article-period';
+import { MapCategoryFilter } from '@/features/map/ui/map-category-filter/map-category-filter';
 import { MapPeriodFilter } from '@/features/map/ui/map-period-filter/map-period-filter';
 
 const periodValues = {
@@ -20,6 +22,10 @@ export function ArticleFilters({ isHome }: { isHome: boolean }) {
   const periods = searchParams?.getAll('period');
   const period = parseArticlePeriod(
     periods?.length === 1 ? periods[0] : undefined,
+  );
+  const categories = searchParams?.getAll('category');
+  const category = parseArticleCategory(
+    categories?.length === 1 ? categories[0] : undefined,
   );
   const chipClassName = `flex shrink-0 items-center gap-1 rounded-[20px] border border-solid border-[rgba(200,210,220,0.6)] bg-floating px-3 py-0 text-[13px]/[normal] font-semibold text-text opacity-100 backdrop-blur-[8px] ${isHome ? 'h-8' : 'h-7'}`;
 
@@ -63,12 +69,25 @@ export function ArticleFilters({ isHome }: { isHome: boolean }) {
           }}
         />
       )}
-      {(isHome ? ['기간', '카테고리'] : ['카테고리']).map((label) => (
+      {!isHome && (
+        <MapCategoryFilter
+          value={category ?? 'all'}
+          onChange={(value) => {
+            const params = new URLSearchParams(searchParams?.toString());
+
+            if (value === 'all') params.delete('category');
+            else params.set('category', value);
+            const query = params.toString();
+
+            router.push(query ? `/incidents?${query}` : '/incidents');
+          }}
+        />
+      )}
+      {isHome && (
         <button
-          key={label}
           type="button"
           disabled
-          title={`${label} 필터 준비 중`}
+          title="기간 필터 준비 중"
           className={chipClassName}
         >
           <IconText
@@ -78,10 +97,10 @@ export function ArticleFilters({ isHome }: { isHome: boolean }) {
             position="end"
             iconClassName="text-muted"
           >
-            {label}
+            기간
           </IconText>
         </button>
-      ))}
+      )}
     </div>
   );
 }

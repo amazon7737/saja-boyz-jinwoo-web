@@ -6,7 +6,7 @@
 | ---------------- | ------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
 | Brand            | src/components/layout/brand/brand.tsx                         | 흉흉 홈 링크. 로컬 SVG 64×24px, 이미지 alt와 화면 읽기 도구용 브랜드 텍스트                                          |
 | SearchHeader     | src/components/layout/search-header/search-header.tsx         | isHome: boolean. 지도에서 떠 있는 헤더, 목록에서 일반 흐름 헤더. 검색 링크 /search                                   |
-| ArticleFilters   | src/components/layout/article-filters/article-filters.tsx     | isHome: boolean. 목록의 기간·카테고리·상태 준비 중 버튼. 지도에는 추가하지 않음                                      |
+| ArticleFilters   | src/components/layout/article-filters/article-filters.tsx     | isHome: boolean. 목록의 기간·카테고리 필터(URL `period`·`category`). 지도에는 추가하지 않음                          |
 | BottomNavigation | src/components/layout/bottom-navigation/bottom-navigation.tsx | pathname: string. /, /report, /incidents 이동. 지도·목록은 aria-current=page, 검색은 지도 영역 aria-current=location |
 | AppShell         | src/components/layout/app-shell/app-shell.tsx                 | children: ReactNode. 화면별 조합과 FeatureErrorBoundary. 본문과 API 로직은 각 기능이 소유                            |
 
@@ -35,7 +35,7 @@ globals.css의 로컬 @font-face는 라틴·숫자 Inter Variable v4.1, 한글 P
 
 뉴스·지도 계약은 docs의 API 계약 문서를 확인한다. 기사 UI 타입은 src/features/article-list/model/article.types.ts에 있다. 발행 시각을 사건 발생 시각으로 바꾸어 표시하지 않는다.
 
-목록의 ArticleFilters는 모두 disabled이며 title에 준비 중 안내가 있다. 지도 필터는 MapHome이 데이터와 함께 소유하며 아래 계약을 따른다. URL을 변경하거나 가짜 결과를 만들지 않는다. 이전 목표 문서의 FilterBar, IncidentFilterControls, IncidentBadges, /ui-preview, URL category/status/period 유틸은 현재 공용 구현 계약이 아니다.
+목록의 ArticleFilters는 기간·카테고리를 URL `period`·`category`로 쓰고 서버가 거른 결과만 보인다(서버가 같은 값을 `X-News-Period`·`X-News-Category`로 확인하지 않으면 오류). 지도 필터는 MapHome이 데이터와 함께 소유하며 아래 계약을 따른다. 이전 목표 문서의 FilterBar, IncidentFilterControls, IncidentBadges, /ui-preview, URL category/status/period 유틸은 현재 공용 구현 계약이 아니다.
 
 API에 없는 사건 분류·상태·발생 시각·타임라인·인용 수·거리·LIVE 수치를 임의 생성하지 않는다. API 필터 규약이 확정되면 별도 승인한 기능으로 연결한다.
 
@@ -45,7 +45,7 @@ API에 없는 사건 분류·상태·발생 시각·타임라인·인용 수·�
 
 ## 지도 홈의 실제 연결
 
-- `MapHome`: API 지도 기사 결과·공개 SDK clientId를 받아 SDK/카메라 수명주기와 데이터 동기화를 소유한다. `MapAllFilters`, `MapPeriodFilter`, `MapUnavailableFilter`는 각각의 UI 폴더에 있으며 데이터 로직은 map/model에서 분리한다. 카테고리/상태는 서버 계약 미제공을 명시한다.
+- `MapHome`: API 지도 기사 결과·공개 SDK clientId를 받아 SDK/카메라 수명주기와 데이터 동기화를 소유한다. `MapAllFilters`, `MapPeriodFilter`, `MapCategoryFilter`는 각각의 UI 폴더에 있으며 데이터 로직은 map/model에서 분리한다. 카테고리는 기사의 `category`(society·security·politics·international 또는 null)로 클라이언트에서 거르고, null은 전체에서만 보인다. 상태는 서버 계약이 없어 UI에 두지 않는다.
 - `MapArticleCarousel`, `MapCarouselCard`, `MapCarouselImage`: 각각의 이름 폴더. 실제 기사 발행시각·이미지·상세 링크를 표시하고 이미지 실패만 해당 이미지가 소유한다. 카드 전체도 같은 단일 상세 링크로 접근하며 실제 상세 URL은 바꾸지 않는다.
 - 기본393px 필터: icon42×30, 기간60×27, 카테고리82×27, 상태60×27, gap6. 선택 기간은 짧은 칩 문구와 접근성 설명을 제공하고 popup/전체 필터에 발행일 기준을 보인다. 원본의 활성 필터 SVG는 public/filters/filter-active.svg(18×18)를 그대로 쓴다.
 - 일반 높이의 카드200×152, 내부 이미지176×80, 간격10. carousel221px와 메뉴 사이10px를 유지한다. 기존 메뉴68/bottom8을 유지해 정규화 Figma와 세로1px 차이가 있다. 높이550px 이하에서는 이미지 없는62px 카드로 압축해 내 위치/필터/메뉴가 겹치지 않게 한다.
@@ -112,4 +112,4 @@ API에 없는 사건 분류·상태·발생 시각·타임라인·인용 수·�
 
 ## 지도 필터 드롭다운 공통 스타일
 
-기간·카테고리·상태는 `map-filter-dropdown`의 `MapFilterTrigger`, `MapFilterPanel`, `MapFilterOption`을 함께 사용한다. 기간 필터를 기준으로27px 트리거,12px 글자, 흰 패널·12px 모서리·테두리·6px 패딩·공통 그림자, 선택 항목의 브랜드 색상과 옅은 배경을 통일한다. 카테고리의 기존82px 너비와 나머지60px 너비, 상태 메뉴의 좁은 화면 정렬은 유지한다. 카테고리·상태의 미제공 항목은 계속 disabled이며 기간 선택·닫기·포커스 복귀 로직은 각 필터가 소유한다. 설명 문단의 sr-only 정책은 이 공통 스타일과 독립적으로 유지한다.
+기간·카테고리·상태는 `map-filter-dropdown`의 `MapFilterTrigger`, `MapFilterPanel`, `MapFilterOption`을 함께 사용한다. 기간 필터를 기준으로27px 트리거,12px 글자, 흰 패널·12px 모서리·테두리·6px 패딩·공통 그림자, 선택 항목의 브랜드 색상과 옅은 배경을 통일한다. 카테고리의 기존82px 너비와 나머지60px 너비, 상태 메뉴의 좁은 화면 정렬은 유지한다. 기간·카테고리 선택·닫기·포커스 복귀 로직은 각 필터가 소유한다. 설명 문단의 sr-only 정책은 이 공통 스타일과 독립적으로 유지한다.

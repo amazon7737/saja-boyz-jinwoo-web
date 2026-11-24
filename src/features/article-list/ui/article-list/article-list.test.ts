@@ -16,6 +16,7 @@ function item(id: string, label: string): ArticleCollectionItem {
     article_id: id,
     image_status: 'ready',
     image_url: `/images/${id}.jpg`,
+    category: null,
     article: {
       title: `샘플 기사 ${label}`,
       description: `검증용 기사 ${label} 요약`,
@@ -59,6 +60,7 @@ test('articleImageErrorPreservesCards', async () => {
     ...item(idC, 'C'),
     image_status: 'disabled',
     image_url: null,
+    category: null,
   };
   await render([item(idA, 'A'), item(idB, 'B'), disabled]);
   const initialCards = container.querySelectorAll('article');
