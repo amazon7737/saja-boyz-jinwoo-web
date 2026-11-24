@@ -22,6 +22,7 @@ test('articleMetadataProvidesSpecificPngAndBrandFallback', async () => {
         article_id: id,
         image_status: 'disabled',
         image_url: null,
+        category: null,
         article: {
           title: '서울 안전 <b>안내</b>',
           description: '기사 요약입니다.',
@@ -60,6 +61,7 @@ test('articleOgVersionTracksSafeDisplayedFactsOnly', () => {
     article_id: id,
     image_status: 'disabled',
     image_url: null,
+    category: null,
     article: {
       title: '서울 <b>안전</b> &amp; 안내',
       description: '요약',
@@ -104,6 +106,7 @@ test('articleOgMarksTruncatedSourceHostnameWithoutChangingSource', () => {
     article_id: id,
     image_status: 'disabled',
     image_url: null,
+    category: null,
     article: {
       title: '지역 기사',
       description: '요약',

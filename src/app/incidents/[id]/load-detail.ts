@@ -1,15 +1,16 @@
 import { cache } from 'react';
 
 import type { ArticleCollectionItem } from '@/features/article-list/model/article.types';
+import { articleCategoryOrNull } from '@/features/article-list/model/article-category';
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === 'object' && !Array.isArray(value);
 }
 
-function isDetailItem(
+function isDetailShape(
   value: unknown,
   id: string,
-): value is ArticleCollectionItem {
+): value is Record<string, unknown> {
   if (!isRecord(value) || !isRecord(value.article)) return false;
 
   return (
@@ -53,9 +54,13 @@ async function fetchDetail(id: string, signal?: AbortSignal) {
 
     if (response.status === 404) return { status: 'not-found' } as const;
     if (!response.ok) return { status: 'error' } as const;
-    const item: unknown = await response.json();
+    const payload: unknown = await response.json();
 
-    if (!isDetailItem(item, id)) return { status: 'error' } as const;
+    if (!isDetailShape(payload, id)) return { status: 'error' } as const;
+    const item = {
+      ...payload,
+      category: articleCategoryOrNull(payload.category),
+    } as ArticleCollectionItem;
 
     return { status: 'success', item, apiOrigin: url.origin } as const;
   } catch {

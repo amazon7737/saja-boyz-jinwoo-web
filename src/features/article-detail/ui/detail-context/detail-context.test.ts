@@ -17,6 +17,7 @@ test('articleSheetVerifiedContext', () => {
     collection_id: 'verified-context',
     image_status: 'disabled',
     image_url: null,
+    category: null,
     article: {
       title: '검증 기사',
       description: '요약',
@@ -103,6 +104,7 @@ test('serverDetailLocationUsesFigmaIconAndKeepsAccuracyDisclosure', () => {
     collection_id: 'verified-context',
     image_status: 'disabled',
     image_url: null,
+    category: null,
     article: {
       title: '검증 기사',
       description: '검증 지역 A',

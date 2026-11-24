@@ -40,6 +40,7 @@ export const getServerSideProps: GetServerSideProps<Props> = async ({
             article_id: loaded.item.article_id,
             image_status: loaded.item.image_status,
             image_url: loaded.item.image_url,
+            category: loaded.item.category,
             article: {
               title: loaded.item.article.title,
               description: loaded.item.article.description,

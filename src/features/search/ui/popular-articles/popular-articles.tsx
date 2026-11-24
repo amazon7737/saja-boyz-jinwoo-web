@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { ArticleSkeleton } from '@/components/feedback/article-skeleton';
 import { Notice } from '@/components/feedback/notice';
 import type { ArticleCollectionItem } from '@/features/article-list/model/article.types';
+import { parseArticleCategory } from '@/features/article-list/model/article-category';
 
 import { usePopularRanking } from '../../model/use-rolling-search-prompt';
 import { PopularArticleCard } from './popular-article-card';
@@ -43,6 +44,8 @@ function validCard(
       item.article_id === expectedId &&
       typeof item.image_status === 'string' &&
       (item.image_url === null || typeof item.image_url === 'string') &&
+      (item.category === null ||
+        parseArticleCategory(item.category) !== undefined) &&
       ['title', 'description', 'pubDate', 'originallink', 'link'].every(
         (key) => typeof article[key] === 'string',
       )

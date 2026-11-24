@@ -4,13 +4,13 @@ import { createRoot } from 'react-dom/client';
 import { expect, test, vi } from 'vitest';
 
 import { MapPeriodFilter } from '../map-period-filter/map-period-filter';
-import { MapUnavailableFilter } from '../map-unavailable-filter/map-unavailable-filter';
+import { MapCategoryFilter } from '../map-category-filter/map-category-filter';
 
 function visualClasses(element: Element, ignore: (value: string) => boolean) {
   return [...element.classList].filter((value) => !ignore(value)).sort();
 }
 
-test('periodAndCategoryShareDropdownStylesAndRetainDisabledChoices', async () => {
+test('periodAndCategoryShareDropdownStyles', async () => {
   vi.stubGlobal('IS_REACT_ACT_ENVIRONMENT', true);
   const change = vi.fn();
   const host = document.createElement('div');
@@ -23,7 +23,7 @@ test('periodAndCategoryShareDropdownStylesAndRetainDisabledChoices', async () =>
           Fragment,
           null,
           createElement(MapPeriodFilter, { value: 'all', onChange: change }),
-          createElement(MapUnavailableFilter, { kind: 'category' }),
+          createElement(MapCategoryFilter, { value: 'all', onChange: change }),
         ),
       ),
     );
@@ -57,10 +57,10 @@ test('periodAndCategoryShareDropdownStylesAndRetainDisabledChoices', async () =>
       expect(actualTrigger, label + ' 트리거').toEqual(triggerStyle);
       if (label !== '기간') {
         expect(
-          [...panel.querySelectorAll<HTMLButtonElement>('button')]
-            .slice(1)
-            .every((button) => button.disabled),
-        ).toBe(true);
+          [...panel.querySelectorAll<HTMLButtonElement>('button')].some(
+            (button) => button.disabled,
+          ),
+        ).toBe(false);
         expect(selected.textContent).toBe('전체');
       }
       await act(async () =>

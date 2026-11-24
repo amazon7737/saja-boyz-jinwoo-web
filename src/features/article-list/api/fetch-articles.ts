@@ -1,4 +1,7 @@
+import type { IncidentCategory } from '@/features/incidents/model/types';
+
 import type { ArticleCollectionItem } from '../model/article.types';
+import { articleCategoryOrNull } from '../model/article-category';
 import type { ArticlePeriod } from '../model/article-period';
 import type { ArticleSort } from '../model/article-sort';
 
@@ -6,9 +9,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === 'object' && !Array.isArray(value);
 }
 
-function isArticleCollectionItem(
-  value: unknown,
-): value is ArticleCollectionItem {
+function isArticleItemShape(value: unknown): value is Record<string, unknown> {
   if (!isRecord(value) || !isRecord(value.article)) return false;
 
   return (
@@ -24,6 +25,13 @@ function isArticleCollectionItem(
   );
 }
 
+function withCategory(value: Record<string, unknown>) {
+  return {
+    ...value,
+    category: articleCategoryOrNull(value.category),
+  } as ArticleCollectionItem;
+}
+
 export async function fetchArticleList(
   keyword?: string,
   offset = 0,
@@ -31,6 +39,7 @@ export async function fetchArticleList(
   signal?: AbortSignal,
   period?: ArticlePeriod,
   limit = 20,
+  category?: IncidentCategory,
 ) {
   if (
     !Number.isSafeInteger(offset) ||
@@ -62,6 +71,7 @@ export async function fetchArticleList(
     url.searchParams.set('limit', String(limit));
     if (sort === 'popular') url.searchParams.set('sort', 'popular');
     if (period) url.searchParams.set('period', period);
+    if (category) url.searchParams.set('category', category);
     const normalizedKeyword = keyword?.trim();
 
     if (normalizedKeyword) url.searchParams.set('keyword', normalizedKeyword);
@@ -76,6 +86,8 @@ export async function fetchArticleList(
 
     if (!response.ok) return null;
     if (period && response.headers.get('X-News-Period') !== period) return null;
+    if (category && response.headers.get('X-News-Category') !== category)
+      return null;
 
     const payload: unknown = await response.json();
 
@@ -85,13 +97,13 @@ export async function fetchArticleList(
       !Number.isInteger(payload.total) ||
       payload.total < 0 ||
       !Array.isArray(payload.items) ||
-      !payload.items.every(isArticleCollectionItem)
+      !payload.items.every(isArticleItemShape)
     ) {
       return null;
     }
 
     return {
-      items: payload.items,
+      items: payload.items.map(withCategory),
       apiOrigin: url.origin,
       total: payload.total,
     };

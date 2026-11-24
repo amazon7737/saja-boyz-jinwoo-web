@@ -1,3 +1,5 @@
+import { articleCategoryOrNull } from '@/features/article-list/model/article-category';
+
 import type {
   LocatedArticle,
   MapArticleResult,
@@ -128,7 +130,10 @@ export async function fetchMapArticles(
 
       for (const item of page.items) {
         if (item.location_status === 'resolved' && !items.has(item.article_id))
-          items.set(item.article_id, item as LocatedArticle);
+          items.set(item.article_id, {
+            ...item,
+            category: articleCategoryOrNull(item.category),
+          } as LocatedArticle);
       }
 
       offset += page.items.length;

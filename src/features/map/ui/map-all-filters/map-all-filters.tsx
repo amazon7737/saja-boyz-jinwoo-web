@@ -2,15 +2,22 @@ import Image from 'next/image';
 import { useEffect, useId, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
+import {
+  mapCategories,
+  type MapCategory,
+} from '../../model/map-category-filter';
 import { mapPeriods, type MapPeriod } from '../../model/map-period-filter';
 
 export function MapAllFilters({
-  value,
-  onChange,
+  period,
+  category,
+  onApply,
 }: {
-  value: MapPeriod;
-  onChange(value: MapPeriod): void;
+  period: MapPeriod;
+  category: MapCategory;
+  onApply(period: MapPeriod, category: MapCategory): void;
 }) {
+  const filtered = period !== 'all' || category !== 'all';
   const [open, setOpen] = useState(false);
   const trigger = useRef<HTMLButtonElement>(null);
   const panelId = useId();
@@ -29,14 +36,10 @@ export function MapAllFilters({
         aria-expanded={open}
         aria-controls={open ? panelId : undefined}
         onClick={() => setOpen(true)}
-        className={`ui-control flex h-[30px] w-[42px] shrink-0 items-center justify-center rounded-[20px] border border-solid bg-floating px-[11px] py-[5px] backdrop-blur-[8px] ${value === 'all' ? 'border-[rgba(200,210,220,0.6)]' : 'border-brand'}`}
+        className={`ui-control flex h-[30px] w-[42px] shrink-0 items-center justify-center rounded-[20px] border border-solid bg-floating px-[11px] py-[5px] backdrop-blur-[8px] ${filtered ? 'border-brand' : 'border-[rgba(200,210,220,0.6)]'}`}
       >
         <Image
-          src={
-            value === 'all'
-              ? '/filters/filter.svg'
-              : '/filters/filter-active.svg'
-          }
+          src={filtered ? '/filters/filter-active.svg' : '/filters/filter.svg'}
           alt=""
           width={18}
           height={18}
@@ -46,9 +49,10 @@ export function MapAllFilters({
       {open && (
         <FilterSheet
           id={panelId}
-          initialValue={value}
+          initialPeriod={period}
+          initialCategory={category}
           onClose={close}
-          onApply={onChange}
+          onApply={onApply}
           restoreFocus={() => trigger.current?.focus({ preventScroll: true })}
         />
       )}
@@ -58,18 +62,21 @@ export function MapAllFilters({
 
 function FilterSheet({
   id,
-  initialValue,
+  initialPeriod,
+  initialCategory,
   onClose,
   onApply,
   restoreFocus,
 }: {
   id: string;
-  initialValue: MapPeriod;
+  initialPeriod: MapPeriod;
+  initialCategory: MapCategory;
   onClose(): void;
-  onApply(value: MapPeriod): void;
+  onApply(period: MapPeriod, category: MapCategory): void;
   restoreFocus(): void;
 }) {
-  const [draft, setDraft] = useState(initialValue);
+  const [draftPeriod, setDraftPeriod] = useState(initialPeriod);
+  const [draftCategory, setDraftCategory] = useState(initialCategory);
   const overlay = useRef<HTMLDivElement>(null);
   const panel = useRef<HTMLElement>(null);
   const callbacks = useRef({ onClose, restoreFocus });
@@ -172,24 +179,38 @@ function FilterSheet({
               <button
                 key={option.value}
                 type="button"
-                aria-pressed={draft === option.value}
-                onClick={() => setDraft(option.value)}
-                className={`ui-control rounded-lg border border-solid px-3 py-2.5 text-[13px] font-semibold ${draft === option.value ? 'border-brand bg-brand/5 text-brand' : 'border-border bg-surface text-muted'}`}
+                aria-pressed={draftPeriod === option.value}
+                onClick={() => setDraftPeriod(option.value)}
+                className={`ui-control rounded-lg border border-solid px-3 py-2.5 text-[13px] font-semibold ${draftPeriod === option.value ? 'border-brand bg-brand/5 text-brand' : 'border-border bg-surface text-muted'}`}
               >
                 {option.label}
               </button>
             ))}
           </div>
         </fieldset>
-        <UnavailableOptions
-          label="카테고리"
-          explanation="분류 정보 미제공"
-          options={['안보', '사회', '정치', '국제']}
-        />
+        <fieldset className="m-0 min-w-0 border-0 p-0">
+          <legend className="mb-2.5 p-0 text-sm font-bold">카테고리</legend>
+          <div className="flex flex-wrap gap-1.5">
+            {mapCategories.map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                aria-pressed={draftCategory === option.value}
+                onClick={() => setDraftCategory(option.value)}
+                className={`ui-control rounded-lg border border-solid px-3.5 py-2 text-[13px] font-semibold ${draftCategory === option.value ? 'border-brand bg-brand/5 text-brand' : 'border-border bg-surface text-muted'}`}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
+        </fieldset>
         <footer className="flex gap-2 border-0 border-t border-solid border-border pt-4">
           <button
             type="button"
-            onClick={() => setDraft('all')}
+            onClick={() => {
+              setDraftPeriod('all');
+              setDraftCategory('all');
+            }}
             className="ui-control rounded-xl border border-solid border-border bg-surface px-4 py-3 text-sm font-semibold text-muted"
           >
             초기화
@@ -197,7 +218,7 @@ function FilterSheet({
           <button
             type="button"
             onClick={() => {
-              onApply(draft);
+              onApply(draftPeriod, draftCategory);
               onClose();
             }}
             className="ui-control ui-primary flex-1 rounded-xl border-0 bg-brand px-4 py-3 text-sm font-bold text-white"
@@ -208,42 +229,5 @@ function FilterSheet({
       </section>
     </div>,
     document.body,
-  );
-}
-
-function UnavailableOptions({
-  label,
-  explanation,
-  options,
-}: {
-  label: string;
-  explanation: string;
-  options: string[];
-}) {
-  const explanationId = useId();
-
-  return (
-    <fieldset
-      aria-describedby={explanationId}
-      className="m-0 min-w-0 border-0 p-0"
-    >
-      <legend className="mb-2.5 p-0 text-sm font-bold">{label}</legend>
-      <div className="flex flex-wrap gap-1.5">
-        {['전체', ...options].map((option, index) => (
-          <button
-            key={option}
-            type="button"
-            disabled={index > 0}
-            aria-pressed={index === 0}
-            className={`rounded-lg border border-solid px-3.5 py-2 text-[13px] font-semibold ${index === 0 ? 'border-brand bg-brand/5 text-brand' : 'cursor-not-allowed border-border bg-surface text-muted'}`}
-          >
-            {option}
-          </button>
-        ))}
-      </div>
-      <p id={explanationId} className="sr-only">
-        {explanation}
-      </p>
-    </fieldset>
   );
 }
