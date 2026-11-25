@@ -2,7 +2,7 @@
 branch: fix/incidents-click-area
 owner: amazon
 started: 2026-11-25
-status: active          # active | paused(한동안 안 함, 남이 이어받아도 됨) | done(PR 올림)
+status: done            # active | paused(한동안 안 함, 남이 이어받아도 됨) | done(PR 올림)
 goal: fix(list): 사건 목록에서 카드 어디를 눌러도 기사 상세로 이동
 next:
 base: dev
