@@ -134,3 +134,23 @@ test('articleImageRecoversForNewSource', async () => {
   expect(container.textContent).toContain('이미지 없음');
   expect(container.querySelectorAll('article')).toHaveLength(1);
 });
+
+test('articleCardOverlaysDetailLinkAndKeepsSourceLinkClickable', async () => {
+  await render([item(idA, 'A')]);
+  const card = container.querySelector('article');
+  assert(card);
+  const detailLink = card.querySelector<HTMLAnchorElement>(
+    `a[href="/incidents/${idA}"]`,
+  );
+  const sourceLink = card.querySelector<HTMLAnchorElement>(
+    'a[href^="https://"]',
+  );
+  assert(detailLink && sourceLink);
+
+  expect(card.querySelectorAll('a a')).toHaveLength(0);
+  expect(card.classList).toContain('relative');
+  expect(detailLink.classList).toContain('after:absolute');
+  expect(detailLink.classList).toContain('after:inset-0');
+  expect(sourceLink.classList).toContain('relative');
+  expect(sourceLink.classList).toContain('z-10');
+});
