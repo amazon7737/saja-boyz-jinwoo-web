@@ -41,12 +41,12 @@ export function ArticleCard({
       : null;
 
   return (
-    <article className="ui-card-enter grid min-h-[120px] min-w-0 grid-cols-[80px_minmax(0,1fr)] content-start items-start gap-x-3 gap-y-1.5 rounded-card border border-solid border-border bg-surface p-3 shadow-[0_4px_8px_rgb(0_0_0/3%)]">
+    <article className="ui-card-enter relative grid min-h-[120px] min-w-0 grid-cols-[80px_minmax(0,1fr)] content-start items-start gap-x-3 gap-y-1.5 rounded-card border border-solid border-border bg-surface p-3 shadow-[0_4px_8px_rgb(0_0_0/3%)]">
       <ArticleImage key={imageUrl} src={imageUrl} />
       <h2 className="col-start-2 row-start-2 m-0 min-w-0 line-clamp-2 text-[14px]/[17px] font-extrabold text-text [overflow-wrap:anywhere]">
         <Link
           scroll={false}
-          className="ui-link"
+          className="ui-link after:absolute after:inset-0 after:content-['']"
           href={`/incidents/${article_id}`}
         >
           {articleText(article.title)}
@@ -55,7 +55,7 @@ export function ArticleCard({
       <div className="col-start-2 row-start-1 flex min-w-0 items-center justify-between gap-2">
         {sourceUrl ? (
           <a
-            className="ui-link relative shrink-0 whitespace-nowrap rounded-sm text-[11px]/[14px] text-muted underline underline-offset-[3px] after:absolute after:-inset-x-1 after:-top-2 after:bottom-0 after:content-['']"
+            className="ui-link relative z-10 shrink-0 whitespace-nowrap rounded-sm text-[11px]/[14px] text-muted underline underline-offset-[3px] after:absolute after:-inset-x-1 after:-top-2 after:bottom-0 after:content-['']"
             href={sourceUrl}
           >
             기사 원문
